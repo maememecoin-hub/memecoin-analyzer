@@ -224,7 +224,7 @@
                     <div class="panel-header" style="color: #fff;">Trader Terminal</div>
                     <div class="search-bar">
                         <input id="tokenInput" onkeypress="if(event.key==='Enter'){analyze()}" type="text" class="search-input" placeholder="Paste token CA...">
-                        <button class="btn">PASTE</button>
+                        <button class="btn" onclick="pasteToken()">PASTE</button>
                         <button class="btn btn-primary" onclick="analyze()">ANALYZE TOKEN</button>
                     </div>
 
@@ -472,6 +472,18 @@ loadScanner();
 loadFullScanner();
 
 document.getElementById("tokenInput").focus();
+
+async function pasteToken() {
+    try {
+        const text = await navigator.clipboard.readText();
+
+        // nadpisuje zawartość inputa (usuwa stary token)
+        document.getElementById("tokenInput").value = text.trim();
+
+    } catch (err) {
+        alert("❌ Nie można wkleić (brak dostępu do schowka)");
+    }
+}
 
 </script>
 
