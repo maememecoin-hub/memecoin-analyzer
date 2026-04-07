@@ -278,6 +278,12 @@
 </div>
 
 <script>
+
+// 🔐 LOGIN CHECK
+if (localStorage.getItem("loggedIn") !== "true") {
+    window.location.href = "login.html";
+}
+
     function switchTab(tabName) {
         // 1. Zresetuj wygląd wszystkich przycisków (usuń klasę 'active')
         document.getElementById('btn-analyzer').classList.remove('active');
@@ -468,6 +474,11 @@ setInterval(() => {
 
 loadScanner();
 loadFullScanner();
+
+function logout() {
+    localStorage.removeItem("loggedIn");
+    window.location.href = "login.html";
+}
 
 </script>
 
