@@ -3,27 +3,73 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Memecoin Sniper PRO</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=JetBrains+Mono:wght@500;800&family=Inter:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 
 <style>
-:root {
-    --gold: #d4af37;
+:root{
+--gold:#d4af37;
+--bg:#020617;
 }
-body {
-    background:#020617;
-    color:white;
-    font-family:'Inter';
-}
-.gold { color: var(--gold); }
 
-.card {
-    background: rgba(15,23,42,0.7);
-    backdrop-filter: blur(12px);
-    border:1px solid rgba(212,175,55,0.2);
-    border-radius:20px;
+body{
+background: radial-gradient(circle at top right, rgba(212,175,55,0.08), transparent),
+           radial-gradient(circle at bottom left, rgba(212,175,55,0.05), transparent),
+           var(--bg);
+font-family:'Inter';
+color:white;
+}
+
+/* TEXT */
+.gold{color:var(--gold);}
+.mono{font-family:'JetBrains Mono';}
+
+/* CARD */
+.card{
+background:rgba(15,23,42,0.6);
+backdrop-filter:blur(20px);
+border:1px solid rgba(212,175,55,0.15);
+border-radius:24px;
+transition:0.3s;
+}
+.card:hover{
+border-color:var(--gold);
+box-shadow:0 0 40px rgba(212,175,55,0.08);
+}
+
+/* BUTTON */
+.btn{
+background:linear-gradient(135deg,#d4af37,#f1c40f);
+color:black;
+font-weight:900;
+transition:0.2s;
+}
+.btn:hover{
+transform:scale(1.03);
+box-shadow:0 0 25px rgba(212,175,55,0.3);
+}
+
+/* INPUT */
+.input{
+background:#020617;
+border:1px solid #1e293b;
+transition:0.2s;
+}
+.input:focus{
+border-color:var(--gold);
+box-shadow:0 0 15px rgba(212,175,55,0.2);
+}
+
+/* ANIMATION */
+.fade{
+animation:fadeIn 0.4s ease;
+}
+@keyframes fadeIn{
+from{opacity:0;transform:translateY(10px);}
+to{opacity:1;transform:translateY(0);}
 }
 </style>
 </head>
@@ -32,36 +78,65 @@ body {
 
 <div class="max-w-5xl mx-auto">
 
-<h1 class="text-4xl font-black italic gold mb-6">MEMECOIN SNIPER</h1>
-
-<!-- TABS -->
-<div class="flex gap-6 mb-8 border-b border-gray-800">
-<button onclick="switchTab('analyzer')" id="btn1" class="pb-3 border-b-2 border-yellow-500">Analyzer</button>
-<button onclick="switchTab('scanner')" id="btn2" class="pb-3 text-gray-500">Auto Scanner</button>
+<!-- HERO -->
+<div class="mb-10">
+<h1 class="text-5xl font-black italic gold tracking-tight">
+MEMECOIN SNIPER<span class="opacity-50">.</span>
+</h1>
+<p class="text-gray-500 text-xs tracking-widest uppercase mt-2">
+REAL-TIME ANALYZER • EDGE TOOL
+</p>
 </div>
 
-<!-- ANALYZER -->
-<div id="analyzer">
-
-<div class="card p-6 mb-6">
-<input id="tokenInput" placeholder="Wklej CA tokena..."
-class="w-full p-4 bg-black border border-gray-800 rounded-xl mb-4">
-
-<button onclick="analyze()" class="w-full bg-yellow-500 text-black font-bold py-3 rounded-xl">
-ANALIZUJ
+<!-- TABS -->
+<div class="flex gap-8 mb-10 border-b border-gray-800">
+<button onclick="switchTab('analyzer')" class="pb-4 border-b-2 border-yellow-500 font-bold">
+ANALYZER
+</button>
+<button onclick="switchTab('scanner')" class="pb-4 text-gray-500 font-bold">
+SCANNER
 </button>
 </div>
 
-<div id="result" class="card p-6 hidden"></div>
+<!-- ================= ANALYZER ================= -->
+<div id="analyzer">
+
+<div class="card p-6 mb-6">
+
+<div class="flex gap-3">
+
+<input id="tokenInput"
+placeholder="Paste token CA..."
+class="input flex-1 p-4 rounded-xl outline-none mono">
+
+<button onclick="paste()" class="px-4 bg-gray-800 rounded-xl">
+📋
+</button>
 
 </div>
 
-<!-- SCANNER -->
+<button onclick="analyze()"
+class="btn w-full py-4 rounded-xl mt-4 tracking-wide">
+ANALYZE TOKEN
+</button>
+
+</div>
+
+<div id="result" class="hidden"></div>
+
+</div>
+
+<!-- ================= SCANNER ================= -->
 <div id="scanner" class="hidden">
 
 <div class="card p-6">
-<h2 class="mb-4">LIVE TOKENS</h2>
+
+<h2 class="text-sm text-gray-500 uppercase mb-4 tracking-widest">
+LIVE SIGNALS
+</h2>
+
 <div id="scannerData"></div>
+
 </div>
 
 </div>
@@ -70,32 +145,30 @@ ANALIZUJ
 
 <script>
 
-// TAB SWITCH
+// TAB
 function switchTab(tab){
 document.getElementById('analyzer').classList.add('hidden')
 document.getElementById('scanner').classList.add('hidden')
-
 document.getElementById(tab).classList.remove('hidden')
 }
 
-// =====================
-// ANALYZER
-// =====================
+// PASTE BUTTON
+async function paste(){
+const text = await navigator.clipboard.readText()
+document.getElementById('tokenInput').value = text
+}
+
+// ================= ANALYZER =================
 async function analyze(){
 
 let ca = document.getElementById('tokenInput').value
-
 if(!ca) return alert("Wklej adres")
 
 let res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${ca}`)
 let data = await res.json()
-
 let pair = data.pairs?.[0]
 
-if(!pair){
-alert("Nie znaleziono")
-return
-}
+if(!pair) return alert("Brak tokena")
 
 let fdv = pair.fdv || 0
 let liq = pair.liquidity?.usd || 0
@@ -103,40 +176,58 @@ let vol = pair.volume?.h24 || 0
 let m1 = pair.priceChange?.m1 || 0
 let age = (Date.now() - pair.pairCreatedAt)/60000
 
-let liq_mc = liq / fdv
-let vol_liq = vol / liq
+let liq_mc = liq/fdv
+let vol_liq = vol/liq
 
-// SCORE
 let score = 0
-if(liq_mc > 0.02) score += 2
-if(vol_liq < 5) score += 2
-if(m1 > 0.5) score += 1
-if(vol > 1000) score += 1
-if(age < 60) score += 1
+if(liq_mc > 0.02) score+=2
+if(vol_liq < 5) score+=2
+if(m1 > 0.5) score+=1
+if(vol > 1000) score+=1
+if(age < 60) score+=1
 
-let decision = "SKIP"
-if(score >= 6) decision = "STRONG BUY"
-else if(score >= 4) decision = "SCALP"
+let decision = "❌ SKIP"
+let color = "text-red-400"
+
+if(score>=6){decision="🔥 STRONG BUY";color="text-green-400"}
+else if(score>=4){decision="⚡ SCALP";color="text-yellow-400"}
 
 document.getElementById('result').classList.remove('hidden')
 document.getElementById('result').innerHTML = `
-<h2 class="text-2xl mb-4">${pair.baseToken.name}</h2>
+<div class="card p-6 fade">
 
-<p>SCORE: <span class="gold">${score}/7</span></p>
-<p>DECYZJA: ${decision}</p>
+<h2 class="text-2xl font-bold mb-4">
+${pair.baseToken.name} (${pair.baseToken.symbol})
+</h2>
 
-<hr class="my-4">
+<div class="flex justify-between mb-4">
+<div>
+<p class="text-gray-500 text-xs">SCORE</p>
+<p class="mono text-2xl gold">${score}/7</p>
+</div>
+
+<div class="text-right">
+<p class="text-gray-500 text-xs">DECISION</p>
+<p class="font-bold ${color}">${decision}</p>
+</div>
+</div>
+
+<hr class="border-gray-800 my-4">
+
+<div class="grid grid-cols-2 gap-4 text-sm mono">
 
 <p>MC: $${fdv}</p>
 <p>LIQ: $${liq}</p>
 <p>VOL: $${vol}</p>
-<p>AGE: ${age.toFixed(1)} min</p>
+<p>AGE: ${age.toFixed(1)}m</p>
+
+</div>
+
+</div>
 `
 }
 
-// =====================
-// SCANNER
-// =====================
+// ================= SCANNER =================
 async function loadScanner(){
 
 let res = await fetch(`https://api.dexscreener.com/latest/dex/search?q=pump`)
@@ -160,21 +251,29 @@ if(vol/liq < 10) score++
 if(m1 > 0) score++
 
 if(score >= 2){
+
 html += `
-<div class="border-b border-gray-800 py-3">
+<div class="p-4 border-b border-gray-800 hover:bg-white/5 transition">
+
+<div class="flex justify-between">
 <b>${p.baseToken.symbol}</b>
-| score: ${score}
-| vol: ${vol}
-| age: ${age.toFixed(0)}m
-</div>`
+<span class="gold mono">score ${score}</span>
+</div>
+
+<div class="text-xs text-gray-500 mono mt-1">
+vol ${vol} • age ${age.toFixed(0)}m
+</div>
+
+</div>
+`
 }
+
 })
 
 document.getElementById('scannerData').innerHTML = html
 }
 
-// AUTO REFRESH
-setInterval(loadScanner, 5000)
+setInterval(loadScanner,5000)
 
 </script>
 
