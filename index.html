@@ -16,19 +16,40 @@ body {
 }
 
 .gold {
-    background: linear-gradient(90deg,#d4af37,#facc15);
+    background: linear-gradient(270deg,#d4af37,#facc15,#ffdd55);
+    background-size: 600% 600%;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    animation: gradientMove 5s ease infinite;
+}
+
+@keyframes gradientMove {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
 
 .card {
-    background: rgba(15,23,42,0.6);
-    backdrop-filter: blur(12px);
+    background: rgba(15,23,42,0.5);
+    backdrop-filter: blur(20px);
     border: 1px solid rgba(212,175,55,0.2);
+    border-radius: 1rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0 30px rgba(212,175,55,0.5), 0 0 50px rgba(255, 255, 0, 0.2);
 }
 
 .glow {
-    box-shadow: 0 0 20px rgba(212,175,55,0.3);
+    box-shadow: 0 0 20px rgba(212,175,55,0.5), 0 0 40px rgba(255, 204, 0,0.3);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 20px rgba(212,175,55,0.5), 0 0 40px rgba(255, 204, 0,0.3); }
+    50% { box-shadow: 0 0 30px rgba(212,175,55,0.8), 0 0 50px rgba(255, 204, 0,0.5); }
+    100% { box-shadow: 0 0 20px rgba(212,175,55,0.5), 0 0 40px rgba(255, 204, 0,0.3); }
 }
 
 </style>
