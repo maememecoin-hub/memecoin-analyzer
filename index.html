@@ -223,14 +223,12 @@
                 <div class="panel">
                     <div class="panel-header" style="color: #fff;">Trader Terminal</div>
                     <div class="search-bar">
-                        <input type="text" class="search-input" placeholder="Paste token CA...">
+                        <input id="tokenInput" type="text" class="search-input" placeholder="Paste token CA...">
                         <button class="btn">PASTE</button>
-                        <button class="btn btn-primary">ANALYZE TOKEN</button>
+                        <button class="btn btn-primary" onclick="analyze()">ANALYZE TOKEN</button>
                     </div>
 
-                    <div class="panel-header" style="color: #fff; font-size: 1.3rem;">
-                        🐸 FROGGO (FROG)
-                    </div>
+                    <div id="analyzerResult"></div>
 
                     <div class="alert-box">
                         <div class="score-display">
@@ -253,11 +251,7 @@
 
                 <div class="panel">
                     <div class="panel-header">LIVE SCANNER</div>
-                    <ul class="data-list">
-                        <li><div><span class="coin-rank">1.</span> <span class="coin-name">YOLADOGE</span> <span class="badge">NEW 🚀</span></div> <div style="font-size: 0.9rem; color: #aaa;">score <span style="color: #fff">7</span> • vol 120k • age 5m</div></li>
-                        <li><div><span class="coin-rank">2.</span> <span class="coin-name">SOLBRO</span></div> <div style="font-size: 0.9rem; color: #aaa;">score <span style="color: #fff">6</span> • vol 95k • age 12m</div></li>
-                        <li><div><span class="coin-rank">3.</span> <span class="coin-name">MOONZILLA</span></div> <div style="font-size: 0.9rem; color: #aaa;">score <span style="color: #fff">5</span> • vol 80k • age 30m</div></li>
-                    </ul>
+                    <ul id="scannerList" class="data-list"></ul>
                 </div>
             </div>
 
@@ -327,6 +321,127 @@
             document.getElementById('view-scanner').classList.add('active');
         }
     }
+    
+// ================= ANALYZER =================
+async function analyze() {
+    const address = document.getElementById("tokenInput").value;
+    if (!address) return alert("Wklej adres!");
+
+    const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${address}`);
+    const data = await res.json();
+
+    if (!data.pairs || data.pairs.length === 0) {
+        document.getElementById("analyzerResult").innerHTML = "❌ Token not found";
+        return;
+    }
+
+    const pair = data.pairs[0];
+
+    const fdv = pair.fdv || 0;
+    const liquidity = pair.liquidity?.usd || 0;
+    const volume = pair.volume?.h24 || 0;
+    const change1m = pair.priceChange?.m1 || 0;
+
+    const created = pair.pairCreatedAt || 0;
+    const age = created ? (Date.now() - created) / 60000 : 9999;
+
+    const liq_mc = liquidity / fdv;
+    const vol_liq = volume / liquidity;
+
+    let score = 0;
+    if (liq_mc > 0.02) score += 2;
+    if (vol_liq < 5) score += 2;
+    if (change1m > 0.5) score += 1;
+    if (volume > 1000) score += 1;
+    if (age < 60) score += 1;
+
+    let decision = "SKIP";
+    let color = "var(--accent-red)";
+
+    if (score >= 6) {
+        decision = "🔥 STRONG BUY";
+        color = "var(--accent-green)";
+    } else if (score >= 4) {
+        decision = "⚡ SCALP";
+        color = "var(--gold-main)";
+    }
+
+    document.getElementById("analyzerResult").innerHTML = `
+        <div class="panel-header" style="color: #fff; font-size: 1.3rem;">
+            ${pair.baseToken.name} (${pair.baseToken.symbol})
+        </div>
+
+        <div class="alert-box">
+            <div class="score-display">
+                <div class="score-title">SCORE</div>
+                <span class="score-value">${score}</span><span class="score-max">/7</span>
+            </div>
+            <div class="alert-details">
+                <div class="strong-buy" style="color:${color}">
+                    ${decision}
+                </div>
+                <div class="stats-row">
+                    <div><span>MC:</span> $${Math.round(fdv)}</div> |
+                    <div><span>LIQ:</span> $${Math.round(liquidity)}</div> |
+                    <div><span>VOL:</span> $${Math.round(volume)}</div>
+                </div>
+                <div class="stats-row" style="margin-top: 10px;">
+                    <div><span>AGE:</span> ${age.toFixed(1)}m</div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+async function loadScanner() {
+    const res = await fetch("https://api.dexscreener.com/latest/dex/search?q=pump");
+    const data = await res.json();
+
+    let html = "";
+
+    let rank = 1;
+
+    data.pairs.forEach(pair => {
+        if (pair.chainId !== "solana") return;
+
+        const fdv = pair.fdv || 0;
+        const liquidity = pair.liquidity?.usd || 0;
+        const volume = pair.volume?.h24 || 0;
+        const change1m = pair.priceChange?.m1 || 0;
+
+        const created = pair.pairCreatedAt || 0;
+        const age = created ? (Date.now() - created) / 60000 : 9999;
+
+        let score = 0;
+        if (fdv > 0 && liquidity / fdv > 0.02) score++;
+        if (liquidity > 0 && volume / liquidity < 10) score++;
+        if (change1m > 0) score++;
+
+        if (volume > 100 && liquidity > 50) {
+            html += `
+                <li>
+                    <div>
+                        <span class="coin-rank">${rank}.</span>
+                        <span class="coin-name">${pair.baseToken.symbol}</span>
+                        ${age < 10 ? '<span class="badge">NEW 🚀</span>' : ''}
+                    </div>
+                    <div style="font-size: 0.9rem; color: #aaa;">
+                        score <span style="color:#fff">${score}</span> • 
+                        vol ${Math.round(volume)} • 
+                        age ${age.toFixed(0)}m
+                    </div>
+                </li>
+            `;
+            rank++;
+        }
+    });
+
+    document.getElementById("scannerList").innerHTML = html;
+}
+
+setInterval(loadScanner, 8000);
+loadScanner();
+
 </script>
 
 </body>
