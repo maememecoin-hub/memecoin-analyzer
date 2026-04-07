@@ -7,71 +7,64 @@
 <style>
 body {
     margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto;
-    background: #0b0f14;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI";
+    background: radial-gradient(circle at top, #0f1720, #05070a);
     color: #e6edf3;
 }
 
-/* NAV */
-.nav {
+/* CENTER */
+.wrapper {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
-    padding: 16px 40px;
-    border-bottom: 1px solid #1f2933;
-}
-
-.logo {
-    font-weight: 600;
-    font-size: 18px;
-    color: #58a6ff;
-}
-
-.tabs button {
-    background: none;
-    border: none;
-    color: #8b949e;
-    margin-left: 20px;
-    font-size: 14px;
-    cursor: pointer;
-}
-
-.tabs button.active {
-    color: white;
-    border-bottom: 2px solid #58a6ff;
-}
-
-/* LAYOUT */
-.container {
-    max-width: 900px;
-    margin: auto;
-    padding: 40px 20px;
+    height: 100vh;
 }
 
 /* CARD */
 .card {
-    background: #11161c;
-    border: 1px solid #1f2933;
-    border-radius: 14px;
-    padding: 25px;
-    margin-bottom: 25px;
+    width: 420px;
+    background: rgba(20,25,30,0.8);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 20px;
+    padding: 30px;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+    animation: fadeIn 0.5s ease;
+}
+
+/* ANIMATION */
+@keyframes fadeIn {
+    from {opacity: 0; transform: translateY(10px);}
+    to {opacity: 1;}
+}
+
+/* TITLE */
+.title {
+    font-size: 20px;
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+
+/* INPUT GROUP */
+.input-group {
+    display: flex;
+    gap: 10px;
 }
 
 /* INPUT */
-.input {
-    width: 100%;
+input {
+    flex: 1;
     padding: 14px;
     border-radius: 10px;
-    border: 1px solid #1f2933;
+    border: none;
     background: #0b0f14;
     color: white;
-    margin-top: 10px;
+    outline: none;
 }
 
 /* BUTTON */
 .btn {
-    margin-top: 15px;
-    padding: 12px 18px;
+    padding: 14px;
     border-radius: 10px;
     border: none;
     background: #238636;
@@ -84,111 +77,68 @@ body {
     background: #2ea043;
 }
 
+/* SMALL BTN */
+.paste {
+    background: #161b22;
+}
+
+.paste:hover {
+    background: #1f2933;
+}
+
 /* RESULT */
 .result {
     margin-top: 20px;
-    line-height: 1.8;
+    font-size: 14px;
+    line-height: 1.7;
 }
 
-/* TABLE */
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-}
-
-th {
-    text-align: left;
-    font-size: 12px;
-    color: #8b949e;
-    padding-bottom: 10px;
-}
-
-td {
-    padding: 12px 0;
-    border-top: 1px solid #1f2933;
-}
-
-/* COLORS */
+/* SCORE COLORS */
 .good { color: #3fb950; }
 .warn { color: #d29922; }
 .bad { color: #f85149; }
 
-/* FUTURE */
-.side {
-    position: fixed;
-    right: 0;
-    top: 0;
-    width: 220px;
-    height: 100%;
-    border-left: 1px solid #1f2933;
-    padding: 30px 20px;
-    background: #0b0f14;
-}
-
-.side h4 {
-    color: #8b949e;
-    font-size: 12px;
-    margin-bottom: 15px;
-}
-
-.side p {
+/* LOADER */
+.loader {
+    margin-top: 15px;
     font-size: 13px;
-    margin: 10px 0;
-    color: #c9d1d9;
+    color: #8b949e;
 }
 </style>
 </head>
 
 <body>
 
-<!-- NAV -->
-<div class="nav">
-    <div class="logo">Sniper PRO</div>
+<div class="wrapper">
+    <div class="card">
 
-    <div class="tabs">
-        <button onclick="showTab('analyzer')" id="tab1" class="active">Analyzer</button>
-        <button onclick="showTab('scanner')" id="tab2">Scanner</button>
-    </div>
-</div>
+        <div class="title">🧠 Analyze Token</div>
 
-<!-- MAIN -->
-<div class="container">
+        <div class="input-group">
+            <input id="tokenInput" placeholder="Paste contract address">
+            <button class="btn paste" onclick="paste()">📋</button>
+        </div>
 
-    <!-- ANALYZER -->
-    <div id="analyzer" class="card">
-        <h3>Analyze token</h3>
-        <input id="tokenInput" class="input" placeholder="Paste contract address">
+        <button class="btn" style="width:100%; margin-top:10px;" onclick="analyze()">
+            Analyze
+        </button>
 
-        <button class="btn" onclick="analyze()">Analyze</button>
-
+        <div id="loading" class="loader"></div>
         <div id="result" class="result"></div>
+
     </div>
-
-    <!-- SCANNER -->
-    <div id="scanner" class="card" style="display:none;">
-        <h3>Live scanner</h3>
-        <div id="scannerTable"></div>
-    </div>
-
-</div>
-
-<!-- FUTURE PANEL -->
-<div class="side">
-    <h4>ROADMAP</h4>
-    <p>Filters</p>
-    <p>Alerts</p>
-    <p>Wallet tracking</p>
-    <p>AI signals</p>
 </div>
 
 <script>
-function showTab(tab) {
-    document.getElementById("analyzer").style.display = tab === "analyzer" ? "block" : "none";
-    document.getElementById("scanner").style.display = tab === "scanner" ? "block" : "none";
 
-    document.getElementById("tab1").classList.toggle("active", tab === "analyzer");
-    document.getElementById("tab2").classList.toggle("active", tab === "scanner");
+// 🔥 QUICK PASTE
+async function paste() {
+    try {
+        const text = await navigator.clipboard.readText();
+        document.getElementById("tokenInput").value = text;
+    } catch {
+        alert("Clipboard blocked");
+    }
 }
 
 // ANALYZER
@@ -196,77 +146,60 @@ async function analyze() {
     const address = document.getElementById("tokenInput").value;
     if (!address) return;
 
-    const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${address}`);
-    const data = await res.json();
+    document.getElementById("loading").innerText = "Analyzing...";
+    document.getElementById("result").innerHTML = "";
 
-    if (!data.pairs || data.pairs.length === 0) {
-        document.getElementById("result").innerHTML = "Not found";
-        return;
-    }
+    try {
+        const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${address}`);
+        const data = await res.json();
 
-    const p = data.pairs[0];
+        if (!data.pairs || data.pairs.length === 0) {
+            document.getElementById("loading").innerText = "";
+            document.getElementById("result").innerHTML = "❌ Not found";
+            return;
+        }
 
-    const fdv = p.fdv || 0;
-    const liq = p.liquidity?.usd || 0;
-    const vol = p.volume?.h24 || 0;
-    const change = p.priceChange?.m1 || 0;
+        const p = data.pairs[0];
 
-    const age = p.pairCreatedAt ? (Date.now() - p.pairCreatedAt)/60000 : 9999;
-
-    const liqmc = liq / fdv;
-    const volliq = vol / liq;
-
-    let score = 0;
-    if (liqmc > 0.02) score += 2;
-    if (volliq < 5) score += 2;
-    if (change > 0.5) score += 1;
-    if (vol > 1000) score += 1;
-    if (age < 60) score += 1;
-
-    let label = "SKIP", cls="bad";
-    if (score >= 6) { label="STRONG BUY"; cls="good"; }
-    else if (score >= 4) { label="SCALP"; cls="warn"; }
-
-    document.getElementById("result").innerHTML = `
-        <b>${p.baseToken.symbol}</b><br>
-        Score: ${score}/7 <span class="${cls}">(${label})</span><br><br>
-
-        MC: ${Math.round(fdv)}<br>
-        Liquidity: ${Math.round(liq)}<br>
-        Volume: ${Math.round(vol)}<br>
-        Age: ${age.toFixed(1)}m<br>
-    `;
-}
-
-// SCANNER
-async function scan() {
-    const res = await fetch("https://api.dexscreener.com/latest/dex/search?q=pump");
-    const data = await res.json();
-
-    let html = "<table><tr><th>Token</th><th>Score</th><th>Vol</th></tr>";
-
-    data.pairs.forEach(p => {
-        if (p.chainId !== "solana") return;
-
-        const vol = p.volume?.h24 || 0;
-        const liq = p.liquidity?.usd || 0;
         const fdv = p.fdv || 0;
+        const liq = p.liquidity?.usd || 0;
+        const vol = p.volume?.h24 || 0;
+        const change = p.priceChange?.m1 || 0;
+
+        const age = p.pairCreatedAt ? (Date.now() - p.pairCreatedAt)/60000 : 9999;
+
+        const liqmc = liq / fdv;
+        const volliq = vol / liq;
 
         let score = 0;
-        if (liq/fdv > 0.02) score++;
-        if (vol/liq < 10) score++;
+        if (liqmc > 0.02) score += 2;
+        if (volliq < 5) score += 2;
+        if (change > 0.5) score += 1;
+        if (vol > 1000) score += 1;
+        if (age < 60) score += 1;
 
-        if (vol > 100) {
-            html += `<tr><td>${p.baseToken.symbol}</td><td>${score}</td><td>${Math.round(vol)}</td></tr>`;
-        }
-    });
+        let label = "SKIP", cls="bad";
+        if (score >= 6) { label="STRONG BUY"; cls="good"; }
+        else if (score >= 4) { label="SCALP"; cls="warn"; }
 
-    html += "</table>";
-    document.getElementById("scannerTable").innerHTML = html;
+        document.getElementById("loading").innerText = "";
+
+        document.getElementById("result").innerHTML = `
+            <b>${p.baseToken.symbol}</b><br>
+            Score: ${score}/7 <span class="${cls}">${label}</span><br><br>
+
+            MC: ${Math.round(fdv)}<br>
+            Liquidity: ${Math.round(liq)}<br>
+            Volume: ${Math.round(vol)}<br>
+            Age: ${age.toFixed(1)}m<br>
+        `;
+
+    } catch {
+        document.getElementById("loading").innerText = "";
+        document.getElementById("result").innerHTML = "❌ Error";
+    }
 }
 
-setInterval(scan, 8000);
-scan();
 </script>
 
 </body>
