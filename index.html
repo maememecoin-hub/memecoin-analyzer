@@ -266,18 +266,11 @@
     </div>
 
     <div id="view-scanner" class="view-section">
-        <div class="panel" style="min-height: 400px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
-            
-            <div style="font-size: 4rem; margin-bottom: 20px;">📡</div>
-            <h2 style="color: var(--gold-light); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px;">Global Scanner Interface</h2>
-            <p style="color: var(--text-muted); max-width: 500px; line-height: 1.6;">
-                To jest Twoje puste płótno dla zakładki Scanner. Możesz tu wrzucić własne tabele, wykresy albo po prostu skopiować klasy paneli z zakładki Analyzer i zbudować nowy układ.
-            </p>
-            <br>
-            <button class="btn btn-primary">START SCANNING</button>
-
-        </div>
+    <div class="panel">
+        <div class="panel-header">GLOBAL LIVE SCANNER</div>
+        <ul id="scannerFull" class="data-list"></ul>
     </div>
+</div>
 
     <div class="footer-ticker">
         <span style="color: #fff">LATEST NEWS:</span> Fresh Coins Spiking! 🚀 Jump in now for quick gains!
@@ -421,8 +414,60 @@ async function loadScanner() {
     document.getElementById("scannerList").innerHTML = html;
 }
 
-setInterval(loadScanner, 8000);
+async function loadFullScanner() {
+    const res = await fetch("https://api.dexscreener.com/latest/dex/search?q=pump");
+    const data = await res.json();
+
+    let html = "";
+
+    let rank = 1;
+
+    data.pairs.forEach(pair => {
+        if (pair.chainId !== "solana") return;
+
+        const fdv = pair.fdv || 0;
+        const liquidity = pair.liquidity?.usd || 0;
+        const volume = pair.volume?.h24 || 0;
+        const change1m = pair.priceChange?.m1 || 0;
+
+        const created = pair.pairCreatedAt || 0;
+        const age = created ? (Date.now() - created) / 60000 : 9999;
+
+        let score = 0;
+        if (fdv > 0 && liquidity / fdv > 0.02) score++;
+        if (liquidity > 0 && volume / liquidity < 10) score++;
+        if (change1m > 0) score++;
+
+        if (volume > 50 && liquidity > 30) {
+            html += `
+                <li>
+                    <div>
+                        <span class="coin-rank">${rank}.</span>
+                        <span class="coin-name">${pair.baseToken.symbol}</span>
+                        ${age < 5 ? '<span class="badge">NEW 🚀</span>' : ''}
+                    </div>
+                    <div style="font-size: 0.9rem; color: #aaa;">
+                        score <span style="color:#fff">${score}</span> • 
+                        vol ${Math.round(volume)} • 
+                        liq ${Math.round(liquidity)} • 
+                        age ${age.toFixed(0)}m
+                    </div>
+                </li>
+            `;
+            rank++;
+        }
+    });
+
+    document.getElementById("scannerFull").innerHTML = html;
+}
+
+setInterval(() => {
+    loadScanner();
+    loadFullScanner();
+}, 8000);
+
 loadScanner();
+loadFullScanner();
 
 </script>
 
