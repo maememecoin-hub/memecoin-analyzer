@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOL-Radar | Meme Analyzer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #09090b; color: #fafafa; font-family: 'Inter', sans-serif; }
+        .glass { background: rgba(24, 24, 27, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(63, 63, 70, 0.5); }
+        .sol-gradient { background: linear-gradient(90deg, #14F195 0%, #9945FF 100%); }
+        .tab-content { display: none; }
+        .active { display: block; }
+        .badge-red { background: #450a0a; color: #f87171; border: 1px solid #7f1d1d; }
+        .badge-green { background: #064e3b; color: #4ade80; border: 1px solid #065f46; }
+    </style>
+</head>
+<body class="min-h-screen pb-10">
+
+    <header class="p-6 border-b border-zinc-800 flex justify-between items-center">
+        <h1 class="text-2xl font-black tracking-tighter sol-gradient bg-clip-text text-transparent">SOL-RADAR v1.0</h1>
+        <div class="text-xs text-zinc-500 uppercase tracking-widest">Solana Network Only</div>
+    </header>
+
+    <nav class="flex justify-center gap-4 my-8">
+        <button onclick="showTab('scan')" class="px-6 py-2 rounded-full glass hover:border-purple-500 transition shadow-lg text-sm font-bold">🔍 GŁĘBOKI SKAN</button>
+        <button onclick="showTab('auto')" class="px-6 py-2 rounded-full glass hover:border-green-500 transition shadow-lg text-sm font-bold">📡 LIVE RADAR</button>
+    </nav>
+
+    <main class="max-w-4xl mx-auto px-4">
+        
+        <div id="scan" class="tab-content active">
+            <div class="glass p-8 rounded-2xl shadow-2xl">
+                <h2 class="text-xl font-bold mb-4">Analiza kontraktu (CA)</h2>
+                <div class="flex flex-col md:flex-row gap-3">
+                    <input type="text" id="tokenInp" placeholder="Wklej adres Mint (Solana)..." 
+                           class="flex-1 bg-zinc-950 p-4 rounded-xl border border-zinc-800 focus:border-purple-500 outline-none transition">
+                    <button onclick="runDeepScan()" class="sol-gradient px-8 py-4 rounded-xl font-black text-black hover:opacity-90 transition">SKANUJ</button>
+                </div>
+                
+                <div id="scanResult" class="hidden mt-8 space-y-6">
+                    </div>
+            </div>
+        </div>
+
+        <div id="auto" class="tab-content">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold">Nowe profile na Solanie</h2>
+                <button onclick="startAutoDetector()" class="text-xs text-purple-400 hover:underline underline-offset-4">ODŚWIEŻ TERAZ</button>
+            </div>
+            <div id="autoList" class="grid gap-3">
+                <div class="text-zinc-500 animate-pulse">Ładowanie najnowszych danych z DexScreener...</div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        function showTab(id) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            if(id === 'auto') startAutoDetector();
+        }
+
+        async function runDeepScan() {
+            const ca = document.getElementById('tokenInp').value.trim();
+            const resDiv = document.getElementById('scanResult');
+            
+            if(!ca) return;
+            
+            resDiv.classList.remove('hidden');
+            resDiv.innerHTML = `<div class="text-center py-10 animate-spin text-2xl">🌀</div>`;
+
+            try {
+                // 1. Pobieranie danych z DexScreener
+                const dexRes = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${ca}`);
+                const dexData = await dexRes.json();
+                
+                if(!dexData.pairs || dexData.pairs.length === 0) {
+                    resDiv.innerHTML = `<div class="p-4 badge-red rounded-lg text-center font-bold">Nie znaleziono tokena na DEX. Może być za wczesny lub to scam.</div>`;
+                    return;
+                }
+
+                const pair = dexData.pairs.find(p => p.chainId === 'solana');
+                const liq = pair.liquidity.usd;
+                const mcap = pair.fdv;
+                const rugCheckUrl = `https://rugcheck.xyz/tokens/${ca}`;
+
+                // Budowanie UI wyników
+                resDiv.innerHTML = `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="p-4 glass rounded-xl">
+                            <p class="text-zinc-500 text-xs uppercase">Token</p>
+                            <h3 class="text-2xl font-black">${pair.baseToken.name}</h3>
+                            <p class="text-purple-400 font-mono text-xs break-all">${ca}</p>
+                        </div>
+                        <div class="p-4 glass rounded-xl flex flex-col justify-center">
+                            <p class="text-zinc-500 text-xs uppercase">Płynność (Liquidity)</p>
+                            <p class="text-2xl font-mono ${liq > 30000 ? 'text-green-400' : 'text-red-400'}">$${liq.toLocaleString()}</p>
+                        </div>
+                    </div>
+
+                    <div class="p-6 glass rounded-xl border-l-4 ${liq > 50000 ? 'border-green-500' : 'border-yellow-500'}">
+                        <h4 class="font-bold mb-2 text-lg">Raport Analizy:</h4>
+                        <ul class="space-y-2 text-sm">
+                            <li class="flex justify-between"><span>Market Cap:</span> <span class="font-mono">$${mcap?.toLocaleString()}</span></li>
+                            <li class="flex justify-between"><span>Sieć:</span> <span class="font-bold text-green-400">Solana (Raydium/Orca)</span></li>
+                            <li class="flex justify-between"><span>Wiek:</span> <span>${new Date(pair.pairCreatedAt).toLocaleString()}</span></li>
+                        </ul>
+                        <div class="mt-6 flex gap-2">
+                            <a href="${pair.url}" target="_blank" class="flex-1 text-center py-2 bg-zinc-800 rounded-lg hover:bg-zinc-700 transition text-xs font-bold">DEXSCREENER</a>
+                            <a href="${rugCheckUrl}" target="_blank" class="flex-1 text-center py-2 bg-red-900/30 text-red-400 rounded-lg border border-red-800 hover:bg-red-800/40 transition text-xs font-bold">RUGCHECK (VITAL)</a>
+                        </div>
+                    </div>
+                `;
+            } catch (e) {
+                resDiv.innerHTML = "Wystąpił błąd podczas skanowania.";
+            }
+        }
+
+        async function startAutoDetector() {
+            const list = document.getElementById('autoList');
+            try {
+                const res = await fetch('https://api.dexscreener.com/token-profiles/latest/v1');
+                const tokens = await res.json();
+                
+                // Filtrujemy tylko Solanę
+                const solanaTokens = tokens.filter(t => t.chainId === 'solana').slice(0, 15);
+                
+                list.innerHTML = "";
+                solanaTokens.forEach(token => {
+                    const el = document.createElement('div');
+                    el.className = "glass p-4 rounded-xl flex justify-between items-center hover:border-zinc-600 transition cursor-pointer";
+                    el.onclick = () => {
+                        document.getElementById('tokenInp').value = token.tokenAddress;
+                        showTab('scan');
+                        runDeepScan();
+                    };
+                    
+                    el.innerHTML = `
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-full overflow-hidden bg-zinc-800">
+                                <img src="${token.icon || ''}" onerror="this.src='https://cryptologos.cc/logos/solana-sol-logo.png'" class="w-full h-full object-cover">
+                            </div>
+                            <div>
+                                <div class="font-bold text-white">${token.symbol}</div>
+                                <div class="text-[10px] text-zinc-500 font-mono">${token.tokenAddress.substring(0, 6)}...${token.tokenAddress.substring(38)}</div>
+                            </div>
+                        </div>
+                        <div class="badge-green px-3 py-1 rounded-full text-[10px] font-black uppercase">Analizuj</div>
+                    `;
+                    list.appendChild(el);
+                });
+            } catch (e) {
+                list.innerHTML = "Nie udało się pobrać najnowszych par.";
+            }
+        }
+
+        // Auto-odświeżanie dla Live Radaru
+        setInterval(() => {
+            if(document.getElementById('auto').classList.contains('active')) {
+                startAutoDetector();
+            }
+        }, 60000); // co minutę
+    </script>
+</body>
+</html>
