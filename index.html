@@ -1,82 +1,173 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-    <meta charset="UTF-8">
-    <title>Memecoin Sniper PRO</title>
-    <style>
-        body {
-            background: #0d1117;
-            color: white;
-            font-family: Arial;
-            padding: 20px;
-        }
+<meta charset="UTF-8">
+<title>Memecoin Sniper PRO</title>
 
-        h1 {
-            color: #58a6ff;
-        }
+<style>
+body {
+    margin: 0;
+    background: linear-gradient(180deg, #0d1117, #05070a);
+    color: white;
+    font-family: 'Segoe UI', sans-serif;
+}
 
-        .tabs button {
-            padding: 10px;
-            margin-right: 10px;
-            background: #21262d;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
+/* NAVBAR */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px 30px;
+    background: rgba(20,20,20,0.8);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid #222;
+}
 
-        .active {
-            background: #58a6ff;
-        }
+.logo {
+    font-size: 20px;
+    font-weight: bold;
+    color: #58a6ff;
+}
 
-        input {
-            padding: 10px;
-            width: 300px;
-        }
+.menu button {
+    margin-left: 10px;
+    padding: 8px 14px;
+    border: none;
+    background: #161b22;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+}
 
-        button {
-            padding: 10px;
-            margin-left: 10px;
-            cursor: pointer;
-        }
+.menu button.active {
+    background: #238636;
+}
 
-        table {
-            width: 100%;
-            margin-top: 20px;
-            border-collapse: collapse;
-        }
+/* MAIN */
+.container {
+    padding: 30px;
+}
 
-        th, td {
-            padding: 8px;
-            border-bottom: 1px solid #333;
-        }
+/* CARD */
+.card {
+    background: rgba(20,20,20,0.6);
+    border: 1px solid #222;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
 
-        .good { color: #00ff88; }
-        .warn { color: orange; }
-        .bad { color: red; }
-    </style>
+/* INPUT */
+input {
+    padding: 12px;
+    width: 300px;
+    border-radius: 8px;
+    border: none;
+    background: #161b22;
+    color: white;
+}
+
+/* BUTTON */
+.btn {
+    padding: 12px 18px;
+    margin-left: 10px;
+    border-radius: 8px;
+    border: none;
+    background: #238636;
+    color: white;
+    cursor: pointer;
+}
+
+.btn:hover {
+    background: #2ea043;
+}
+
+/* TABLE */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 10px;
+    border-bottom: 1px solid #222;
+}
+
+tr:hover {
+    background: rgba(255,255,255,0.05);
+}
+
+/* COLORS */
+.good { color: #00ff88; }
+.warn { color: orange; }
+.bad { color: red; }
+
+/* BADGE */
+.badge {
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+}
+
+/* FUTURE PANEL */
+.future {
+    position: fixed;
+    right: 0;
+    top: 0;
+    height: 100%;
+    width: 200px;
+    background: #0d1117;
+    border-left: 1px solid #222;
+    padding: 20px;
+}
+
+.future h3 {
+    font-size: 14px;
+    color: #888;
+}
+</style>
 </head>
+
 <body>
 
-<h1>🚀 Memecoin Sniper PRO</h1>
+<!-- NAV -->
+<div class="navbar">
+    <div class="logo">🚀 Sniper PRO</div>
 
-<div class="tabs">
-    <button onclick="showTab('analyzer')" id="tab1" class="active">🧠 Analyzer</button>
-    <button onclick="showTab('scanner')" id="tab2">🤖 Auto Scanner</button>
+    <div class="menu">
+        <button onclick="showTab('analyzer')" id="tab1" class="active">Analyzer</button>
+        <button onclick="showTab('scanner')" id="tab2">Scanner</button>
+    </div>
 </div>
 
-<!-- ANALYZER -->
-<div id="analyzer">
-    <h3>Wklej adres tokena</h3>
-    <input id="tokenInput" placeholder="Contract Address">
-    <button onclick="analyze()">ANALIZUJ</button>
+<!-- MAIN -->
+<div class="container">
 
-    <div id="result"></div>
+    <!-- ANALYZER -->
+    <div id="analyzer" class="card">
+        <h2>🧠 Analyzer</h2>
+
+        <input id="tokenInput" placeholder="Wklej CA tokena">
+        <button class="btn" onclick="analyze()">Analizuj</button>
+
+        <div id="result" style="margin-top:20px;"></div>
+    </div>
+
+    <!-- SCANNER -->
+    <div id="scanner" class="card" style="display:none;">
+        <h2>🤖 Auto Scanner</h2>
+
+        <div id="scannerTable"></div>
+    </div>
+
 </div>
 
-<!-- SCANNER -->
-<div id="scanner" style="display:none;">
-    <h3>📡 Live Scanner</h3>
-    <div id="scannerTable"></div>
+<!-- FUTURE PANEL -->
+<div class="future">
+    <h3>⚙️ FUTURE</h3>
+    <p>Filters</p>
+    <p>Alerts</p>
+    <p>Wallet tracking</p>
+    <p>AI signals</p>
 </div>
 
 <script>
@@ -88,22 +179,17 @@ function showTab(tab) {
     document.getElementById("tab2").classList.toggle("active", tab === "scanner");
 }
 
-// ======================
-// ANALYZER
-// ======================
+// ================= ANALYZER =================
 async function analyze() {
     const address = document.getElementById("tokenInput").value;
 
-    if (!address) {
-        alert("Wklej adres!");
-        return;
-    }
+    if (!address) return alert("Wklej adres!");
 
     const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${address}`);
     const data = await res.json();
 
     if (!data.pairs || data.pairs.length === 0) {
-        document.getElementById("result").innerHTML = "❌ Nie znaleziono";
+        document.getElementById("result").innerHTML = "❌ Token nie znaleziony";
         return;
     }
 
@@ -120,7 +206,6 @@ async function analyze() {
     const liq_mc = liquidity / fdv;
     const vol_liq = volume / liquidity;
 
-    // SCORE
     let score = 0;
     if (liq_mc > 0.02) score += 2;
     if (vol_liq < 5) score += 2;
@@ -128,24 +213,16 @@ async function analyze() {
     if (volume > 1000) score += 1;
     if (age < 60) score += 1;
 
-    let decision = "";
-    let className = "";
+    let decision = "❌ SKIP";
+    let cls = "bad";
 
-    if (score >= 6) {
-        decision = "🔥 STRONG BUY";
-        className = "good";
-    } else if (score >= 4) {
-        decision = "⚡ SCALP";
-        className = "warn";
-    } else {
-        decision = "❌ SKIP";
-        className = "bad";
-    }
+    if (score >= 6) { decision = "🔥 STRONG BUY"; cls="good"; }
+    else if (score >= 4) { decision = "⚡ SCALP"; cls="warn"; }
 
     document.getElementById("result").innerHTML = `
-        <h2>${pair.baseToken.name} (${pair.baseToken.symbol})</h2>
+        <h3>${pair.baseToken.name} (${pair.baseToken.symbol})</h3>
         <p>SCORE: ${score}/7</p>
-        <p class="${className}">${decision}</p>
+        <p class="${cls}">${decision}</p>
 
         <hr>
 
@@ -158,9 +235,7 @@ async function analyze() {
     `;
 }
 
-// ======================
-// SCANNER
-// ======================
+// ================= SCANNER =================
 async function loadScanner() {
     const res = await fetch("https://api.dexscreener.com/latest/dex/search?q=pump");
     const data = await res.json();
@@ -198,7 +273,6 @@ async function loadScanner() {
     document.getElementById("scannerTable").innerHTML = html;
 }
 
-// AUTO REFRESH
 setInterval(loadScanner, 8000);
 loadScanner();
 </script>
