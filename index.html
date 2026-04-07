@@ -1,202 +1,409 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Memecoin Sniper</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memecoin Sniper UI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-main: #0a0a0a;
+            --bg-panel: #111111;
+            --gold-light: #ffc857;
+            --gold-main: #fca311;
+            --gold-dark: #b07000;
+            --text-main: #e0e0e0;
+            --text-muted: #888888;
+            --accent-green: #a2ff00;
+            --accent-red: #ff3333;
+            --panel-border: rgba(252, 163, 17, 0.3);
+            --panel-shadow: 0 0 15px rgba(252, 163, 17, 0.05), inset 0 0 20px rgba(0,0,0,0.8);
+        }
 
-<script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Inter:wght@300;500&display=swap" rel="stylesheet">
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-<style>
-body {
-    background: #020617;
-    font-family: 'Inter', sans-serif;
-    color: white;
-}
+        body {
+            background-color: var(--bg-main);
+            background-image: radial-gradient(circle at 50% 0%, #1a1600 0%, var(--bg-main) 60%);
+            color: var(--text-main);
+            font-family: 'Rajdhani', sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
 
-.gold {
-    background: linear-gradient(270deg,#d4af37,#facc15,#ffdd55);
-    background-size: 600% 600%;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    animation: gradientMove 5s ease infinite;
-}
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
 
-@keyframes gradientMove {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
+        /* --- HEADER --- */
+        .header {
+            text-align: center;
+            margin-bottom: 10px;
+        }
 
-.card {
-    background: rgba(15,23,42,0.5);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(212,175,55,0.2);
-    border-radius: 1rem;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-.card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 0 30px rgba(212,175,55,0.5), 0 0 50px rgba(255, 255, 0, 0.2);
-}
+        .title {
+            font-size: 3rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            background: linear-gradient(to bottom, #fff, var(--gold-main));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0px 0px 20px rgba(252, 163, 17, 0.4);
+        }
 
-.glow {
-    box-shadow: 0 0 20px rgba(212,175,55,0.5), 0 0 40px rgba(255, 204, 0,0.3);
-    animation: pulse 2s infinite;
-}
+        .subtitle {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            letter-spacing: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-top: -5px;
+        }
 
-@keyframes pulse {
-    0% { box-shadow: 0 0 20px rgba(212,175,55,0.5), 0 0 40px rgba(255, 204, 0,0.3); }
-    50% { box-shadow: 0 0 30px rgba(212,175,55,0.8), 0 0 50px rgba(255, 204, 0,0.5); }
-    100% { box-shadow: 0 0 20px rgba(212,175,55,0.5), 0 0 40px rgba(255, 204, 0,0.3); }
-}
+        .subtitle::before, .subtitle::after {
+            content: "";
+            height: 1px;
+            width: 50px;
+            background: linear-gradient(to right, transparent, var(--gold-main), transparent);
+        }
 
-</style>
+        /* --- TABS --- */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .tab {
+            background: linear-gradient(to bottom, #1a1a1a, var(--bg-main));
+            border: 1px solid var(--panel-border);
+            color: var(--text-muted);
+            padding: 8px 30px;
+            font-family: inherit;
+            font-weight: 600;
+            font-size: 1rem;
+            text-transform: uppercase;
+            cursor: pointer;
+            border-radius: 4px 4px 0 0;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            background: linear-gradient(to bottom, #2a1f00, var(--bg-main));
+            color: var(--gold-light);
+            border-bottom: none;
+            box-shadow: inset 0 2px 10px rgba(252, 163, 17, 0.2);
+        }
+
+        /* --- LAYOUT GRID --- */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+
+        /* --- PANELS (The non-square look) --- */
+        .panel {
+            background: var(--bg-panel);
+            border: 1px solid var(--panel-border);
+            border-radius: 6px;
+            padding: 20px;
+            box-shadow: var(--panel-shadow);
+            position: relative;
+        }
+
+        /* Panel Glow Effects */
+        .panel::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 10%; right: 10%; height: 1px;
+            background: linear-gradient(90deg, transparent, var(--gold-main), transparent);
+            opacity: 0.5;
+        }
+
+        .panel-header {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--gold-light);
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .panel-header::before {
+            content: '•';
+            color: var(--gold-main);
+        }
+
+        /* --- TRADER TERMINAL --- */
+        .search-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            flex-grow: 1;
+            background: #050505;
+            border: 1px solid #333;
+            color: white;
+            padding: 10px 15px;
+            font-family: inherit;
+            border-radius: 4px;
+            box-shadow: inset 0 0 10px black;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--gold-dark);
+        }
+
+        .btn {
+            background: #222;
+            border: 1px solid #444;
+            color: white;
+            font-family: inherit;
+            font-weight: 600;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(to bottom, #ffb703, #fb8500);
+            border: 1px solid #ffea00;
+            color: black;
+            text-shadow: 0 1px 2px rgba(255,255,255,0.5);
+            box-shadow: 0 0 10px rgba(251, 133, 0, 0.4);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 0 15px rgba(251, 133, 0, 0.7);
+            transform: scale(1.02);
+        }
+
+        /* --- MAIN ALERT INFO --- */
+        .alert-box {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: linear-gradient(90deg, #0f0f0f, #1a1605);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .score-display {
+            text-align: center;
+            border-right: 1px solid #333;
+            padding-right: 20px;
+        }
+
+        .score-title { color: var(--text-muted); font-size: 0.9rem; letter-spacing: 1px;}
+        .score-value { font-size: 3rem; font-weight: 700; color: var(--gold-light); text-shadow: 0 0 10px var(--gold-dark); line-height: 1;}
+        .score-max { font-size: 1.5rem; color: var(--text-muted); }
+
+        .alert-details {
+            flex-grow: 1;
+            padding-left: 20px;
+            text-align: center;
+        }
+
+        .strong-buy {
+            font-size: 1.8rem;
+            color: var(--accent-green);
+            font-weight: 700;
+            text-shadow: 0 0 10px rgba(162, 255, 0, 0.4);
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            font-size: 1rem;
+            color: #ccc;
+        }
+        
+        .stats-row span { color: var(--text-muted); }
+
+        /* --- LISTS (Top Coins, Scanner) --- */
+        .data-list {
+            list-style: none;
+        }
+
+        .data-list li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px dashed #333;
+            font-size: 1.1rem;
+        }
+
+        .data-list li:last-child {
+            border-bottom: none;
+        }
+
+        .coin-name { font-weight: 600; color: #fff; }
+        .coin-rank { color: var(--gold-main); width: 20px; display: inline-block; }
+        
+        .badge {
+            background: var(--accent-red);
+            color: white;
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 3px;
+            margin-left: 10px;
+            font-weight: 700;
+        }
+
+        /* --- FOOTER NEWS --- */
+        .footer-ticker {
+            margin-top: 10px;
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--gold-light);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .footer-ticker::before, .footer-ticker::after {
+            content: "➔";
+            color: var(--text-muted);
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 900px) {
+            .main-grid { grid-template-columns: 1fr; }
+            .alert-box { flex-direction: column; gap: 20px; }
+            .score-display { border-right: none; border-bottom: 1px solid #333; padding-right: 0; padding-bottom: 20px; }
+        }
+    </style>
 </head>
+<body>
 
-<body class="p-6">
+<div class="container">
+    <header class="header">
+        <div class="title">MEMECOIN SNIPER.</div>
+        <div class="subtitle">REAL-TIME ANALYZER • EDGE TOOL</div>
+    </header>
 
-<div class="max-w-7xl mx-auto">
+    <div class="tabs">
+        <button class="tab active">ANALYZER</button>
+        <button class="tab">SCANNER</button>
+    </div>
 
-<!-- HEADER -->
-<div class="mb-10 text-center">
-    <h1 class="text-5xl font-bold gold tracking-widest">MEMECOIN SNIPER</h1>
-    <p class="text-gray-500 text-sm tracking-widest mt-2">REAL-TIME ANALYZER • EDGE TOOL</p>
-</div>
+    <div class="main-grid">
+        <div class="left-col" style="display: flex; flex-direction: column; gap: 20px;">
+            
+            <div class="panel">
+                <div class="panel-header" style="color: #fff;">Trader Terminal</div>
+                <div class="search-bar">
+                    <input type="text" class="search-input" placeholder="Paste token CA...">
+                    <button class="btn">PASTE</button>
+                    <button class="btn btn-primary">ANALYZE TOKEN</button>
+                </div>
 
-<!-- TABS -->
-<div class="flex gap-6 mb-8 justify-center">
-    <button class="text-yellow-400 border-b-2 border-yellow-400 pb-2">ANALYZER</button>
-    <button class="text-gray-500 hover:text-white">SCANNER</button>
-</div>
+                <div class="panel-header" style="color: #fff; font-size: 1.3rem;">
+                    🐸 FROGGO (FROG)
+                </div>
 
-<!-- INPUT -->
-<div class="card p-6 rounded-xl mb-8 flex gap-4 items-center">
-    <input id="tokenInput" placeholder="Paste token CA..."
-        class="flex-1 bg-black/40 p-4 rounded-lg outline-none">
-
-    <button onclick="pasteToken()" class="bg-gray-700 px-5 py-3 rounded-lg">PASTE</button>
-
-    <button onclick="analyzeToken()" class="bg-yellow-500 text-black px-6 py-3 rounded-lg font-bold glow">
-        ANALYZE
-    </button>
-</div>
-
-<!-- MAIN GRID -->
-<div class="grid grid-cols-3 gap-6">
-
-<!-- TOKEN CARD -->
-<div class="col-span-2 card p-6 rounded-xl">
-
-    <h2 id="tokenName" class="text-xl font-bold mb-4">Token Name</h2>
-
-    <div class="flex gap-6 items-center">
-
-        <div class="bg-black p-6 rounded-lg text-center">
-            <p class="text-gray-400 text-sm">SCORE</p>
-            <p id="score" class="text-3xl font-bold text-yellow-400">0/7</p>
-        </div>
-
-        <div>
-            <p id="decision" class="text-xl font-bold text-green-400">WAITING...</p>
-
-            <div class="flex gap-4 mt-3 text-sm text-gray-400">
-                <span id="mc">MC: -</span>
-                <span id="liq">LIQ: -</span>
-                <span id="vol">VOL: -</span>
-                <span id="age">AGE: -</span>
+                <div class="alert-box">
+                    <div class="score-display">
+                        <div class="score-title">SCORE</div>
+                        <span class="score-value">6</span><span class="score-max">/7</span>
+                    </div>
+                    <div class="alert-details">
+                        <div class="strong-buy">ALERT! 🔥 STRONG BUY</div>
+                        <div class="stats-row">
+                            <div><span>MC:</span> $1,200,000</div> |
+                            <div><span>LIQ:</span> $220,000</div> |
+                            <div><span>VOL:</span> $80,000</div>
+                        </div>
+                        <div class="stats-row" style="margin-top: 10px;">
+                            <div><span>AGE:</span> 14m</div>
+                        </div>
+                    </div>
+                </div>
             </div>
+
+            <div class="panel">
+                <div class="panel-header">LIVE SCANNER</div>
+                <ul class="data-list">
+                    <li>
+                        <div><span class="coin-rank">1.</span> <span class="coin-name">YOLADOGE</span> <span class="badge">NEW 🚀</span></div>
+                        <div style="font-size: 0.9rem; color: #aaa;">score <span style="color: #fff">7</span> • vol 120k • age 5m</div>
+                    </li>
+                    <li>
+                        <div><span class="coin-rank">2.</span> <span class="coin-name">SOLBRO</span></div>
+                        <div style="font-size: 0.9rem; color: #aaa;">score <span style="color: #fff">6</span> • vol 95k • age 12m</div>
+                    </li>
+                    <li>
+                        <div><span class="coin-rank">3.</span> <span class="coin-name">MOONZILLA</span></div>
+                        <div style="font-size: 0.9rem; color: #aaa;">score <span style="color: #fff">5</span> • vol 80k • age 30m</div>
+                    </li>
+                </ul>
+            </div>
+
         </div>
 
+        <div class="right-col" style="display: flex; flex-direction: column; gap: 20px;">
+            
+            <div class="panel">
+                <div class="panel-header">TOP 5 COINS</div>
+                <ul class="data-list">
+                    <li><div><span class="coin-rank">1.</span> <span class="coin-name">DOGEYOLO</span></div> <span style="color: #aaa;">score <span style="color: #fff;">7</span></span></li>
+                    <li><div><span class="coin-rank">2.</span> <span class="coin-name">PEPEGEM</span></div> <span style="color: #aaa;">score <span style="color: #fff;">6</span></span></li>
+                    <li><div><span class="coin-rank">3.</span> <span class="coin-name">MOONINU</span></div> <span style="color: #aaa;">score <span style="color: #fff;">5</span></span></li>
+                    <li><div><span class="coin-rank">4.</span> <span class="coin-name">SHIBLORD</span></div> <span style="color: #aaa;">score <span style="color: #fff;">5</span></span></li>
+                    <li><div><span class="coin-rank">5.</span> <span class="coin-name">MOONCAT</span></div> <span style="color: #aaa;">score <span style="color: #fff;">4</span></span></li>
+                </ul>
+                <div style="text-align: right; margin-top: 15px;">
+                    <button class="btn" style="padding: 5px 15px; font-size: 0.8rem; border-color: var(--gold-main); color: var(--gold-main);">VIEW ALL ▶</button>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">ALERT LOG</div>
+                <ul class="data-list" style="font-size: 0.95rem;">
+                    <li><div><span class="coin-rank">1.</span> <span class="coin-name">DOGEYOLO</span> • <span style="color: var(--accent-green);">STRONG BUY</span></div> <span style="color: #666;">2m ago</span></li>
+                    <li><div><span class="coin-rank">2.</span> <span class="coin-name">PEPEGEM</span> • <span style="color: var(--gold-main);">SCALP</span></div> <span style="color: #666;">5m ago</span></li>
+                    <li><div><span class="coin-rank">3.</span> <span style="color: #ccc;">New Coin Detected!</span></div> <span style="color: #666;">15m ago</span></li>
+                    <li><div><span class="coin-rank">4.</span> <span class="coin-name">SHIBLORD</span> • <span style="color: var(--gold-main);">SCALP</span></div> <span style="color: #666;">28m ago</span></li>
+                </ul>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="footer-ticker">
+        <span style="color: #fff">LATEST NEWS:</span> Fresh Coins Spiking! 🚀 Jump in now for quick gains!
     </div>
 </div>
-
-<!-- SIDE PANEL -->
-<div class="space-y-6">
-
-    <div class="card p-4 rounded-xl">
-        <h3 class="text-yellow-400 mb-3">TOP COINS</h3>
-        <ul class="text-sm space-y-2">
-            <li>1. DOGECOIN</li>
-            <li>2. PEPE</li>
-            <li>3. SHIBA</li>
-        </ul>
-    </div>
-
-    <div class="card p-4 rounded-xl">
-        <h3 class="text-yellow-400 mb-3">ALERT LOG</h3>
-        <ul class="text-sm space-y-2">
-            <li>STRONG BUY detected</li>
-        </ul>
-    </div>
-
-</div>
-
-</div>
-
-<!-- SCANNER -->
-<div class="mt-10 card p-6 rounded-xl">
-    <h3 class="text-yellow-400 mb-4">LIVE SCANNER</h3>
-    <table class="w-full text-sm">
-        <thead>
-            <tr class="text-gray-400">
-                <th>Name</th>
-                <th>Score</th>
-                <th>Volume</th>
-                <th>Age</th>
-            </tr>
-        </thead>
-        <tbody id="scannerTable"></tbody>
-    </table>
-</div>
-
-</div>
-
-<script>
-
-// PASTE BUTTON
-async function pasteToken() {
-    const text = await navigator.clipboard.readText();
-    document.getElementById("tokenInput").value = text;
-}
-
-// ANALYZER
-async function analyzeToken() {
-    const token = document.getElementById("tokenInput").value;
-
-    const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${token}`);
-    const data = await res.json();
-
-    const pair = data.pairs[0];
-
-    const name = pair.baseToken.name;
-    const mc = pair.fdv || 0;
-    const liq = pair.liquidity.usd || 0;
-    const vol = pair.volume.h24 || 0;
-
-    document.getElementById("tokenName").innerText = name;
-
-    document.getElementById("mc").innerText = "MC: $" + Math.floor(mc);
-    document.getElementById("liq").innerText = "LIQ: $" + Math.floor(liq);
-    document.getElementById("vol").innerText = "VOL: $" + Math.floor(vol);
-
-    let score = 0;
-
-    if (liq/mc > 0.02) score += 2;
-    if (vol/liq < 5) score += 2;
-    if (vol > 1000) score += 1;
-
-    document.getElementById("score").innerText = score + "/7";
-
-    if (score >= 5) {
-        document.getElementById("decision").innerText = "🔥 STRONG BUY";
-    } else {
-        document.getElementById("decision").innerText = "❌ SKIP";
-    }
-}
-
-</script>
 
 </body>
 </html>
