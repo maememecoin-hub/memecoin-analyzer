@@ -1,279 +1,179 @@
 <!DOCTYPE html>
-<html lang="pl">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Memecoin Sniper</title>
 
-<title>Memecoin Sniper PRO</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=JetBrains+Mono:wght@500;800&family=Inter:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Inter:wght@300;500&display=swap" rel="stylesheet">
 
 <style>
-:root{
---gold:#d4af37;
---bg:#020617;
+body {
+    background: #020617;
+    font-family: 'Inter', sans-serif;
+    color: white;
 }
 
-body{
-background: radial-gradient(circle at top right, rgba(212,175,55,0.08), transparent),
-           radial-gradient(circle at bottom left, rgba(212,175,55,0.05), transparent),
-           var(--bg);
-font-family:'Inter';
-color:white;
+.gold {
+    background: linear-gradient(90deg,#d4af37,#facc15);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
-/* TEXT */
-.gold{color:var(--gold);}
-.mono{font-family:'JetBrains Mono';}
-
-/* CARD */
-.card{
-background:rgba(15,23,42,0.6);
-backdrop-filter:blur(20px);
-border:1px solid rgba(212,175,55,0.15);
-border-radius:24px;
-transition:0.3s;
-}
-.card:hover{
-border-color:var(--gold);
-box-shadow:0 0 40px rgba(212,175,55,0.08);
+.card {
+    background: rgba(15,23,42,0.6);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(212,175,55,0.2);
 }
 
-/* BUTTON */
-.btn{
-background:linear-gradient(135deg,#d4af37,#f1c40f);
-color:black;
-font-weight:900;
-transition:0.2s;
-}
-.btn:hover{
-transform:scale(1.03);
-box-shadow:0 0 25px rgba(212,175,55,0.3);
+.glow {
+    box-shadow: 0 0 20px rgba(212,175,55,0.3);
 }
 
-/* INPUT */
-.input{
-background:#020617;
-border:1px solid #1e293b;
-transition:0.2s;
-}
-.input:focus{
-border-color:var(--gold);
-box-shadow:0 0 15px rgba(212,175,55,0.2);
-}
-
-/* ANIMATION */
-.fade{
-animation:fadeIn 0.4s ease;
-}
-@keyframes fadeIn{
-from{opacity:0;transform:translateY(10px);}
-to{opacity:1;transform:translateY(0);}
-}
 </style>
 </head>
 
 <body class="p-6">
 
-<div class="max-w-5xl mx-auto">
+<div class="max-w-7xl mx-auto">
 
-<!-- HERO -->
-<div class="mb-10">
-<h1 class="text-5xl font-black italic gold tracking-tight">
-MEMECOIN SNIPER<span class="opacity-50">.</span>
-</h1>
-<p class="text-gray-500 text-xs tracking-widest uppercase mt-2">
-REAL-TIME ANALYZER • EDGE TOOL
-</p>
+<!-- HEADER -->
+<div class="mb-10 text-center">
+    <h1 class="text-5xl font-bold gold tracking-widest">MEMECOIN SNIPER</h1>
+    <p class="text-gray-500 text-sm tracking-widest mt-2">REAL-TIME ANALYZER • EDGE TOOL</p>
 </div>
 
 <!-- TABS -->
-<div class="flex gap-8 mb-10 border-b border-gray-800">
-<button onclick="switchTab('analyzer')" class="pb-4 border-b-2 border-yellow-500 font-bold">
-ANALYZER
-</button>
-<button onclick="switchTab('scanner')" class="pb-4 text-gray-500 font-bold">
-SCANNER
-</button>
+<div class="flex gap-6 mb-8 justify-center">
+    <button class="text-yellow-400 border-b-2 border-yellow-400 pb-2">ANALYZER</button>
+    <button class="text-gray-500 hover:text-white">SCANNER</button>
 </div>
 
-<!-- ================= ANALYZER ================= -->
-<div id="analyzer">
+<!-- INPUT -->
+<div class="card p-6 rounded-xl mb-8 flex gap-4 items-center">
+    <input id="tokenInput" placeholder="Paste token CA..."
+        class="flex-1 bg-black/40 p-4 rounded-lg outline-none">
 
-<div class="card p-6 mb-6">
+    <button onclick="pasteToken()" class="bg-gray-700 px-5 py-3 rounded-lg">PASTE</button>
 
-<div class="flex gap-3">
+    <button onclick="analyzeToken()" class="bg-yellow-500 text-black px-6 py-3 rounded-lg font-bold glow">
+        ANALYZE
+    </button>
+</div>
 
-<input id="tokenInput"
-placeholder="Paste token CA..."
-class="input flex-1 p-4 rounded-xl outline-none mono">
+<!-- MAIN GRID -->
+<div class="grid grid-cols-3 gap-6">
 
-<button onclick="paste()" class="px-4 bg-gray-800 rounded-xl">
-📋
-</button>
+<!-- TOKEN CARD -->
+<div class="col-span-2 card p-6 rounded-xl">
+
+    <h2 id="tokenName" class="text-xl font-bold mb-4">Token Name</h2>
+
+    <div class="flex gap-6 items-center">
+
+        <div class="bg-black p-6 rounded-lg text-center">
+            <p class="text-gray-400 text-sm">SCORE</p>
+            <p id="score" class="text-3xl font-bold text-yellow-400">0/7</p>
+        </div>
+
+        <div>
+            <p id="decision" class="text-xl font-bold text-green-400">WAITING...</p>
+
+            <div class="flex gap-4 mt-3 text-sm text-gray-400">
+                <span id="mc">MC: -</span>
+                <span id="liq">LIQ: -</span>
+                <span id="vol">VOL: -</span>
+                <span id="age">AGE: -</span>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- SIDE PANEL -->
+<div class="space-y-6">
+
+    <div class="card p-4 rounded-xl">
+        <h3 class="text-yellow-400 mb-3">TOP COINS</h3>
+        <ul class="text-sm space-y-2">
+            <li>1. DOGECOIN</li>
+            <li>2. PEPE</li>
+            <li>3. SHIBA</li>
+        </ul>
+    </div>
+
+    <div class="card p-4 rounded-xl">
+        <h3 class="text-yellow-400 mb-3">ALERT LOG</h3>
+        <ul class="text-sm space-y-2">
+            <li>STRONG BUY detected</li>
+        </ul>
+    </div>
 
 </div>
 
-<button onclick="analyze()"
-class="btn w-full py-4 rounded-xl mt-4 tracking-wide">
-ANALYZE TOKEN
-</button>
-
 </div>
 
-<div id="result" class="hidden"></div>
-
-</div>
-
-<!-- ================= SCANNER ================= -->
-<div id="scanner" class="hidden">
-
-<div class="card p-6">
-
-<h2 class="text-sm text-gray-500 uppercase mb-4 tracking-widest">
-LIVE SIGNALS
-</h2>
-
-<div id="scannerData"></div>
-
-</div>
-
+<!-- SCANNER -->
+<div class="mt-10 card p-6 rounded-xl">
+    <h3 class="text-yellow-400 mb-4">LIVE SCANNER</h3>
+    <table class="w-full text-sm">
+        <thead>
+            <tr class="text-gray-400">
+                <th>Name</th>
+                <th>Score</th>
+                <th>Volume</th>
+                <th>Age</th>
+            </tr>
+        </thead>
+        <tbody id="scannerTable"></tbody>
+    </table>
 </div>
 
 </div>
 
 <script>
 
-// TAB
-function switchTab(tab){
-document.getElementById('analyzer').classList.add('hidden')
-document.getElementById('scanner').classList.add('hidden')
-document.getElementById(tab).classList.remove('hidden')
-}
-
 // PASTE BUTTON
-async function paste(){
-const text = await navigator.clipboard.readText()
-document.getElementById('tokenInput').value = text
+async function pasteToken() {
+    const text = await navigator.clipboard.readText();
+    document.getElementById("tokenInput").value = text;
 }
 
-// ================= ANALYZER =================
-async function analyze(){
+// ANALYZER
+async function analyzeToken() {
+    const token = document.getElementById("tokenInput").value;
 
-let ca = document.getElementById('tokenInput').value
-if(!ca) return alert("Wklej adres")
+    const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${token}`);
+    const data = await res.json();
 
-let res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${ca}`)
-let data = await res.json()
-let pair = data.pairs?.[0]
+    const pair = data.pairs[0];
 
-if(!pair) return alert("Brak tokena")
+    const name = pair.baseToken.name;
+    const mc = pair.fdv || 0;
+    const liq = pair.liquidity.usd || 0;
+    const vol = pair.volume.h24 || 0;
 
-let fdv = pair.fdv || 0
-let liq = pair.liquidity?.usd || 0
-let vol = pair.volume?.h24 || 0
-let m1 = pair.priceChange?.m1 || 0
-let age = (Date.now() - pair.pairCreatedAt)/60000
+    document.getElementById("tokenName").innerText = name;
 
-let liq_mc = liq/fdv
-let vol_liq = vol/liq
+    document.getElementById("mc").innerText = "MC: $" + Math.floor(mc);
+    document.getElementById("liq").innerText = "LIQ: $" + Math.floor(liq);
+    document.getElementById("vol").innerText = "VOL: $" + Math.floor(vol);
 
-let score = 0
-if(liq_mc > 0.02) score+=2
-if(vol_liq < 5) score+=2
-if(m1 > 0.5) score+=1
-if(vol > 1000) score+=1
-if(age < 60) score+=1
+    let score = 0;
 
-let decision = "❌ SKIP"
-let color = "text-red-400"
+    if (liq/mc > 0.02) score += 2;
+    if (vol/liq < 5) score += 2;
+    if (vol > 1000) score += 1;
 
-if(score>=6){decision="🔥 STRONG BUY";color="text-green-400"}
-else if(score>=4){decision="⚡ SCALP";color="text-yellow-400"}
+    document.getElementById("score").innerText = score + "/7";
 
-document.getElementById('result').classList.remove('hidden')
-document.getElementById('result').innerHTML = `
-<div class="card p-6 fade">
-
-<h2 class="text-2xl font-bold mb-4">
-${pair.baseToken.name} (${pair.baseToken.symbol})
-</h2>
-
-<div class="flex justify-between mb-4">
-<div>
-<p class="text-gray-500 text-xs">SCORE</p>
-<p class="mono text-2xl gold">${score}/7</p>
-</div>
-
-<div class="text-right">
-<p class="text-gray-500 text-xs">DECISION</p>
-<p class="font-bold ${color}">${decision}</p>
-</div>
-</div>
-
-<hr class="border-gray-800 my-4">
-
-<div class="grid grid-cols-2 gap-4 text-sm mono">
-
-<p>MC: $${fdv}</p>
-<p>LIQ: $${liq}</p>
-<p>VOL: $${vol}</p>
-<p>AGE: ${age.toFixed(1)}m</p>
-
-</div>
-
-</div>
-`
+    if (score >= 5) {
+        document.getElementById("decision").innerText = "🔥 STRONG BUY";
+    } else {
+        document.getElementById("decision").innerText = "❌ SKIP";
+    }
 }
-
-// ================= SCANNER =================
-async function loadScanner(){
-
-let res = await fetch(`https://api.dexscreener.com/latest/dex/search?q=pump`)
-let data = await res.json()
-
-let html = ""
-
-data.pairs.forEach(p=>{
-
-if(p.chainId !== "solana") return
-
-let fdv = p.fdv || 0
-let liq = p.liquidity?.usd || 0
-let vol = p.volume?.h24 || 0
-let m1 = p.priceChange?.m1 || 0
-let age = (Date.now() - p.pairCreatedAt)/60000
-
-let score = 0
-if(liq/fdv > 0.02) score++
-if(vol/liq < 10) score++
-if(m1 > 0) score++
-
-if(score >= 2){
-
-html += `
-<div class="p-4 border-b border-gray-800 hover:bg-white/5 transition">
-
-<div class="flex justify-between">
-<b>${p.baseToken.symbol}</b>
-<span class="gold mono">score ${score}</span>
-</div>
-
-<div class="text-xs text-gray-500 mono mt-1">
-vol ${vol} • age ${age.toFixed(0)}m
-</div>
-
-</div>
-`
-}
-
-})
-
-document.getElementById('scannerData').innerHTML = html
-}
-
-setInterval(loadScanner,5000)
 
 </script>
 
