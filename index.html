@@ -343,35 +343,35 @@ async function analyze() {
         color = "var(--gold-main)";
     }
 
-    document.getElementById("analyzerResult").innerHTML = `
-        <div class="panel-header" style="color: #fff; font-size: 1.3rem;">
-            ${pair.baseToken.name} (${pair.baseToken.symbol})
-        </div>
+document.getElementById("analyzerResult").innerHTML = `
+    <div class="panel-header" style="color: #fff; font-size: 1.3rem;">
+        ${pair.baseToken.name} (${pair.baseToken.symbol})
+    </div>
 
-        <div class="alert-box">
-            <div class="score-display">
-                <div class="score-title">SCORE</div>
-                <span class="score-value">${score}</span><span class="score-max">/7</span>
-            </div>
-            <div class="alert-details">
-                <div class="strong-buy" style="color:${color}">
-                    ${decision}
-                </div>
-                <div class="stats-row">
-                    <div><span>MC:</span> $${Math.round(fdv)}</div> |
-                    <div><span>LIQ:</span> $${Math.round(liquidity)}</div> |
-                    <div><span>VOL:</span> $${Math.round(volume)}</div>
-                </div>
-                <div class="stats-row" style="margin-top: 10px;">
-                    <div><span>AGE:</span> ${age.toFixed(1)}m</div>
-                </div>
-                <div id="chart" style="margin-top:20px; height:400px;"></div>
-            </div>
+    <div class="alert-box">
+        <div class="score-display">
+            <div class="score-title">SCORE</div>
+            <span class="score-value">${score}</span><span class="score-max">/7</span>
         </div>
-    `;
-}
+        <div class="alert-details">
+            <div class="strong-buy" style="color:${color}">
+                ${decision}
+            </div>
+            <div class="stats-row">
+                <div><span>MC:</span> $${Math.round(fdv)}</div> |
+                <div><span>LIQ:</span> $${Math.round(liquidity)}</div> |
+                <div><span>VOL:</span> $${Math.round(volume)}</div>
+            </div>
+            <div class="stats-row" style="margin-top: 10px;">
+                <div><span>AGE:</span> ${age.toFixed(1)}m</div>
+            </div>
+            <div id="chart" style="margin-top:20px; height:400px;"></div>
+        </div>
+    </div>
+`;
 
 loadChart(pair.pairAddress);
+}
 
 async function loadScanner() {
     const res = await fetch("https://api.dexscreener.com/latest/dex/search?q=pump");
