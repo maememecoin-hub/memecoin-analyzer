@@ -321,6 +321,7 @@ async function analyze() {
 
     const created = pair.pairCreatedAt || 0;
     const age = created ? (Date.now() - created) / 60000 : 9999;
+    loadChart(pair.pairAddress);
 
     const liq_mc = liquidity / fdv;
     const vol_liq = volume / liquidity;
@@ -365,6 +366,7 @@ async function analyze() {
                 <div class="stats-row" style="margin-top: 10px;">
                     <div><span>AGE:</span> ${age.toFixed(1)}m</div>
                 </div>
+                <div id="chart" style="margin-top:20px; height:400px;"></div>
             </div>
         </div>
     `;
@@ -477,16 +479,34 @@ async function pasteToken() {
     try {
         const text = await navigator.clipboard.readText();
 
-        // nadpisuje zawartość inputa (usuwa stary token)
-        document.getElementById("tokenInput").value = text.trim();
+        if (!text) {
+            alert("❌ Schowek pusty");
+            return;
+        }
+
+        const input = document.getElementById("tokenInput");
+
+        // jeśli coś już jest → nadpisz
+        input.value = text.trim();
+
+        // opcjonalnie: auto analyze
+        analyze();
 
     } catch (err) {
-        alert("❌ Nie można wkleić (brak dostępu do schowka)");
+        alert("❌ Nie można wkleić (przeglądarka blokuje clipboard)");
     }
 }
 
-document.getElementById("tokenInput").value = text.trim();
-analyze();
+function loadChart(pairAddress) {
+    const chartDiv = document.getElementById("chart");
+
+    chartDiv.innerHTML = `
+        <iframe 
+            src="https://dexscreener.com/solana/${pairAddress}?embed=1&theme=dark"
+            style="width:100%; height:100%; border:none; border-radius:6px;">
+        </iframe>
+    `;
+}
 
 </script>
 
