@@ -321,7 +321,6 @@ async function analyze() {
 
     const created = pair.pairCreatedAt || 0;
     const age = created ? (Date.now() - created) / 60000 : 9999;
-    loadChart(pair.pairAddress);
 
     const liq_mc = liquidity / fdv;
     const vol_liq = volume / liquidity;
@@ -371,6 +370,8 @@ async function analyze() {
         </div>
     `;
 }
+
+loadChart(pair.pairAddress);
 
 async function loadScanner() {
     const res = await fetch("https://api.dexscreener.com/latest/dex/search?q=pump");
@@ -499,6 +500,7 @@ async function pasteToken() {
 
 function loadChart(pairAddress) {
     const chartDiv = document.getElementById("chart");
+if (!chartDiv) return;
 
     chartDiv.innerHTML = `
         <iframe 
