@@ -129,7 +129,7 @@
         /* --- LAYOUT GRID --- */
         .main-grid {
             display: grid;
-            grid-template-columns: 2fr 1fr;
+            grid-template-columns: 1fr;
             gap: 20px;
         }
 
@@ -214,7 +214,6 @@
 
     <div class="tabs">
         <button class="tab active" id="btn-analyzer" onclick="switchTab('analyzer')">ANALYZER</button>
-        <button class="tab" id="btn-scanner" onclick="switchTab('scanner')">SCANNER</button>
     </div>
 
     <div id="view-analyzer" class="view-section active">
@@ -231,45 +230,6 @@
                     <div id="analyzerResult"></div>
                 </div>
 
-                <div class="panel">
-                    <div class="panel-header">LIVE SCANNER</div>
-                    <ul id="scannerList" class="data-list"></ul>
-                </div>
-            </div>
-
-            <div class="right-col" style="display: flex; flex-direction: column; gap: 20px;">
-                <div class="panel">
-                    <div class="panel-header">🚨 REAL PUMP DETECTOR</div>
-                    <ul id="pumpList" class="data-list"></ul>
-                    <div style="text-align: right; margin-top: 15px;">
-                        <button class="btn" style="padding: 5px 15px; font-size: 0.8rem; border-color: var(--gold-main); color: var(--gold-main);">VIEW ALL ▶</button>
-                    </div>
-                </div>
-
-                <div class="panel">
-                    <div class="panel-header">ALERT LOG</div>
-                    <ul class="data-list" style="font-size: 0.95rem;">
-                        <li><div><span class="coin-rank">1.</span> <span class="coin-name">DOGEYOLO</span> • <span style="color: var(--accent-green);">STRONG BUY</span></div> <span style="color: #666;">2m ago</span></li>
-                        <li><div><span class="coin-rank">2.</span> <span class="coin-name">PEPEGEM</span> • <span style="color: var(--gold-main);">SCALP</span></div> <span style="color: #666;">5m ago</span></li>
-                        <li><div><span class="coin-rank">3.</span> <span style="color: #ccc;">New Coin Detected!</span></div> <span style="color: #666;">15m ago</span></li>
-                        <li><div><span class="coin-rank">4.</span> <span class="coin-name">SHIBLORD</span> • <span style="color: var(--gold-main);">SCALP</span></div> <span style="color: #666;">28m ago</span></li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="view-scanner" class="view-section">
-    <div class="panel">
-        <div class="panel-header">GLOBAL LIVE SCANNER</div>
-        <div style="margin-bottom: 15px; display: flex; gap: 10px;">
-            <input id="filterInput" type="text" placeholder="Filter by token symbol..." 
-                   class="search-input" oninput="applyFilter()">
-        </div>
-        <ul id="scannerFull" class="data-list"></ul>
-    </div>
-</div>
-
     <div class="footer-ticker">
         <span style="color: #fff">LATEST NEWS:</span> Fresh Coins Spiking! 🚀 Jump in now for quick gains!
     </div>
@@ -278,22 +238,6 @@
 <script>
 
     function switchTab(tabName) {
-        // 1. Zresetuj wygląd wszystkich przycisków (usuń klasę 'active')
-        document.getElementById('btn-analyzer').classList.remove('active');
-        document.getElementById('btn-scanner').classList.remove('active');
-
-        // 2. Ukryj wszystkie widoki (usuń klasę 'active')
-        document.getElementById('view-analyzer').classList.remove('active');
-        document.getElementById('view-scanner').classList.remove('active');
-
-        // 3. Aktywuj kliknięty przycisk i przypisany do niego widok
-        if(tabName === 'analyzer') {
-            document.getElementById('btn-analyzer').classList.add('active');
-            document.getElementById('view-analyzer').classList.add('active');
-        } else if (tabName === 'scanner') {
-            document.getElementById('btn-scanner').classList.add('active');
-            document.getElementById('view-scanner').classList.add('active');
-        }
     }
     
 // ================= ANALYZER =================
@@ -366,109 +310,6 @@ document.getElementById("analyzerResult").innerHTML = `
         </div>
     </div>
 `;
-}
-
-// =================== SCANNER + PUMP DETECTOR (BIRDEYE) ===================
-async function loadScannerAndPump() {
-    const liveList = document.getElementById("scannerList");
-    const pumpList = document.getElementById("pumpList");
-    const scannerFull = document.getElementById('scannerFull');
-    if (!liveList || !pumpList || !scannerFull) return;
-
-    try {
-        const res = await fetch("https://public-api.birdeye.so/defi/tokenlist?sort_by=volume_24h&sort_type=desc", {
-            headers: {
-                "x-api-key": "7f9d21dc676b4a608c615ffd418629ac"
-            }
-        });
-
-        const data = await res.json();
-
-        // 🔴 BirdEye struktura:
-        const tokens = data?.data?.tokens;
-
-        if (!tokens || tokens.length === 0) {
-            liveList.innerHTML = "<li>Brak tokenów...</li>";
-            pumpList.innerHTML = "<li>Brak tokenów...</li>";
-            scannerFull.innerHTML = "<li>Brak tokenów...</li>";
-            return;
-        }
-
-        let liveHTML = "", pumpHTML = "", rankLive = 1, rankPump = 1;
-
-        tokens.forEach(token => {
-            const symbol = token.symbol || "";
-            if (!symbol || symbol.length < 2) return;
-
-            const volume = token.volume24h || 0;
-            const liquidity = token.liquidity || 0;
-            const priceChange = token.priceChange24hPercent || 0;
-
-            // 🧠 fake "age" (bo BirdEye nie daje real age)
-            const age = Math.random() * 60;
-
-            // 🚀 PUMP DETECTOR
-            if (priceChange > 20 && volume > 10000) {
-                pumpHTML += `<li>
-                    <div>
-                        <span class="coin-rank">${rankPump}.</span>
-                        <span class="coin-name">${symbol}</span>
-                        <span class="badge">PUMP 🚀</span>
-                    </div>
-                    <div style="font-size:0.9rem; color:#aaa;">
-                        +${priceChange.toFixed(1)}% • vol ${Math.round(volume)} • liq ${Math.round(liquidity)}
-                    </div>
-                </li>`;
-                rankPump++;
-            } 
-            
-            // 📈 LIVE SCANNER
-            else if (volume > 5000) {
-                let score = 0;
-                if (liquidity > 10000) score++;
-                if (priceChange > 0) score++;
-                if (volume > 20000) score++;
-
-                liveHTML += `<li>
-                    <div>
-                        <span class="coin-rank">${rankLive}.</span>
-                        <span class="coin-name">${symbol}</span>
-                        ${age < 5 ? '<span class="badge">NEW 🚀</span>' : ''}
-                    </div>
-                    <div style="font-size:0.9rem;color:#aaa;">
-                        score <span style="color:#fff">${score}</span> • vol ${Math.round(volume)} • liq ${Math.round(liquidity)}
-                    </div>
-                </li>`;
-                rankLive++;
-            }
-        });
-
-        liveList.innerHTML = liveHTML || "<li>Brak danych...</li>";
-        pumpList.innerHTML = pumpHTML || "<li>Brak pumpów...</li>";
-        scannerFull.innerHTML = liveHTML || "<li>Brak danych...</li>";
-
-    } catch (err) {
-        console.error("Błąd skanera:", err);
-        liveList.innerHTML = "<li>Błąd API</li>";
-        pumpList.innerHTML = "<li>Błąd API</li>";
-        scannerFull.innerHTML = "<li>Błąd API</li>";
-    }
-}
-
-// Odświeżanie
-loadScannerAndPump();
-setInterval(loadScannerAndPump, 30000); // 30s (bezpieczne)
-
-// FILTER
-function applyFilter() {
-    const filterValue = document.getElementById('filterInput').value.toLowerCase();
-    const scannerFull = document.getElementById('scannerFull');
-    if (!scannerFull) return;
-
-    scannerFull.querySelectorAll('li').forEach(li => {
-        const symbol = li.querySelector('.coin-name')?.textContent.toLowerCase() || '';
-        li.style.display = symbol.includes(filterValue) ? '' : 'none';
-    });
 }
 
 </script>
