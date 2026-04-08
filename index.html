@@ -367,9 +367,10 @@ loadChart(pair.pairAddress);
 }
 
 // =================== SOLANA LIVE SCANNER ===================
+// =================== SOLANA LIVE SCANNER ===================
 async function loadLiveScanner() {
     const listEl = document.getElementById("scannerList");
-    if (!listEl) return; // dodatkowe zabezpieczenie
+    if (!listEl) return; // zabezpieczenie
 
     try {
         const res = await fetch("https://api.dexscreener.com/latest/dex/search?q=pump");
@@ -402,6 +403,7 @@ async function loadLiveScanner() {
             if (volume / liquidity < 10) score++;
             if (change1m > 0) score++;
 
+            // minimalne progi do wyświetlenia
             if ((volume || 0) > 50 && (liquidity || 0) > 30) {
                 html += `
                     <li>
