@@ -367,26 +367,27 @@ loadChart(pair.pairAddress);
 }
 
 // =================== SOLANA LIVE SCANNER ===================
-async function loadScanner() {
+async function loadLiveScanner() {
+    const listEl = document.getElementById("scannerList");
+
     try {
         const res = await fetch("https://api.dexscreener.com/latest/dex/search?q=pump");
         const data = await res.json();
 
-        let html = "";
-        let rank = 1;
-
         if (!data.pairs || data.pairs.length === 0) {
-            document.getElementById("scannerList").innerHTML = "<li>Brak tokenów do wyświetlenia...</li>";
+            listEl.innerHTML = "<li>Brak tokenów do wyświetlenia...</li>";
             return;
         }
 
+        let html = "";
+        let rank = 1;
+
         data.pairs.forEach(pair => {
-            // Sprawdź dokładnie chainId dla Solana
             const chain = pair.chainId?.toLowerCase();
             if (chain !== "solana" && chain !== "sol") return;
 
-            // Filtr symboli krótkich / "pump"
-            const symbol = pair.baseToken?.symbol || "";
+            const token = pair.baseToken;
+            const symbol = token?.symbol || "";
             if (!symbol || symbol.toLowerCase() === "pump" || symbol.length < 3) return;
 
             const liquidity = pair.liquidity?.usd || 0;
@@ -401,7 +402,7 @@ async function loadScanner() {
             if (volume / liquidity < 10) score++;
             if (change1m > 0) score++;
 
-            // Progi wyświetlania
+            // progi do wyświetlania
             if (volume > 50 && liquidity > 30) {
                 html += `
                     <li>
@@ -422,13 +423,17 @@ async function loadScanner() {
             }
         });
 
-        document.getElementById("scannerList").innerHTML = html || "<li>Brak tokenów do wyświetlenia...</li>";
+        listEl.innerHTML = html || "<li>Brak tokenów do wyświetlenia...</li>";
 
     } catch (err) {
-        console.error("Błąd Scanner:", err);
-        document.getElementById("scannerList").innerHTML = "<li>Błąd ładowania danych</li>";
+        console.error("Błąd Live Scanner:", err);
+        listEl.innerHTML = "<li>Błąd ładowania danych</li>";
     }
 }
+
+// Odświeżanie co 5 sekund
+loadLiveScanner(); // pierwsze wywołanie
+setInterval(loadLiveScanner, 5000);
 
 // =================== SOLANA FULL SCANNER ===================
 async function loadFullScanner() {
