@@ -366,25 +366,29 @@ document.getElementById("analyzerResult").innerHTML = `
         </div>
     </div>
 `;
-
-loadChart(pair.pairAddress);
 }
 
-// =================== SCALONY LIVE SCANNER + PUMP DETECTOR ===================
+// =================== SCANNER + PUMP DETECTOR ===================
 async function loadScannerAndPump() {
     const liveList = document.getElementById("scannerList");
     const pumpList = document.getElementById("pumpList");
-    if (!liveList || !pumpList) return;
+    const scannerFull = document.getElementById('scannerFull');
+    if (!liveList || !pumpList || !scannerFull) return;
 
     try {
         const res = await fetch("https://api.dexscreener.com/latest/dex/search?q=pump");
         const data = await res.json();
-        if (!data.pairs) return;
+        if (!data.pairs || data.pairs.length === 0) {
+            scannerFull.innerHTML = "<li>Brak tokenów do wyświetlenia...</li>";
+            pumpList.innerHTML = "<li>Brak tokenów do wyświetlenia...</li>";
+            liveList.innerHTML = "<li>Brak tokenów do wyświetlenia...</li>";
+            return;
+        }
 
         let liveHTML = "", pumpHTML = "", rankLive = 1, rankPump = 1;
 
         data.pairs.forEach(pair => {
-            if (!pair.chainId || pair.chainId.toLowerCase() !== "solana") return;
+            if (!pair.chainId || pair.chainId.toLowerCase() !== "101") return; // filtrujemy tylko określoną sieć
             const token = pair.baseToken;
             const symbol = token?.symbol || "";
             if (!symbol || symbol.toLowerCase() === "pump" || symbol.length < 3) return;
@@ -394,11 +398,10 @@ async function loadScannerAndPump() {
             const change1m = pair.priceChange?.m1 || 0;
             const change5m = pair.priceChange?.m5 || 0;
             const created = pair.pairCreatedAt ? pair.pairCreatedAt * 1000 : 0;
-            const age = created ? (Date.now() - created)/60000 : 9999;
+            const age = created ? (Date.now() - created) / 60000 : 9999;
 
-            const isPump = change5m > 3 && volume > 200 && liquidity > 100;
-
-            if(isPump) {
+            // Pump detector
+            if (change5m > 3 && volume > 200 && liquidity > 100) {
                 pumpHTML += `<li>
                     <div>
                         <span class="coin-rank">${rankPump}.</span>
@@ -410,16 +413,18 @@ async function loadScannerAndPump() {
                     </div>
                 </li>`;
                 rankPump++;
-            } else if(volume > 50 && liquidity > 30) {
+            } else if (volume > 50 && liquidity > 30) {
+                // Live scanner score
                 let score = 0;
-                if(liquidity/(pair.fdv||1) > 0.02) score++;
-                if(volume/liquidity < 10) score++;
-                if(change1m > 0) score++;
+                if (liquidity / (pair.fdv || 1) > 0.02) score++;
+                if (volume / liquidity < 10) score++;
+                if (change1m > 0) score++;
+
                 liveHTML += `<li>
                     <div>
                         <span class="coin-rank">${rankLive}.</span>
                         <span class="coin-name">${symbol}</span>
-                        ${age<5?'<span class="badge">NEW 🚀</span>':''}
+                        ${age < 5 ? '<span class="badge">NEW 🚀</span>' : ''}
                     </div>
                     <div style="font-size:0.9rem;color:#aaa;">
                         score <span style="color:#fff">${score}</span> • vol ${Math.round(volume)} • liq ${Math.round(liquidity)} • age ${age.toFixed(0)}m
@@ -429,13 +434,15 @@ async function loadScannerAndPump() {
             }
         });
 
-        const scannerFull = document.getElementById('scannerFull');
-        if(scannerFull) scannerFull.innerHTML = liveHTML || "<li>Brak tokenów do wyświetlenia...</li>";
+        liveList.innerHTML = liveHTML || "<li>Brak tokenów do wyświetlenia...</li>";
+        pumpList.innerHTML = pumpHTML || "<li>Brak tokenów do wyświetlenia...</li>";
+        scannerFull.innerHTML = liveHTML || "<li>Brak tokenów do wyświetlenia...</li>";
 
-    } catch(err) {
+    } catch (err) {
         console.error("Błąd skanera:", err);
         liveList.innerHTML = "<li>Błąd ładowania danych</li>";
         pumpList.innerHTML = "<li>Błąd ładowania danych</li>";
+        scannerFull.innerHTML = "<li>Błąd ładowania danych</li>";
     }
 }
 
@@ -443,13 +450,13 @@ async function loadScannerAndPump() {
 loadScannerAndPump();
 setInterval(loadScannerAndPump, 5000);
 
+// Filter dla globalnego scannerFull
 function applyFilter() {
     const filterValue = document.getElementById('filterInput').value.toLowerCase();
     const scannerFull = document.getElementById('scannerFull');
     if (!scannerFull) return;
 
-    const items = scannerFull.querySelectorAll('li');
-    items.forEach(li => {
+    scannerFull.querySelectorAll('li').forEach(li => {
         const symbol = li.querySelector('.coin-name')?.textContent.toLowerCase() || '';
         li.style.display = symbol.includes(filterValue) ? '' : 'none';
     });
