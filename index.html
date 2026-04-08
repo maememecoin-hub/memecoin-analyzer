@@ -537,10 +537,9 @@ async function loadPumpDetector() {
 
         // 🔥 WARUNKI PRAWDZIWEGO PUMPA
         if (
-            change5m > 20 &&      // duży wzrost %
-            volume > 5000 &&      // volume musi być konkretny
-            liquidity > 1000 &&   // nie scam mikro
-            age < 120             // świeży (do 2h)
+            change5m > 5 &&      // duży wzrost %
+            volume > 1000 &&      // volume musi być konkretny
+            liquidity > 500   // nie scam mikro
         ) {
             html += `
                 <li>
