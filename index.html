@@ -440,11 +440,11 @@
                     <p>PASTE TOKEN ADDRESS BELOW TO START REAL-TIME ANALYSIS</p>
                 </div>
                 <div class="input-group">
-                    <input type="text" value="Do2egGsrSWSRVzeDPQmUKnhJunTfJm5ZVJEzrbACpump" readonly>
-                    <button class="btn-primary">ANALYZE TOKEN</button>
+                    <input id="tokenInput" type="text" placeholder="Paste token CA...">
+                    <button class="btn-primary" onclick="analyze()">ANALYZE TOKEN</button>
                     <div class="strong-buy-select">
                         STRONG BUY ≥ 
-                        <select>
+                        <select id="strongBuyThreshold">
                             <option>6</option>
                             <option>7</option>
                             <option>8</option>
@@ -453,68 +453,21 @@
                 </div>
             </section>
 
-            <button class="btn-copy glass"><i class="fa-regular fa-copy"></i> COPY RESULT</button>
+            <button class="btn-copy glass" onclick="copyResult()">
+    <i class="fa-regular fa-copy"></i> COPY RESULT
+</button>
 
-            <section class="bottom-grid">
-                <div class="list-panel glass">
-                    <div class="list-header">
-                        <span><i class="fa-solid fa-clock-rotate-left"></i> LAST TOKENS</span>
-                        <span style="cursor: pointer;">VIEW ALL</span>
-                    </div>
-                    <div class="list-item">
-                        <div class="item-left">
-                            <div class="item-icon" style="background: #2ed573;"></div>
-                            <div class="item-name"><h4>PEPE 2.0</h4><p>0x7d3...a91f</p></div>
-                        </div>
-                        <span class="badge-buy">STRONG BUY</span>
-                        <div class="item-right">2s ago <i class="fa-solid fa-chevron-right"></i></div>
-                    </div>
-                    <div class="list-item">
-                        <div class="item-left">
-                            <div class="item-icon" style="background: #eccc68;"></div>
-                            <div class="item-name"><h4>DOGE AI</h4><p>0x9f8...c2b1</p></div>
-                        </div>
-                        <span class="badge-buy" style="color: #eccc68; border-color: #eccc68;">BUY</span>
-                        <div class="item-right">12s ago <i class="fa-solid fa-chevron-right"></i></div>
-                    </div>
-                    <div class="list-item">
-                        <div class="item-left">
-                            <div class="item-icon" style="background: #70a1ff;"></div>
-                            <div class="item-name"><h4>MOON CAT</h4><p>0x1b2...e7f3</p></div>
-                        </div>
-                        <span class="badge-buy">STRONG BUY</span>
-                        <div class="item-right">45s ago <i class="fa-solid fa-chevron-right"></i></div>
-                    </div>
-                </div>
+<div id="analyzerResult" class="glass" style="padding:20px; margin-bottom:20px;"></div>
 
-                <div class="list-panel glass">
-                    <div class="list-header">
-                        <span style="color: var(--accent-green);">• LIVE FEED</span>
-                        <span class="badge-live">LIVE</span>
-                    </div>
-                    <div class="list-item">
-                        <div class="item-left">
-                            <i class="fa-solid fa-wallet" style="color: #70a1ff; font-size: 1.2rem;"></i>
-                            <div class="item-name"><h4>Whale bought $PEPE 2.0</h4><p>2s ago</p></div>
-                        </div>
-                        <div class="item-right" style="color: var(--accent-green);">+12.4 SOL</div>
-                    </div>
-                    <div class="list-item">
-                        <div class="item-left">
-                            <i class="fa-solid fa-water" style="color: #eccc68; font-size: 1.2rem;"></i>
-                            <div class="item-name"><h4>New pool created: $DOGE AI</h4><p>5s ago</p></div>
-                        </div>
-                        <div class="item-right">Raydium</div>
-                    </div>
-                    <div class="list-item">
-                        <div class="item-left">
-                            <i class="fa-solid fa-crosshairs" style="color: var(--accent-orange); font-size: 1.2rem;"></i>
-                            <div class="item-name"><h4>Sniper user earned 3.2x</h4><p>18s ago</p></div>
-                        </div>
-                        <div class="item-right" style="color: var(--accent-green);">$1,240</div>
-                    </div>
-                </div>
-            </section>
+<section class="bottom-grid">
+    <div class="list-panel glass">
+        <div class="list-header">
+            <span>LAST TOKENS</span>
+        </div>
+
+        <div id="historyList"></div>
+    </div>
+</section>
         </div>
 
         <div id="watchlist" class="tab-content glass">
@@ -557,6 +510,111 @@
     </aside>
 
     <script>
+    
+let history = [];
+
+function addToHistory(pairData) {
+    const tokenObj = {
+        symbol: pairData.baseToken.symbol,
+        score: pairData.score || 0
+    };
+
+    if(history[0] && history[0].symbol === tokenObj.symbol) return;
+
+    history.unshift(tokenObj);
+    if(history.length > 5) history.pop();
+
+    document.getElementById("historyList").innerHTML =
+        history.map(t => `
+        <div class="list-item">
+            <div class="item-left">
+                <div class="item-icon"></div>
+                <div class="item-name">
+                    <h4>${t.symbol}</h4>
+                    <p>Score: ${t.score}</p>
+                </div>
+            </div>
+            <span class="badge-buy">${t.score >= 6 ? "STRONG BUY" : "CHECK"}</span>
+        </div>
+        `).join("");
+}
+
+function copyResult() {
+    const el = document.getElementById("analyzerResult");
+    navigator.clipboard.writeText(el.innerText);
+    alert("Skopiowano wynik!");
+}
+
+async function analyze() {
+    document.getElementById("analyzerResult").innerHTML = "Loading...";
+
+    const address = document.getElementById("tokenInput").value;
+    if (!address) return alert("Wklej adres!");
+
+    let data;
+    try {
+        const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${address}`);
+        data = await res.json();
+    } catch (err) {
+        data = null;
+    }
+
+    let pair, fdv, liquidity, volume, change1m, created, age;
+
+    if (!data || !data.pairs || data.pairs.length === 0) {
+        pair = { baseToken: { name: "UNKNOWN", symbol: address.toUpperCase() } };
+        fdv = liquidity = volume = change1m = created = 0;
+        age = 0;
+    } else {
+        pair = data.pairs[0];
+        fdv = pair.fdv || 0;
+        liquidity = pair.liquidity?.usd || 0;
+        volume = pair.volume?.h24 || 0;
+        change1m = pair.priceChange?.m1 || 0;
+        created = pair.pairCreatedAt || 0;
+        age = created ? (Date.now() - created) / 60000 : 0;
+    }
+
+    const liq_mc = fdv ? liquidity / fdv : 0;
+    const vol_liq = liquidity ? volume / liquidity : 0;
+
+    let score = 0;
+    if (liq_mc > 0.02) score += 2;
+    if (vol_liq < 5) score += 2;
+    if (change1m > 0.5) score += 1;
+    if (volume > 1000) score += 1;
+    if (age < 60) score += 1;
+
+    addToHistory({ baseToken: pair.baseToken, score });
+
+    let decision = "SKIP";
+    let color = "#ff3333";
+    const strongBuyThreshold = Number(document.getElementById("strongBuyThreshold").value);
+
+    if(score >= strongBuyThreshold) {
+        decision = "🔥 STRONG BUY";
+        color = "#00d084";
+    } else if(score >= 4) {
+        decision = "⚡ SCALP";
+        color = "#f5a623";
+    }
+
+    document.getElementById("analyzerResult").innerHTML = `
+        <h3>${pair.baseToken.name} (${pair.baseToken.symbol})</h3>
+        <p style="color:${color}; font-weight:bold; font-size:20px;">${decision}</p>
+        <p>Score: ${score}/7</p>
+        <p>MC: $${Math.round(fdv)}</p>
+        <p>Liquidity: $${Math.round(liquidity)}</p>
+        <p>Volume: $${Math.round(volume)}</p>
+        <p>Age: ${age.toFixed(1)} min</p>
+    `;
+}
+
+setInterval(() => {
+    const addr = document.getElementById("tokenInput").value;
+    if(addr) analyze();
+}, 30000);
+
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.nav-tabs button').forEach(btn => btn.classList.remove('active'));
