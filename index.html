@@ -296,13 +296,9 @@ async function analyze() {
     let pair, fdv, liquidity, volume, change1m, created, age;
 
     if (!data || !data.pairs || data.pairs.length === 0) {
-        // Gdy token nie istnieje, wypełniamy wszystko zerami
         pair = { baseToken: { name: "UNKNOWN", symbol: address.toUpperCase() } };
         fdv = liquidity = volume = change1m = created = 0;
         age = 0;
-
-        // Dodajemy symbol do historii nawet gdy token nie istnieje
-        addToHistory({ baseToken: pair.baseToken, score });
 
     } else {
         pair = data.pairs[0];
@@ -312,8 +308,6 @@ async function analyze() {
         change1m = pair.priceChange?.m1 || 0;
         created = pair.pairCreatedAt || 0;
         age = created ? (Date.now() - created) / 60000 : 0;
-
-        addToHistory(pair.baseToken.symbol);
     }
 
     const liq_mc = fdv ? liquidity / fdv : 0;
@@ -325,6 +319,9 @@ async function analyze() {
     if (change1m > 0.5) score += 1;
     if (volume > 1000) score += 1;
     if (age < 60) score += 1;
+
+    // Dodanie do historii **po obliczeniu score**
+    addToHistory({ baseToken: pair.baseToken, score });
 
     let decision = "SKIP";
     let color = "var(--accent-red)";
