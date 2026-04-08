@@ -367,199 +367,163 @@ document.getElementById("analyzerResult").innerHTML = `
 loadChart(pair.pairAddress);
 }
 
+// =================== SOLANA LIVE SCANNER ===================
 async function loadScanner() {
-    const res = await fetch("https://api.dexscreener.com/latest/dex/search?q=pump");
-    const data = await res.json();
-
-    let html = "";
-
-    let rank = 1;
-
-    data.pairs.forEach(pair => {
-    if (pair.chainId !== "solana") return;
-
-    // 🔥 FILTR SYFU
-    if (
-        pair.baseToken.symbol.toLowerCase() === "pump" ||
-        pair.baseToken.symbol.length < 3
-    ) return;
-
-        const fdv = pair.fdv || 0;
-        const liquidity = pair.liquidity?.usd || 0;
-        const volume = pair.volume?.h24 || 0;
-        const change1m = pair.priceChange?.m1 || 0;
-
-        const created = pair.pairCreatedAt || 0;
-        const age = created ? (Date.now() - created) / 60000 : 9999;
-
-        let score = 0;
-        if (fdv > 0 && liquidity / fdv > 0.02) score++;
-        if (liquidity > 0 && volume / liquidity < 10) score++;
-        if (change1m > 0) score++;
-
-        if (volume > 100 && liquidity > 50) {
-            html += `
-                <li>
-                    <div>
-                        <span class="coin-rank">${rank}.</span>
-                        <span class="coin-name">${pair.baseToken.symbol}</span>
-                        ${age < 10 ? '<span class="badge">NEW 🚀</span>' : ''}
-                    </div>
-                    <div style="font-size: 0.9rem; color: #aaa;">
-                        score <span style="color:#fff">${score}</span> • 
-                        vol ${Math.round(volume)} • 
-                        age ${age.toFixed(0)}m
-                    </div>
-                </li>
-            `;
-            rank++;
-        }
-    });
-
-    document.getElementById("scannerList").innerHTML = html;
-}
-
-async function loadFullScanner() {
-    const res = await fetch("https://api.dexscreener.com/latest/dex/search?q=pump");
-    const data = await res.json();
-
-    let html = "";
-
-    let rank = 1;
-
-    data.pairs.forEach(pair => {
-    if (pair.chainId !== "solana") return;
-
-    // 🔥 FILTR SYFU (WKLEJ TO TUTAJ)
-    if (
-        pair.baseToken.symbol.toLowerCase() === "pump" ||
-        pair.baseToken.symbol.length < 3
-    ) return;
-
-        const fdv = pair.fdv || 0;
-        const liquidity = pair.liquidity?.usd || 0;
-        const volume = pair.volume?.h24 || 0;
-        const change1m = pair.priceChange?.m1 || 0;
-
-        const created = pair.pairCreatedAt || 0;
-        const age = created ? (Date.now() - created) / 60000 : 9999;
-
-        let score = 0;
-        if (fdv > 0 && liquidity / fdv > 0.02) score++;
-        if (liquidity > 0 && volume / liquidity < 10) score++;
-        if (change1m > 0) score++;
-
-        if (volume > 50 && liquidity > 30) {
-            html += `
-                <li>
-                    <div>
-                        <span class="coin-rank">${rank}.</span>
-                        <span class="coin-name">${pair.baseToken.symbol}</span>
-                        ${age < 5 ? '<span class="badge">NEW 🚀</span>' : ''}
-                    </div>
-                    <div style="font-size: 0.9rem; color: #aaa;">
-                        score <span style="color:#fff">${score}</span> • 
-                        vol ${Math.round(volume)} • 
-                        liq ${Math.round(liquidity)} • 
-                        age ${age.toFixed(0)}m
-                    </div>
-                </li>
-            `;
-            rank++;
-        }
-    });
-
-    document.getElementById("scannerFull").innerHTML = html;
-}
-
-setInterval(() => {
-    loadScanner();
-    loadFullScanner();
-    loadPumpDetector();
-}, 8000);
-
-loadScanner();
-loadFullScanner();
-loadPumpDetector();
-
-document.getElementById("tokenInput").focus();
-
-async function pasteToken() {
     try {
-        const text = await navigator.clipboard.readText();
+        const res = await fetch("https://api.dexscreener.com/latest/dex/search?q=pump");
+        const data = await res.json();
 
-        if (!text) {
-            alert("❌ Schowek pusty");
-            return;
-        }
+        let html = "";
+        let rank = 1;
 
-        const input = document.getElementById("tokenInput");
+        data.pairs.forEach(pair => {
+            // tylko Solana
+            if (pair.chainId !== "solana") return;
 
-        // jeśli coś już jest → nadpisz
-        input.value = text.trim();
+            // filtr syfu
+            if (pair.baseToken.symbol.toLowerCase() === "pump" || pair.baseToken.symbol.length < 3) return;
 
-        // opcjonalnie: auto analyze
-        analyze();
+            const liquidity = pair.liquidity?.usd || 0;
+            const volume = pair.volume?.h24 || 0;
+            const change1m = pair.priceChange?.m1 || 0;
+
+            const created = pair.pairCreatedAt || 0;
+            const age = created ? (Date.now() - created) / 60000 : 9999;
+
+            let score = 0;
+            if (liquidity / (pair.fdv || 1) > 0.02) score++;
+            if (volume / liquidity < 10) score++;
+            if (change1m > 0) score++;
+
+            // progi do wyświetlenia
+            if (volume > 50 && liquidity > 30) {
+                html += `
+                    <li>
+                        <div>
+                            <span class="coin-rank">${rank}.</span>
+                            <span class="coin-name">${pair.baseToken.symbol}</span>
+                            ${age < 5 ? '<span class="badge">NEW 🚀</span>' : ''}
+                        </div>
+                        <div style="font-size: 0.9rem; color: #aaa;">
+                            score <span style="color:#fff">${score}</span> • 
+                            vol ${Math.round(volume)} • 
+                            liq ${Math.round(liquidity)} • 
+                            age ${age.toFixed(0)}m
+                        </div>
+                    </li>
+                `;
+                rank++;
+            }
+        });
+
+        document.getElementById("scannerList").innerHTML = html || "<li>Brak tokenów do wyświetlenia...</li>";
 
     } catch (err) {
-        alert("❌ Nie można wkleić (przeglądarka blokuje clipboard)");
+        console.error("Błąd Scanner:", err);
+        document.getElementById("scannerList").innerHTML = "<li>Błąd ładowania danych</li>";
     }
 }
 
-function loadChart(pairAddress) {
-    const chartDiv = document.getElementById("chart");
-if (!chartDiv) return;
+// =================== SOLANA FULL SCANNER ===================
+async function loadFullScanner() {
+    try {
+        const res = await fetch("https://api.dexscreener.com/latest/dex/search?q=pump");
+        const data = await res.json();
 
-    chartDiv.innerHTML = `
-        <iframe 
-            src="https://dexscreener.com/solana/${pairAddress}?embed=1&theme=dark"
-            style="width:100%; height:100%; border:none; border-radius:6px;">
-        </iframe>
-    `;
+        let html = "";
+        let rank = 1;
+
+        data.pairs.forEach(pair => {
+            if (pair.chainId !== "solana") return;
+
+            if (pair.baseToken.symbol.toLowerCase() === "pump" || pair.baseToken.symbol.length < 3) return;
+
+            const liquidity = pair.liquidity?.usd || 0;
+            const volume = pair.volume?.h24 || 0;
+            const change1m = pair.priceChange?.m1 || 0;
+
+            const created = pair.pairCreatedAt || 0;
+            const age = created ? (Date.now() - created) / 60000 : 9999;
+
+            let score = 0;
+            if (liquidity / (pair.fdv || 1) > 0.02) score++;
+            if (volume / liquidity < 10) score++;
+            if (change1m > 0) score++;
+
+            if (volume > 30 && liquidity > 20) {
+                html += `
+                    <li>
+                        <div>
+                            <span class="coin-rank">${rank}.</span>
+                            <span class="coin-name">${pair.baseToken.symbol}</span>
+                            ${age < 5 ? '<span class="badge">NEW 🚀</span>' : ''}
+                        </div>
+                        <div style="font-size: 0.9rem; color: #aaa;">
+                            score <span style="color:#fff">${score}</span> • 
+                            vol ${Math.round(volume)} • 
+                            liq ${Math.round(liquidity)} • 
+                            age ${age.toFixed(0)}m
+                        </div>
+                    </li>
+                `;
+                rank++;
+            }
+        });
+
+        document.getElementById("scannerFull").innerHTML = html || "<li>Brak tokenów do wyświetlenia...</li>";
+
+    } catch (err) {
+        console.error("Błąd Full Scanner:", err);
+        document.getElementById("scannerFull").innerHTML = "<li>Błąd ładowania danych</li>";
+    }
 }
 
+// =================== SOLANA PUMP DETECTOR ===================
 async function loadPumpDetector() {
-    const res = await fetch("https://api.dexscreener.com/latest/dex/search?q=pump");
-    const data = await res.json();
+    try {
+        const res = await fetch("https://api.dexscreener.com/latest/dex/search?q=pump");
+        const data = await res.json();
 
-    let html = "";
-    let rank = 1;
+        let html = "";
+        let rank = 1;
 
-    data.pairs.forEach(pair => {
-        if (pair.chainId !== "solana") return;
+        data.pairs.forEach(pair => {
+            if (pair.chainId !== "solana") return;
 
-        const liquidity = pair.liquidity?.usd || 0;
-        const volume = pair.volume?.h24 || 0;
-        const change5m = pair.priceChange?.m5 || 0;
+            const liquidity = pair.liquidity?.usd || 0;
+            const volume = pair.volume?.h24 || 0;
+            const change5m = pair.priceChange?.m5 || 0;
 
-        const created = pair.pairCreatedAt || 0;
-        const age = created ? (Date.now() - created) / 60000 : 9999;
+            const created = pair.pairCreatedAt || 0;
+            const age = created ? (Date.now() - created) / 60000 : 9999;
 
-        // 🔥 WARUNKI PRAWDZIWEGO PUMPA
-        if (
-            change5m > 5 &&      // duży wzrost %
-            volume > 1000 &&      // volume musi być konkretny
-            liquidity > 500   // nie scam mikro
-        ) {
-            html += `
-                <li>
-                    <div>
-                        <span class="coin-rank">${rank}.</span>
-                        <span class="coin-name">${pair.baseToken.symbol}</span>
-                        <span class="badge">PUMP 🚀</span>
-                    </div>
-                    <div style="font-size: 0.9rem; color: #aaa;">
-                        +${change5m.toFixed(1)}% • 
-                        vol ${Math.round(volume)} • 
-                        age ${age.toFixed(0)}m
-                    </div>
-                </li>
-            `;
-            rank++;
-        }
-    });
+            // realistyczne progi dla pumpa
+            if (change5m > 3 && volume > 200 && liquidity > 100) {
+                html += `
+                    <li>
+                        <div>
+                            <span class="coin-rank">${rank}.</span>
+                            <span class="coin-name">${pair.baseToken.symbol}</span>
+                            <span class="badge">PUMP 🚀</span>
+                        </div>
+                        <div style="font-size: 0.9rem; color: #aaa;">
+                            +${change5m.toFixed(1)}% • 
+                            vol ${Math.round(volume)} • 
+                            liq ${Math.round(liquidity)} • 
+                            age ${age.toFixed(0)}m
+                        </div>
+                    </li>
+                `;
+                rank++;
+            }
+        });
 
-    document.getElementById("pumpList").innerHTML = html || "<li>Brak pumpów...</li>";
+        document.getElementById("pumpList").innerHTML = html || "<li>Brak pumpów...</li>";
+
+    } catch (err) {
+        console.error("Błąd Pump Detector:", err);
+        document.getElementById("pumpList").innerHTML = "<li>Błąd ładowania danych</li>";
+    }
 }
 
 </script>
