@@ -202,6 +202,10 @@
             .alert-box { flex-direction: column; gap: 20px; }
             .score-display { border-right: none; border-bottom: 1px solid #333; padding-right: 0; padding-bottom: 20px; }
         }
+        
+        .alert-box.high { background: linear-gradient(90deg, #001a00, #004d00); }
+        .alert-box.medium { background: linear-gradient(90deg, #2a1f00, #5c3b00); }
+        .alert-box.low { background: linear-gradient(90deg, #1a0f0f, #3a1f1f); }
     </style>
 </head>
 <body>
@@ -225,10 +229,20 @@
                         <input id="tokenInput" onkeypress="if(event.key==='Enter'){analyze()}" type="text" class="search-input" placeholder="Paste token CA...">
                         <button class="btn" onclick="pasteToken()">PASTE</button>
                         <button class="btn btn-primary" onclick="analyze()">ANALYZE TOKEN</button>
+                        <label style="display:block; margin-top:10px;">
+                        STRONG BUY ≥ 
+                        <input type="number" id="strongBuyThreshold" value="6" style="width:50px;">
+                        </label>
                     </div>
 
                     <div id="analyzerResult"></div>
                 </div>
+                <button class="btn" style="margin-top: 10px;" onclick="copyResult()">📋 Copy Result</button>
+                <!-- Lista ostatnich tokenów -->
+<div class="panel" style="margin-top: 10px;">
+    <div class="panel-header" style="color: #fff;">Last Tokens</div>
+    <ul id="historyList" class="data-list"></ul>
+</div>
 </div>
 
 <script>
@@ -237,6 +251,22 @@
     }
     
 // ================= ANALYZER =================
+// ==== HISTORIA TOKENÓW ====
+let history = [];
+function addToHistory(token) {
+    history.unshift(token); // dodaj na początek
+    if(history.length > 5) history.pop(); // zachowaj max 5
+    document.getElementById("historyList").innerHTML =
+        history.map(t => `<li>${t}</li>`).join("");
+}
+
+// ==== KOPIOWANIE WYNIKU ====
+function copyResult() {
+    const el = document.getElementById("analyzerResult");
+    navigator.clipboard.writeText(el.innerText);
+    alert("Skopiowano wynik!");
+}
+
 async function analyze() {
     document.getElementById("analyzerResult").innerHTML = "";
     const address = document.getElementById("tokenInput").value;
@@ -272,41 +302,54 @@ async function analyze() {
 
     let decision = "SKIP";
     let color = "var(--accent-red)";
+    const strongBuyThreshold = Number(document.getElementById("strongBuyThreshold").value);
 
-    if (score >= 6) {
+    addToHistory(pair.baseToken.symbol);
+
+    if(score >= strongBuyThreshold) {
         decision = "🔥 STRONG BUY";
         color = "var(--accent-green)";
-    } else if (score >= 4) {
+    } else if(score >= 4) {
         decision = "⚡ SCALP";
         color = "var(--gold-main)";
     }
 
-document.getElementById("analyzerResult").innerHTML = `
-    <div class="panel-header" style="color: #fff; font-size: 1.3rem;">
-        ${pair.baseToken.name} (${pair.baseToken.symbol})
-    </div>
+    // --- Wyliczamy klasę alertu ---
+    let alertClass = "low";
+    if(score >= strongBuyThreshold) alertClass = "high";
+    else if(score >= 4) alertClass = "medium";
 
-    <div class="alert-box">
-        <div class="score-display">
-            <div class="score-title">SCORE</div>
-            <span class="score-value">${score}</span><span class="score-max">/7</span>
+    document.getElementById("analyzerResult").innerHTML = `
+        <div class="panel-header" style="color: #fff; font-size: 1.3rem;">
+            ${pair.baseToken.name} (${pair.baseToken.symbol})
         </div>
-        <div class="alert-details">
-            <div class="strong-buy" style="color:${color}">
-                ${decision}
+
+        <div class="alert-box ${alertClass}">
+            <div class="score-display">
+                <div class="score-title">SCORE</div>
+                <span class="score-value">${score}</span><span class="score-max">/7</span>
             </div>
-            <div class="stats-row">
-                <div><span>MC:</span> $${Math.round(fdv)}</div> |
-                <div><span>LIQ:</span> $${Math.round(liquidity)}</div> |
-                <div><span>VOL:</span> $${Math.round(volume)}</div>
-            </div>
-            <div class="stats-row" style="margin-top: 10px;">
-                <div><span>AGE:</span> ${age.toFixed(1)}m</div>
+            <div class="alert-details">
+                <div class="strong-buy" style="color:${color}">
+                    ${decision}
+                </div>
+                <div class="stats-row">
+                    <div><span>MC:</span> $${Math.round(fdv)}</div> |
+                    <div><span>LIQ:</span> $${Math.round(liquidity)}</div> |
+                    <div><span>VOL:</span> $${Math.round(volume)}</div>
+                </div>
+                <div class="stats-row" style="margin-top: 10px;">
+                    <div><span>AGE:</span> ${age.toFixed(1)}m</div>
+                </div>
             </div>
         </div>
-    </div>
-`;
+    `;
 }
+
+setInterval(() => {
+    const addr = document.getElementById("tokenInput").value;
+    if(addr) analyze();
+}, 30000); // co 30 sekund
 
 </script>
 
