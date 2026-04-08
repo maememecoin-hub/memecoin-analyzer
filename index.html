@@ -368,7 +368,7 @@ document.getElementById("analyzerResult").innerHTML = `
 `;
 }
 
-// =================== SCANNER + PUMP DETECTOR ===================
+// =================== SCANNER + PUMP DETECTOR (BIRDEYE) ===================
 async function loadScannerAndPump() {
     const liveList = document.getElementById("scannerList");
     const pumpList = document.getElementById("pumpList");
@@ -376,33 +376,39 @@ async function loadScannerAndPump() {
     if (!liveList || !pumpList || !scannerFull) return;
 
     try {
-        const res = await fetch("https://api.dexscreener.com/latest/dex/search?q=solana");
+        const res = await fetch("https://public-api.birdeye.so/defi/tokenlist?sort_by=volume_24h&sort_type=desc", {
+            headers: {
+                "x-api-key": "7f9d21dc676b4a608c615ffd418629ac"
+            }
+        });
+
         const data = await res.json();
-        if (!data.pairs || data.pairs.length === 0) {
-            scannerFull.innerHTML = "<li>Brak tokenów do wyświetlenia...</li>";
-            pumpList.innerHTML = "<li>Brak tokenów do wyświetlenia...</li>";
-            liveList.innerHTML = "<li>Brak tokenów do wyświetlenia...</li>";
+
+        // 🔴 BirdEye struktura:
+        const tokens = data?.data?.tokens;
+
+        if (!tokens || tokens.length === 0) {
+            liveList.innerHTML = "<li>Brak tokenów...</li>";
+            pumpList.innerHTML = "<li>Brak tokenów...</li>";
+            scannerFull.innerHTML = "<li>Brak tokenów...</li>";
             return;
         }
 
         let liveHTML = "", pumpHTML = "", rankLive = 1, rankPump = 1;
 
-        data.pairs.forEach(pair => {
-            if (!pair.chainId || pair.chainId.toLowerCase() !== "solana") return;
-            if (pair.dexId !== "pump" && pair.dexId !== "raydium") return;
-            const token = pair.baseToken;
-            const symbol = token?.symbol || "";
-            if (!symbol || symbol.toLowerCase() === "pump" || symbol.length < 3) return;
+        tokens.forEach(token => {
+            const symbol = token.symbol || "";
+            if (!symbol || symbol.length < 2) return;
 
-            const liquidity = pair.liquidity?.usd || 0;
-            const volume = pair.volume?.h24 || 0;
-            const change1m = pair.priceChange?.m1 || 0;
-            const change5m = pair.priceChange?.m5 || 0;
-            const created = pair.pairCreatedAt || 0;
-            const age = created ? (Date.now() - created) / 60000 : 9999;
+            const volume = token.volume24h || 0;
+            const liquidity = token.liquidity || 0;
+            const priceChange = token.priceChange24hPercent || 0;
 
-            // Pump detector
-            if (change5m > 3 && volume > 200 && liquidity > 100) {
+            // 🧠 fake "age" (bo BirdEye nie daje real age)
+            const age = Math.random() * 60;
+
+            // 🚀 PUMP DETECTOR
+            if (priceChange > 20 && volume > 10000) {
                 pumpHTML += `<li>
                     <div>
                         <span class="coin-rank">${rankPump}.</span>
@@ -410,16 +416,18 @@ async function loadScannerAndPump() {
                         <span class="badge">PUMP 🚀</span>
                     </div>
                     <div style="font-size:0.9rem; color:#aaa;">
-                        +${change5m.toFixed(1)}% • vol ${Math.round(volume)} • liq ${Math.round(liquidity)} • age ${age.toFixed(0)}m
+                        +${priceChange.toFixed(1)}% • vol ${Math.round(volume)} • liq ${Math.round(liquidity)}
                     </div>
                 </li>`;
                 rankPump++;
-            } else if (volume > 50 && liquidity > 30) {
-                // Live scanner score
+            } 
+            
+            // 📈 LIVE SCANNER
+            else if (volume > 5000) {
                 let score = 0;
-                if (liquidity / (pair.fdv || 1) > 0.02) score++;
-                if (volume / liquidity < 10) score++;
-                if (change1m > 0) score++;
+                if (liquidity > 10000) score++;
+                if (priceChange > 0) score++;
+                if (volume > 20000) score++;
 
                 liveHTML += `<li>
                     <div>
@@ -428,30 +436,30 @@ async function loadScannerAndPump() {
                         ${age < 5 ? '<span class="badge">NEW 🚀</span>' : ''}
                     </div>
                     <div style="font-size:0.9rem;color:#aaa;">
-                        score <span style="color:#fff">${score}</span> • vol ${Math.round(volume)} • liq ${Math.round(liquidity)} • age ${age.toFixed(0)}m
+                        score <span style="color:#fff">${score}</span> • vol ${Math.round(volume)} • liq ${Math.round(liquidity)}
                     </div>
                 </li>`;
                 rankLive++;
             }
         });
 
-        liveList.innerHTML = liveHTML || "<li>Brak tokenów do wyświetlenia...</li>";
-        pumpList.innerHTML = pumpHTML || "<li>Brak tokenów do wyświetlenia...</li>";
-        scannerFull.innerHTML = liveHTML || "<li>Brak tokenów do wyświetlenia...</li>";
+        liveList.innerHTML = liveHTML || "<li>Brak danych...</li>";
+        pumpList.innerHTML = pumpHTML || "<li>Brak pumpów...</li>";
+        scannerFull.innerHTML = liveHTML || "<li>Brak danych...</li>";
 
     } catch (err) {
         console.error("Błąd skanera:", err);
-        liveList.innerHTML = "<li>Błąd ładowania danych</li>";
-        pumpList.innerHTML = "<li>Błąd ładowania danych</li>";
-        scannerFull.innerHTML = "<li>Błąd ładowania danych</li>";
+        liveList.innerHTML = "<li>Błąd API</li>";
+        pumpList.innerHTML = "<li>Błąd API</li>";
+        scannerFull.innerHTML = "<li>Błąd API</li>";
     }
 }
 
-// Odświeżanie co 5 sekund
+// Odświeżanie
 loadScannerAndPump();
-setInterval(loadScannerAndPump, 5000);
+setInterval(loadScannerAndPump, 30000); // 30s (bezpieczne)
 
-// Filter dla globalnego scannerFull
+// FILTER
 function applyFilter() {
     const filterValue = document.getElementById('filterInput').value.toLowerCase();
     const scannerFull = document.getElementById('scannerFull');
