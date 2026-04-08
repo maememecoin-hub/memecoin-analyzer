@@ -359,7 +359,6 @@ document.getElementById("analyzerResult").innerHTML = `
             <div class="stats-row" style="margin-top: 10px;">
                 <div><span>AGE:</span> ${age.toFixed(1)}m</div>
             </div>
-            <div id="chart" style="margin-top:20px; height:400px;"></div>
         </div>
     </div>
 `;
@@ -526,61 +525,7 @@ async function loadPumpDetector() {
     }
 }
 
-async function loadChart(pairAddress) {
-    const chartContainer = document.getElementById('chart');
-    chartContainer.innerHTML = ""; // wyczyść poprzedni wykres
-
-    // pobieramy dane historyczne z Dexscreener
-    try {
-        const res = await fetch(`https://api.coingecko.com/api/v3/coins/${id}/market_chart?vs_currency=usd&days=1`);
-        const data = await res.json();
-
-        const prices = data?.chart?.map(item => item.close) || [];
-        const labels = data?.chart?.map(item => new Date(item.timestamp * 1000).toLocaleTimeString()) || [];
-
-        const canvas = document.createElement('canvas');
-        chartContainer.appendChild(canvas);
-
-        new Chart(canvas, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Price',
-                    data: prices,
-                    borderColor: 'rgba(252, 163, 17, 1)',
-                    backgroundColor: 'rgba(252, 163, 17, 0.2)',
-                    fill: true,
-                    tension: 0.3
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    x: { 
-                        ticks: { color: '#e0e0e0' },
-                        grid: { color: 'rgba(255,255,255,0.05)' }
-                    },
-                    y: { 
-                        ticks: { color: '#e0e0e0' },
-                        grid: { color: 'rgba(255,255,255,0.05)' }
-                    }
-                },
-                plugins: {
-                    legend: { labels: { color: '#fff' } }
-                }
-            }
-        });
-
-    } catch (err) {
-        chartContainer.innerHTML = "❌ Brak danych do wykresu";
-        console.error("Błąd ładowania wykresu:", err);
-    }
-}
-
 </script>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 </body>
 </html>
