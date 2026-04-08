@@ -272,52 +272,36 @@ async function analyze() {
     const address = document.getElementById("tokenInput").value;
     if (!address) return alert("Wklej adres!");
 
-    let res, data;
+    let data;
     try {
-        res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${address}`);
+        const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${address}`);
         data = await res.json();
     } catch (err) {
         console.error(err);
-        document.getElementById("analyzerResult").innerHTML = `
-            <div class="alert-box low">
-                <div class="score-display">
-                    <div class="score-title">SCORE</div>
-                    <span class="score-value">0</span><span class="score-max">/7</span>
-                </div>
-                <div class="alert-details">
-                    <div class="strong-buy" style="color: var(--accent-red)">❌ TOKEN NOT FOUND</div>
-                </div>
-            </div>
-        `;
-        return;
+        data = null;
     }
 
-    if (!data.pairs || data.pairs.length === 0) {
-        document.getElementById("analyzerResult").innerHTML = `
-            <div class="alert-box low">
-                <div class="score-display">
-                    <div class="score-title">SCORE</div>
-                    <span class="score-value">0</span><span class="score-max">/7</span>
-                </div>
-                <div class="alert-details">
-                    <div class="strong-buy" style="color: var(--accent-red)">❌ TOKEN NOT FOUND</div>
-                </div>
-            </div>
-        `;
-        return;
+    let pair, fdv, liquidity, volume, change1m, created, age;
+
+    if (!data || !data.pairs || data.pairs.length === 0) {
+        // Gdy token nie istnieje, wypełniamy wszystko zerami
+        pair = { baseToken: { name: "UNKNOWN", symbol: "UNKNOWN" } };
+        fdv = liquidity = volume = change1m = created = 0;
+        age = 0;
+    } else {
+        pair = data.pairs[0];
+        fdv = pair.fdv || 0;
+        liquidity = pair.liquidity?.usd || 0;
+        volume = pair.volume?.h24 || 0;
+        change1m = pair.priceChange?.m1 || 0;
+        created = pair.pairCreatedAt || 0;
+        age = created ? (Date.now() - created) / 60000 : 0;
+
+        addToHistory(pair.baseToken.symbol);
     }
 
-    const pair = data.pairs[0];
-    const fdv = pair.fdv || 0;
-    const liquidity = pair.liquidity?.usd || 0;
-    const volume = pair.volume?.h24 || 0;
-    const change1m = pair.priceChange?.m1 || 0;
-
-    const created = pair.pairCreatedAt || 0;
-    const age = created ? (Date.now() - created) / 60000 : 9999;
-
-    const liq_mc = liquidity / fdv;
-    const vol_liq = volume / liquidity;
+    const liq_mc = fdv ? liquidity / fdv : 0;
+    const vol_liq = liquidity ? volume / liquidity : 0;
 
     let score = 0;
     if (liq_mc > 0.02) score += 2;
@@ -329,8 +313,6 @@ async function analyze() {
     let decision = "SKIP";
     let color = "var(--accent-red)";
     const strongBuyThreshold = Number(document.getElementById("strongBuyThreshold").value);
-
-    addToHistory(pair.baseToken.symbol);
 
     if(score >= strongBuyThreshold) {
         decision = "🔥 STRONG BUY";
@@ -356,7 +338,7 @@ async function analyze() {
             </div>
             <div class="alert-details">
                 <div class="strong-buy" style="color:${color}">
-                    ${decision}
+                    ${data && data.pairs && data.pairs.length > 0 ? decision : "❌ TOKEN NOT FOUND"}
                 </div>
                 <div class="stats-row">
                     <div><span>MC:</span> $${Math.round(fdv)}</div> |
