@@ -386,6 +386,57 @@
                 align-self: flex-start;
             }
         }
+        
+        .alert-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #111;
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 15px;
+}
+
+.alert-box.high { background: rgba(0, 208, 132, 0.1); }
+.alert-box.medium { background: rgba(245, 166, 35, 0.1); }
+.alert-box.low { background: rgba(255, 51, 51, 0.1); }
+
+.score-display {
+    text-align: center;
+    border-right: 1px solid rgba(255,255,255,0.1);
+    padding-right: 20px;
+}
+
+.score-value {
+    font-size: 2.5rem;
+    font-weight: 800;
+}
+
+.score-max {
+    font-size: 1.2rem;
+    color: var(--text-muted);
+}
+
+.alert-details {
+    flex: 1;
+    padding-left: 20px;
+    text-align: center;
+}
+
+.strong-buy {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    font-size: 0.9rem;
+}
+
     </style>
 </head>
 <body>
@@ -599,15 +650,33 @@ async function analyze() {
         color = "#f5a623";
     }
 
-    document.getElementById("analyzerResult").innerHTML = `
-        <h3>${pair.baseToken.name} (${pair.baseToken.symbol})</h3>
-        <p style="color:${color}; font-weight:bold; font-size:20px;">${decision}</p>
-        <p>Score: ${score}/7</p>
-        <p>MC: $${Math.round(fdv)}</p>
-        <p>Liquidity: $${Math.round(liquidity)}</p>
-        <p>Volume: $${Math.round(volume)}</p>
-        <p>Age: ${age.toFixed(1)} min</p>
-    `;
+let alertClass = "low";
+if(score >= strongBuyThreshold) alertClass = "high";
+else if(score >= 4) alertClass = "medium";
+
+document.getElementById("analyzerResult").innerHTML = `
+    <h3>${pair.baseToken.name} (${pair.baseToken.symbol})</h3>
+
+    <div class="alert-box ${alertClass}">
+        <div class="score-display">
+            <div class="score-title">SCORE</div>
+            <span class="score-value">${score}</span><span class="score-max">/7</span>
+        </div>
+        <div class="alert-details">
+            <div class="strong-buy" style="color:${color}">
+                ${data && data.pairs && data.pairs.length > 0 ? decision : "❌ TOKEN NOT FOUND"}
+            </div>
+            <div class="stats-row">
+                <div><span>MC:</span> $${Math.round(fdv)}</div> |
+                <div><span>LIQ:</span> $${Math.round(liquidity)}</div> |
+                <div><span>VOL:</span> $${Math.round(volume)}</div>
+            </div>
+            <div class="stats-row" style="margin-top:10px;">
+                <div><span>AGE:</span> ${age.toFixed(1)}m</div>
+            </div>
+        </div>
+    </div>
+`;
 }
 
 setInterval(() => {
