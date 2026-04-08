@@ -369,6 +369,7 @@ loadChart(pair.pairAddress);
 // =================== SOLANA LIVE SCANNER ===================
 async function loadLiveScanner() {
     const listEl = document.getElementById("scannerList");
+    if (!listEl) return; // dodatkowe zabezpieczenie
 
     try {
         const res = await fetch("https://api.dexscreener.com/latest/dex/search?q=pump");
@@ -383,8 +384,7 @@ async function loadLiveScanner() {
         let rank = 1;
 
         data.pairs.forEach(pair => {
-            const chain = pair.chainId?.toLowerCase();
-            if (chain !== "solana" && chain !== "sol") return;
+            if (!pair.chainId || pair.chainId.toLowerCase() !== "solana") return;
 
             const token = pair.baseToken;
             const symbol = token?.symbol || "";
@@ -394,7 +394,7 @@ async function loadLiveScanner() {
             const volume = pair.volume?.h24 || 0;
             const change1m = pair.priceChange?.m1 || 0;
 
-            const created = pair.pairCreatedAt || 0;
+            const created = pair.pairCreatedAt ? pair.pairCreatedAt * 1000 : 0;
             const age = created ? (Date.now() - created) / 60000 : 9999;
 
             let score = 0;
@@ -402,8 +402,7 @@ async function loadLiveScanner() {
             if (volume / liquidity < 10) score++;
             if (change1m > 0) score++;
 
-            // progi do wyświetlania
-            if (volume > 50 && liquidity > 30) {
+            if ((volume || 0) > 50 && (liquidity || 0) > 30) {
                 html += `
                     <li>
                         <div>
@@ -432,7 +431,7 @@ async function loadLiveScanner() {
 }
 
 // Odświeżanie co 5 sekund
-loadLiveScanner(); // pierwsze wywołanie
+loadLiveScanner();
 setInterval(loadLiveScanner, 5000);
 
 // =================== SOLANA FULL SCANNER ===================
