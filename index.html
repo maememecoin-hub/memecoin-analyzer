@@ -254,8 +254,12 @@
 // ==== HISTORIA TOKENÓW ====
 let history = [];
 function addToHistory(token) {
+    // Sprawdzamy, czy token jest taki sam jak ostatni w historii
+    if(history[0] === token) return;
+
     history.unshift(token); // dodaj na początek
     if(history.length > 5) history.pop(); // zachowaj max 5
+
     document.getElementById("historyList").innerHTML =
         history.map(t => `<li>${t}</li>`).join("");
 }
