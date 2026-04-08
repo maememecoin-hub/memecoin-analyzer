@@ -252,15 +252,24 @@
 // ================= ANALYZER =================
 // ==== HISTORIA TOKENÓW ====
 let history = [];
-function addToHistory(token) {
-    // Sprawdzamy, czy token jest taki sam jak ostatni w historii
-    if(history[0] === token) return;
 
-    history.unshift(token); // dodaj na początek
-    if(history.length > 5) history.pop(); // zachowaj max 5
+function addToHistory(pairData) {
+    // Tworzymy obiekt tokenu z symbol i score
+    const tokenObj = {
+        symbol: pairData.baseToken.symbol,
+        score: pairData.score || 0
+    };
 
+    // Nie dodajemy, jeśli taki sam jak ostatni
+    if(history[0] && history[0].symbol === tokenObj.symbol) return;
+
+    // Dodajemy na początek i zachowujemy max 5
+    history.unshift(tokenObj);
+    if(history.length > 5) history.pop();
+
+    // Generujemy HTML dla listy
     document.getElementById("historyList").innerHTML =
-        history.map(t => `<li>${t}</li>`).join("");
+        history.map(t => `<li><span class="coin-name">${t.symbol}</span> - Score: ${t.score}</li>`).join("");
 }
 
 // ==== KOPIOWANIE WYNIKU ====
@@ -293,7 +302,7 @@ async function analyze() {
         age = 0;
 
         // Dodajemy symbol do historii nawet gdy token nie istnieje
-        addToHistory(pair.baseToken.symbol);
+        addToHistory({ baseToken: pair.baseToken, score });
 
     } else {
         pair = data.pairs[0];
