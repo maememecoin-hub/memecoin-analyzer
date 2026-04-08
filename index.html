@@ -429,8 +429,6 @@ async function loadScannerAndPump() {
             }
         });
 
-        liveList.innerHTML = liveHTML || "<li>Brak tokenów do wyświetlenia...</li>";
-        pumpList.innerHTML = pumpHTML || "<li>Brak pumpów...</li>";
         const scannerFull = document.getElementById('scannerFull');
         if(scannerFull) scannerFull.innerHTML = liveHTML || "<li>Brak tokenów do wyświetlenia...</li>";
 
