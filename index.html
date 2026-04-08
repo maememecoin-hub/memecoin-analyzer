@@ -375,12 +375,19 @@ async function loadScanner() {
         let html = "";
         let rank = 1;
 
-        data.pairs.forEach(pair => {
-            // tylko Solana
-            if (pair.chainId !== "solana") return;
+        if (!data.pairs || data.pairs.length === 0) {
+            document.getElementById("scannerList").innerHTML = "<li>Brak tokenów do wyświetlenia...</li>";
+            return;
+        }
 
-            // filtr syfu
-            if (pair.baseToken.symbol.toLowerCase() === "pump" || pair.baseToken.symbol.length < 3) return;
+        data.pairs.forEach(pair => {
+            // Sprawdź dokładnie chainId dla Solana
+            const chain = pair.chainId?.toLowerCase();
+            if (chain !== "solana" && chain !== "sol") return;
+
+            // Filtr symboli krótkich / "pump"
+            const symbol = pair.baseToken?.symbol || "";
+            if (!symbol || symbol.toLowerCase() === "pump" || symbol.length < 3) return;
 
             const liquidity = pair.liquidity?.usd || 0;
             const volume = pair.volume?.h24 || 0;
@@ -394,13 +401,13 @@ async function loadScanner() {
             if (volume / liquidity < 10) score++;
             if (change1m > 0) score++;
 
-            // progi do wyświetlenia
+            // Progi wyświetlania
             if (volume > 50 && liquidity > 30) {
                 html += `
                     <li>
                         <div>
                             <span class="coin-rank">${rank}.</span>
-                            <span class="coin-name">${pair.baseToken.symbol}</span>
+                            <span class="coin-name">${symbol}</span>
                             ${age < 5 ? '<span class="badge">NEW 🚀</span>' : ''}
                         </div>
                         <div style="font-size: 0.9rem; color: #aaa;">
