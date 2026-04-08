@@ -376,7 +376,13 @@ async function loadScanner() {
     let rank = 1;
 
     data.pairs.forEach(pair => {
-        if (pair.chainId !== "solana") return;
+    if (pair.chainId !== "solana") return;
+
+    // 🔥 FILTR SYFU
+    if (
+        pair.baseToken.symbol.toLowerCase() === "pump" ||
+        pair.baseToken.symbol.length < 3
+    ) return;
 
         const fdv = pair.fdv || 0;
         const liquidity = pair.liquidity?.usd || 0;
@@ -422,7 +428,13 @@ async function loadFullScanner() {
     let rank = 1;
 
     data.pairs.forEach(pair => {
-        if (pair.chainId !== "solana") return;
+    if (pair.chainId !== "solana") return;
+
+    // 🔥 FILTR SYFU (WKLEJ TO TUTAJ)
+    if (
+        pair.baseToken.symbol.toLowerCase() === "pump" ||
+        pair.baseToken.symbol.length < 3
+    ) return;
 
         const fdv = pair.fdv || 0;
         const liquidity = pair.liquidity?.usd || 0;
