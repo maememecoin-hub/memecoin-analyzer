@@ -262,6 +262,10 @@
     <div id="view-scanner" class="view-section">
     <div class="panel">
         <div class="panel-header">GLOBAL LIVE SCANNER</div>
+        <div style="margin-bottom: 15px; display: flex; gap: 10px;">
+            <input id="filterInput" type="text" placeholder="Filter by token symbol..." 
+                   class="search-input" oninput="applyFilter()">
+        </div>
         <ul id="scannerFull" class="data-list"></ul>
     </div>
 </div>
@@ -427,6 +431,8 @@ async function loadScannerAndPump() {
 
         liveList.innerHTML = liveHTML || "<li>Brak tokenów do wyświetlenia...</li>";
         pumpList.innerHTML = pumpHTML || "<li>Brak pumpów...</li>";
+        const scannerFull = document.getElementById('scannerFull');
+        if(scannerFull) scannerFull.innerHTML = liveHTML || "<li>Brak tokenów do wyświetlenia...</li>";
 
     } catch(err) {
         console.error("Błąd skanera:", err);
@@ -438,6 +444,18 @@ async function loadScannerAndPump() {
 // Odświeżanie co 5 sekund
 loadScannerAndPump();
 setInterval(loadScannerAndPump, 5000);
+
+function applyFilter() {
+    const filterValue = document.getElementById('filterInput').value.toLowerCase();
+    const scannerFull = document.getElementById('scannerFull');
+    if (!scannerFull) return;
+
+    const items = scannerFull.querySelectorAll('li');
+    items.forEach(li => {
+        const symbol = li.querySelector('.coin-name')?.textContent.toLowerCase() || '';
+        li.style.display = symbol.includes(filterValue) ? '' : 'none';
+    });
+}
 
 </script>
 
