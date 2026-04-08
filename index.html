@@ -376,7 +376,7 @@ async function loadScannerAndPump() {
     if (!liveList || !pumpList || !scannerFull) return;
 
     try {
-        const res = await fetch("https://api.dexscreener.com/latest/dex/search?q=pump");
+        const res = await fetch("https://api.dexscreener.com/latest/dex/search?q=solana");
         const data = await res.json();
         if (!data.pairs || data.pairs.length === 0) {
             scannerFull.innerHTML = "<li>Brak tokenów do wyświetlenia...</li>";
@@ -388,7 +388,7 @@ async function loadScannerAndPump() {
         let liveHTML = "", pumpHTML = "", rankLive = 1, rankPump = 1;
 
         data.pairs.forEach(pair => {
-            if (!pair.chainId || pair.chainId.toLowerCase() !== "101") return; // filtrujemy tylko określoną sieć
+            if (!pair.chainId || pair.chainId.toLowerCase() !== "solana") return;
             const token = pair.baseToken;
             const symbol = token?.symbol || "";
             if (!symbol || symbol.toLowerCase() === "pump" || symbol.length < 3) return;
@@ -397,7 +397,7 @@ async function loadScannerAndPump() {
             const volume = pair.volume?.h24 || 0;
             const change1m = pair.priceChange?.m1 || 0;
             const change5m = pair.priceChange?.m5 || 0;
-            const created = pair.pairCreatedAt ? pair.pairCreatedAt * 1000 : 0;
+            const created = pair.pairCreatedAt || 0;
             const age = created ? (Date.now() - created) / 60000 : 9999;
 
             // Pump detector
