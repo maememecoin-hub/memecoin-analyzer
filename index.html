@@ -272,16 +272,42 @@ async function analyze() {
     const address = document.getElementById("tokenInput").value;
     if (!address) return alert("Wklej adres!");
 
-    const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${address}`);
-    const data = await res.json();
+    let res, data;
+    try {
+        res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${address}`);
+        data = await res.json();
+    } catch (err) {
+        console.error(err);
+        document.getElementById("analyzerResult").innerHTML = `
+            <div class="alert-box low">
+                <div class="score-display">
+                    <div class="score-title">SCORE</div>
+                    <span class="score-value">0</span><span class="score-max">/7</span>
+                </div>
+                <div class="alert-details">
+                    <div class="strong-buy" style="color: var(--accent-red)">❌ TOKEN NOT FOUND</div>
+                </div>
+            </div>
+        `;
+        return;
+    }
 
     if (!data.pairs || data.pairs.length === 0) {
-        document.getElementById("analyzerResult").innerHTML = "❌ Token not found";
+        document.getElementById("analyzerResult").innerHTML = `
+            <div class="alert-box low">
+                <div class="score-display">
+                    <div class="score-title">SCORE</div>
+                    <span class="score-value">0</span><span class="score-max">/7</span>
+                </div>
+                <div class="alert-details">
+                    <div class="strong-buy" style="color: var(--accent-red)">❌ TOKEN NOT FOUND</div>
+                </div>
+            </div>
+        `;
         return;
     }
 
     const pair = data.pairs[0];
-
     const fdv = pair.fdv || 0;
     const liquidity = pair.liquidity?.usd || 0;
     const volume = pair.volume?.h24 || 0;
@@ -314,7 +340,6 @@ async function analyze() {
         color = "var(--gold-main)";
     }
 
-    // --- Wyliczamy klasę alertu ---
     let alertClass = "low";
     if(score >= strongBuyThreshold) alertClass = "high";
     else if(score >= 4) alertClass = "medium";
