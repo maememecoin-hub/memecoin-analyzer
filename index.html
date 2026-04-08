@@ -376,7 +376,7 @@ async function loadScannerAndPump() {
     if (!liveList || !pumpList || !scannerFull) return;
 
     try {
-        const res = await fetch("https://api.dexscreener.com/latest/dex/search?q=solana");
+        const res = await fetch("https://api.dexscreener.com/latest/dex/search?q=pump");
         const data = await res.json();
         if (!data.pairs || data.pairs.length === 0) {
             scannerFull.innerHTML = "<li>Brak tokenów do wyświetlenia...</li>";
@@ -389,6 +389,7 @@ async function loadScannerAndPump() {
 
         data.pairs.forEach(pair => {
             if (!pair.chainId || pair.chainId.toLowerCase() !== "solana") return;
+            if (pair.dexId !== "raydium" && pair.dexId !== "pump") return;
             const token = pair.baseToken;
             const symbol = token?.symbol || "";
             if (!symbol || symbol.toLowerCase() === "pump" || symbol.length < 3) return;
