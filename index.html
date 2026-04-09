@@ -47,7 +47,7 @@
                 <p class="description">FIND. ANALYZE. SNIPE. BEFORE THE CROWD.</p>
             </header>
 
-            <div class="stats-grid">
+            <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr);">
                 <div class="stat-card">
                     <div class="stat-icon"><i class="ph ph-lightning"></i></div>
                     <div class="stat-info">
@@ -56,14 +56,7 @@
                         <span class="stat-sub">Total</span>
                     </div>
                 </div>
-                <div class="stat-card glow-red">
-                    <div class="stat-icon red"><i class="ph ph-fire"></i></div>
-                    <div class="stat-info">
-                        <span class="stat-label">HOT TOKENS</span>
-                        <span class="stat-value">247</span>
-                        <span class="stat-sub">Live</span>
-                    </div>
-                </div>
+                
                 <div class="stat-card glow-purple">
                     <div class="stat-icon purple"><i class="ph ph-target"></i></div>
                     <div class="stat-info">
@@ -72,8 +65,9 @@
                         <span class="stat-sub">All Trades</span>
                     </div>
                 </div>
+
                 <div class="stat-card glow-blue">
-                    <div class="stat-icon blue"><i class="ph ph-users"></i></div>
+                    <div class="stat-icon blue"><i class="ph ph-banknotes"></i></div>
                     <div class="stat-info">
                         <span class="stat-label">KAPITAŁ</span>
                         <span class="stat-value" id="main-total-capital">$0</span>
@@ -161,9 +155,6 @@
             <div class="panel">
                 <div class="journal-header" style="display: flex; justify-content: space-between; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); color: var(--text-muted); font-size: 0.8rem; font-weight: bold;">
                     <span style="flex: 2;">TOKEN</span>
-                    <span style="flex: 1; text-align: right;">INVESTED</span>
-                    <span style="flex: 1; text-align: right;">BUY MC</span>
-                    <span style="flex: 1; text-align: right;">SELL MC</span>
                     <span style="flex: 1; text-align: right;">PNL</span>
                     <span style="flex: 1; text-align: right;">STATUS</span>
                 </div>
