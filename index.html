@@ -449,7 +449,7 @@
         </div>
         <nav class="nav-tabs">
             <button class="active" onclick="switchTab('analyzer')">ANALYZER</button>
-            <button onclick="switchTab('watchlist')">WATCHLIST</button>
+            <button onclick="switchTab('watchlist')">DZIENNIK</button>
             <button onclick="switchTab('leaderboard')">LEADERBOARD</button>
             <button onclick="switchTab('docs')">DOCS</button>
         </nav>
@@ -483,7 +483,7 @@
                 </div>
                 <div class="stat-card glass">
                     <div class="stat-icon" style="color: #3742fa;"><i class="fa-solid fa-users"></i></div>
-                    <div class="stat-info"><p>Active Users</p><h3>3.9K</h3><span>Online</span></div>
+                    <div class="stat-info"><p>Kapitał</p><h3 id="capital">$0</h3><span>Online</span></div>
                 </div>
             </section>
 
@@ -523,12 +523,25 @@
 </section>
         </div>
 
-        <div id="watchlist" class="tab-content glass">
-            <div class="empty-state">
-                <h2>Watchlist</h2>
-                <p>Tutaj możesz dodać swoją zawartość dla Watchlisty.</p>
-            </div>
+        <div id="watchlist" class="tab-content">
+
+    <div class="list-panel glass" style="margin-bottom:20px;">
+        <h2>Dziennik Tradingowy</h2>
+
+        <div style="display:flex; gap:10px; margin-top:15px; flex-wrap:wrap;">
+            <input id="tokenName" placeholder="Token" />
+            <input id="entry" type="number" placeholder="Entry $" />
+            <input id="exit" type="number" placeholder="Exit $" />
+            <button class="btn-primary" onclick="addTrade()">Dodaj</button>
         </div>
+    </div>
+
+    <div class="list-panel glass">
+        <h3>Twoje trady</h3>
+        <div id="tradesList"></div>
+    </div>
+
+</div>
         
         <div id="leaderboard" class="tab-content glass">
             <div class="empty-state">
@@ -561,10 +574,113 @@
             </p>
         </div>
     </aside>
-
-    <script>
     
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    
+<script>
+const SUPABASE_URL = "https://mdauvdggfaotjobfmxj.supabase.co";
+const SUPABASE_KEY = "TWÓJ_ANON_KEY";
+
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
 let history = [];
+const START_CAPITAL = 1000;
+
+// ====================== TRADES ======================
+
+async function addTrade() {
+    const token = document.getElementById("tokenName").value;
+    const entry = parseFloat(document.getElementById("entry").value);
+    const exit = parseFloat(document.getElementById("exit").value);
+
+    if (!token || isNaN(entry) || isNaN(exit)) {
+        alert("Uzupełnij dane");
+        return;
+    }
+
+    const profit = exit - entry;
+
+    const { error } = await supabase.from("trades").insert([
+        { token, entry, exit, profit }
+    ]);
+
+    if (error) {
+        console.error(error);
+        alert("Błąd zapisu");
+        return;
+    }
+
+    loadTrades(); // 🔥 refresh po dodaniu
+}
+
+async function deleteTrade(id) {
+    if (!confirm("Usunąć trade?")) return;
+
+    const { error } = await supabase
+        .from("trades")
+        .delete()
+        .eq("id", id);
+
+    if (error) {
+        console.error(error);
+        alert("Błąd usuwania");
+        return;
+    }
+
+    loadTrades();
+}
+
+async function loadTrades() {
+    const { data, error } = await supabase
+        .from("trades")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+    if (error) {
+        console.error(error);
+        return;
+    }
+
+    let totalProfit = 0;
+    let wins = 0;
+
+    document.getElementById("tradesList").innerHTML = data.map(t => {
+        totalProfit += t.profit;
+        if (t.profit > 0) wins++;
+
+        return `
+        <div class="list-item">
+            <div class="item-left">
+                <div class="item-name">
+                    <h4>${t.token}</h4>
+                    <p>Entry: $${t.entry} → Exit: $${t.exit}</p>
+                </div>
+            </div>
+
+            <div class="item-right">
+                $${t.profit.toFixed(2)}
+                <br>
+                <button onclick="deleteTrade('${t.id}')" style="
+                    margin-top:5px;
+                    background:#ff3333;
+                    border:none;
+                    padding:5px 10px;
+                    border-radius:6px;
+                    color:white;
+                    cursor:pointer;
+                    font-size:0.7rem;
+                ">
+                    DELETE
+                </button>
+            </div>
+        </div>
+        `;
+    }).join("");
+
+    updateStats(data.length, totalProfit, wins);
+}
+
+// ====================== ANALYZER ======================
 
 function addToHistory(pairData) {
     const tokenObj = {
@@ -572,10 +688,10 @@ function addToHistory(pairData) {
         score: pairData.score || 0
     };
 
-    if(history[0] && history[0].symbol === tokenObj.symbol) return;
+    if (history[0] && history[0].symbol === tokenObj.symbol) return;
 
     history.unshift(tokenObj);
-    if(history.length > 5) history.pop();
+    if (history.length > 5) history.pop();
 
     document.getElementById("historyList").innerHTML =
         history.map(t => `
@@ -592,41 +708,32 @@ function addToHistory(pairData) {
         `).join("");
 }
 
-function copyResult() {
-    const el = document.getElementById("analyzerResult");
-    navigator.clipboard.writeText(el.innerText);
-    alert("Skopiowano wynik!");
-}
-
 async function analyze() {
-    document.getElementById("analyzerResult").innerHTML = "Loading...";
+    const resultEl = document.getElementById("analyzerResult");
+    resultEl.innerHTML = "Loading...";
 
     const address = document.getElementById("tokenInput").value;
     if (!address) return alert("Wklej adres!");
 
     let data;
+
     try {
         const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${address}`);
         data = await res.json();
-    } catch (err) {
+    } catch {
         data = null;
     }
 
-    let pair, fdv, liquidity, volume, change1m, created, age;
+    let pair = data?.pairs?.[0] || {
+        baseToken: { name: "UNKNOWN", symbol: address.toUpperCase() }
+    };
 
-    if (!data || !data.pairs || data.pairs.length === 0) {
-        pair = { baseToken: { name: "UNKNOWN", symbol: address.toUpperCase() } };
-        fdv = liquidity = volume = change1m = created = 0;
-        age = 0;
-    } else {
-        pair = data.pairs[0];
-        fdv = pair.fdv || 0;
-        liquidity = pair.liquidity?.usd || 0;
-        volume = pair.volume?.h24 || 0;
-        change1m = pair.priceChange?.m1 || 0;
-        created = pair.pairCreatedAt || 0;
-        age = created ? (Date.now() - created) / 60000 : 0;
-    }
+    let fdv = pair.fdv || 0;
+    let liquidity = pair.liquidity?.usd || 0;
+    let volume = pair.volume?.h24 || 0;
+    let change1m = pair.priceChange?.m1 || 0;
+    let created = pair.pairCreatedAt || 0;
+    let age = created ? (Date.now() - created) / 60000 : 0;
 
     const liq_mc = fdv ? liquidity / fdv : 0;
     const vol_liq = liquidity ? volume / liquidity : 0;
@@ -640,94 +747,80 @@ async function analyze() {
 
     addToHistory({ baseToken: pair.baseToken, score });
 
-    let decision = "SKIP";
-    let color = "#ff3333";
     const strongBuyThreshold = Number(document.getElementById("strongBuyThreshold").value);
 
-    if(score >= strongBuyThreshold) {
+    let decision = "SKIP";
+    let color = "#ff3333";
+
+    if (score >= strongBuyThreshold) {
         decision = "🔥 STRONG BUY";
         color = "#00d084";
-    } else if(score >= 4) {
+    } else if (score >= 4) {
         decision = "⚡ SCALP";
         color = "#f5a623";
     }
 
-let alertClass = "low";
-if(score >= strongBuyThreshold) alertClass = "high";
-else if(score >= 4) alertClass = "medium";
+    let alertClass = score >= strongBuyThreshold ? "high" : score >= 4 ? "medium" : "low";
 
-document.getElementById("analyzerResult").innerHTML = `
+    resultEl.innerHTML = `
     <h3>${pair.baseToken.name} (${pair.baseToken.symbol})</h3>
 
     <div class="alert-box ${alertClass}">
         <div class="score-display">
-            <div class="score-title">SCORE</div>
+            <div>SCORE</div>
             <span class="score-value">${score}</span><span class="score-max">/7</span>
         </div>
         <div class="alert-details">
             <div class="strong-buy" style="color:${color}">
-                ${data && data.pairs && data.pairs.length > 0 ? decision : "❌ TOKEN NOT FOUND"}
+                ${data?.pairs?.length ? decision : "❌ TOKEN NOT FOUND"}
             </div>
             <div class="stats-row">
-                <div><span>MC:</span> $${Math.round(fdv)}</div> |
-                <div><span>LIQ:</span> $${Math.round(liquidity)}</div> |
-                <div><span>VOL:</span> $${Math.round(volume)}</div>
+                MC: $${Math.round(fdv)} | LIQ: $${Math.round(liquidity)} | VOL: $${Math.round(volume)}
             </div>
-            <div class="stats-row" style="margin-top:10px;">
-                <div><span>AGE:</span> ${age.toFixed(1)}m</div>
-            </div>
+            <div class="stats-row">AGE: ${age.toFixed(1)}m</div>
         </div>
     </div>
-`;
+    `;
 }
 
-setInterval(() => {
-    const addr = document.getElementById("tokenInput").value;
-    if(addr) analyze();
-}, 30000);
+// ====================== UI ======================
 
-        function switchTab(tabId) {
-    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-    document.querySelectorAll('.nav-tabs button').forEach(btn => btn.classList.remove('active'));
-    
+function switchTab(tabId, btn) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.nav-tabs button').forEach(b => b.classList.remove('active'));
+
     document.getElementById(tabId).classList.add('active');
-    event.target.classList.add('active');
+    if (btn) btn.classList.add('active');
 
-    // 🔥 ZAPIS DO LOCAL STORAGE
     localStorage.setItem("activeTab", tabId);
 }
 
-        const settingsSidebar = document.getElementById('settingsSidebar');
-        const settingsBtn = document.getElementById('settingsBtn');
-        const closeSettings = document.getElementById('closeSettings');
+function updateStats(totalTrades, totalProfit, wins) {
+    const capital = START_CAPITAL + totalProfit;
+    const successRate = totalTrades ? (wins / totalTrades) * 100 : 0;
 
-        settingsBtn.addEventListener('click', () => {
-            settingsSidebar.classList.add('open');
-        });
+    document.getElementById("capital").innerText = "$" + capital.toFixed(2);
+    document.querySelectorAll(".stat-card")[2]
+        .querySelector("h3").innerText = successRate.toFixed(1) + "%";
+}
 
-        closeSettings.addEventListener('click', () => {
-            settingsSidebar.classList.remove('open');
-        });
-        
-        // 🔥 Przy starcie strony ustaw ostatnią zakładkę
+// ====================== INIT ======================
+
 window.addEventListener("DOMContentLoaded", () => {
+    loadTrades();
+
     const savedTab = localStorage.getItem("activeTab");
-
     if (savedTab) {
-        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-        document.querySelectorAll('.nav-tabs button').forEach(btn => btn.classList.remove('active'));
-
         document.getElementById(savedTab).classList.add('active');
-
-        // znajdź odpowiedni przycisk i aktywuj
-        document.querySelectorAll('.nav-tabs button').forEach(btn => {
-            if (btn.getAttribute("onclick").includes(savedTab)) {
-                btn.classList.add('active');
-            }
-        });
     }
 });
 
-    </script>
+// auto refresh analyzer
+setInterval(() => {
+    const addr = document.getElementById("tokenInput").value;
+    if (addr) analyze();
+}, 30000);
+</script>
 </body>
 </html>
+
