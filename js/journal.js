@@ -128,7 +128,7 @@ async function addNewTrade() {
 
     if (error) {
         console.error("Błąd zapisu:", error);
-        alert("Błąd bazy danych!");
+        alert("Błąd bazy danych: " + error.message); // Dodaj to error.message
     } else {
         // Po sukcesie odśwież dane z bazy
         loadTradesFromSupabase();
