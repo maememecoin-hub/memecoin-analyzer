@@ -7,17 +7,13 @@ function formatMoney(num) {
     return '$' + num.toFixed(0);
 }
 
-// 1. FUNKCJA ZWIĘKSZAJĄCA LICZNIK SKANOWAŃ (OPCJA B)
+// 1. FUNKCJA ZWIĘKSZAJĄCA LICZNIK SKANOWAŃ
 async function incrementScanCount() {
     try {
-        // Pobierz obecną wartość z tabeli user_settings (id=1)
         const { data, error } = await db.from('user_settings').select('tokens_analyzed').eq('id', 1).single();
-        
         if (!error && data) {
             let newCount = data.tokens_analyzed + 1;
-            // Zaktualizuj w bazie
             await db.from('user_settings').update({ tokens_analyzed: newCount }).eq('id', 1);
-            // Odśwież na ekranie głównym
             const counterDisplay = document.getElementById('main-tokens-count');
             if(counterDisplay) counterDisplay.innerText = newCount;
         }
@@ -119,18 +115,25 @@ async function analyzeToken() {
     `;
 
     addToHistory(pair.baseToken.symbol, decision, colorClass, arrow);
-    
-    // WYWOŁANIE LICZNIKA SUPABASE
     incrementScanCount();
 }
 
-// 3. SYNCHRONIZACJA STATYSTYK NA STRONIE GŁÓWNEJ (OPCJA A)
+// 3. NAPRAWIONA SYNCHRONIZACJA (POBIERA STARTING CAPITAL Z BAZY)
 async function syncMainStats() {
-    // Pobierz dane z tabeli TRADES (PnL i WinRate)
+    // Pobierz ustawienia użytkownika (Kapitał startowy i licznik)
+    const { data: settings, error: setErr } = await db.from('user_settings').select('*').eq('id', 1).single();
+    
+    // Jeśli nie ma danych w bazie, przyjmij 1000 jako awaryjny backup
+    let startCap = settings ? parseFloat(settings.starting_capital) : 1000;
+
+    // Pobierz dane z tabeli TRADES (Zyski/Straty)
     const { data: trades, error: tradesErr } = await db.from('trades').select('pnl');
+    
     if (!tradesErr && trades) {
         let totalPnl = trades.reduce((sum, trade) => sum + parseFloat(trade.pnl), 0);
-        let currentCap = 1000 + totalPnl;
+        
+        // KLUCZOWA ZMIANA: currentCap liczone od wartości z bazy (startCap)
+        let currentCap = startCap + totalPnl;
         
         const capDisplay = document.getElementById('main-total-capital');
         if(capDisplay) capDisplay.innerText = `$${currentCap.toFixed(0)}`;
@@ -141,15 +144,13 @@ async function syncMainStats() {
         if(rateDisplay) rateDisplay.innerText = `${rate}%`;
     }
 
-    // Pobierz dane z tabeli SETTINGS (Licznik skanów)
-    const { data: settings } = await db.from('user_settings').select('tokens_analyzed').eq('id', 1).single();
     if (settings) {
         const counterDisplay = document.getElementById('main-tokens-count');
         if(counterDisplay) counterDisplay.innerText = settings.tokens_analyzed;
     }
 }
 
-// Reszta funkcji (History, Copy, Interval)
+// --- FUNKCJE POMOCNICZE ---
 function addToHistory(symbol, decision, colorClass, arrow) {
     if(tokenHistory.length > 0 && tokenHistory[0].symbol === symbol) return;
     tokenHistory.unshift({symbol, decision, colorClass, arrow});
@@ -183,5 +184,4 @@ setInterval(() => {
     if(input && input.value.trim()) analyzeToken();
 }, 30000);
 
-// Inicjalizacja statystyk przy starcie
 document.addEventListener("DOMContentLoaded", syncMainStats);
