@@ -1,6 +1,6 @@
 // --- LOGIKA DZIENNIKA I KAPITAŁU ---
 let startingCapital = 1000;
-let trades = []; // Tu wpadają zakończone pozycje { token: 'POPCAT', pnl: 150, date: '...' }
+let trades = []; // Tu wpadają zakończone pozycje z bazy
 
 const startingCapitalInput = document.getElementById('startingCapital');
 const currentCapitalDisplay = document.getElementById('currentCapital');
@@ -25,18 +25,17 @@ function updateJournalStats() {
     let won = 0;
     let lost = 0;
 
-    // Zliczamy PnL z każdej transakcji
+    // Zliczamy PnL z każdej transakcji pobranej z bazy
     trades.forEach(trade => {
         totalPnl += trade.pnl;
-        
         if (trade.pnl > 0) won++;
         else if (trade.pnl < 0) lost++;
     });
 
-    // Aktualny kapitał to Baza + Zysk/Strata
+    // Matematyka kapitału
     let currentCapital = startingCapital + totalPnl;
 
-    // --- Aktualizacja Wyglądu Statystyk ---
+    // --- Aktualizacja UI Statystyk ---
     currentCapitalDisplay.innerText = `$${currentCapital.toFixed(2)}`;
     
     if (totalPnl >= 0) {
@@ -67,7 +66,6 @@ function updateJournalStats() {
     if(winRateEl) winRateEl.innerText = `${winRate}%`;
     if(winLossEl) winLossEl.innerText = `${won}W / ${lost}L`;
 
-    // Renderuj listę HTML
     renderTradesList();
 }
 
@@ -75,7 +73,7 @@ function renderTradesList() {
     if(!journalList) return;
     
     if(trades.length === 0) {
-        journalList.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 20px;">Brak zapisanych transakcji.</div>`;
+        journalList.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 20px;">Brak zapisanych transakcji w bazie.</div>`;
         return;
     }
 
@@ -105,7 +103,7 @@ function renderTradesList() {
     }).join("");
 }
 
-// Funkcja dodająca pozycję (podpięta pod guzik ADD NEW TRADE)
+// Funkcja dodająca pozycję do bazy Supabase
 async function addNewTrade() {
     let tokenName = prompt("Podaj nazwę tokena (np. SHIBA):");
     if (!tokenName) return;
@@ -119,8 +117,8 @@ async function addNewTrade() {
     let date = new Date();
     let formattedDate = date.toLocaleDateString('pl-PL') + ' ' + date.toLocaleTimeString('pl-PL', {hour: '2-digit', minute:'2-digit'});
 
-    // WYŚLIJ DO SUPABASE
-    const { data, error } = await supabase
+    // WYŚLIJ DO SUPABASE (Używamy zmiennej 'db'!)
+    const { data, error } = await db
         .from('trades')
         .insert([
             { token_name: tokenName.toUpperCase(), pnl: pnl, formatted_date: formattedDate }
@@ -128,7 +126,7 @@ async function addNewTrade() {
 
     if (error) {
         console.error("Błąd zapisu:", error);
-        alert("Błąd bazy danych: " + error.message); // Dodaj to error.message
+        alert("Błąd bazy danych: " + error.message);
     } else {
         // Po sukcesie odśwież dane z bazy
         loadTradesFromSupabase();
@@ -137,28 +135,25 @@ async function addNewTrade() {
 
 // Funkcja do pobierania danych przy starcie strony
 async function loadTradesFromSupabase() {
-    const { data, error } = await supabase
+    // Używamy zmiennej 'db'!
+    const { data, error } = await db
         .from('trades')
         .select('*')
         .order('created_at', { ascending: false });
 
     if (!error && data) {
-        // Mapujemy dane z bazy na nasz format i odświeżamy UI
         trades = data.map(d => ({
             token: d.token_name,
             pnl: parseFloat(d.pnl),
             date: d.formatted_date
         }));
         updateJournalStats();
+    } else if (error) {
+        console.error("Błąd pobierania:", error);
     }
 }
 
-// Zamiast zwykłego updateJournalStats, odpalaj pobieranie przy starcie
+// Inicjalizacja przy ładowaniu
 document.addEventListener("DOMContentLoaded", () => {
     loadTradesFromSupabase();
-});
-
-// Odpalenie obliczeń przy starcie strony
-document.addEventListener("DOMContentLoaded", () => {
-    updateJournalStats();
 });
