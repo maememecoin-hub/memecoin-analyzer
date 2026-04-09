@@ -146,3 +146,22 @@ setInterval(() => {
     const input = document.getElementById("tokenInput");
     if(input && input.value.trim()) analyzeToken();
 }, 30000);
+
+// Funkcja synchronizująca kapitał na stronie głównej
+async function syncMainCapital() {
+    const { data, error } = await db.from('trades').select('pnl');
+    if (!error && data) {
+        let totalPnl = data.reduce((sum, trade) => sum + parseFloat(trade.pnl), 0);
+        // Zakładamy, że początkowy kapitał to 1000 (możesz to potem też brać z bazy)
+        let currentCap = 1000 + totalPnl;
+        
+        // Szukamy elementu kapitału na stronie głównej (czwarta karta statystyk)
+        const capDisplay = document.querySelector('.stat-card:nth-child(4) .stat-value');
+        if(capDisplay) {
+            capDisplay.innerText = `$${currentCap.toFixed(0)}`;
+        }
+    }
+}
+
+// Odpal synchronizację przy starcie
+document.addEventListener("DOMContentLoaded", syncMainCapital);
