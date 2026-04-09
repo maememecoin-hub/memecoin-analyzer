@@ -47,12 +47,16 @@ function updateJournalStats() {
     
     let totalClosed = won + lost;
     let winRate = totalClosed > 0 ? Math.round((won / totalClosed) * 100) : 0;
-    document.getElementById('winRate').innerText = `${winRate}%`;
-    document.getElementById('winLossCount').innerText = `${won}W / ${lost}L`;
+    
+    const winRateEl = document.getElementById('winRate');
+    const winLossEl = document.getElementById('winLossCount');
+    if(winRateEl) winRateEl.innerText = `${winRate}%`;
+    if(winLossEl) winLossEl.innerText = `${won}W / ${lost}L`;
 
     renderTradesList();
 }
 
+// RENDEROWANIE LISTY Z PRZYCISKIEM USUWANIA
 function renderTradesList() {
     if(!journalList) return;
     journalList.innerHTML = trades.map(trade => `
@@ -65,9 +69,28 @@ function renderTradesList() {
                 </div>
             </div>
             <div style="flex: 1; text-align: right; font-weight: bold; color: ${trade.pnl >= 0 ? 'var(--accent-green)' : 'var(--accent-red)'};">${trade.pnl >= 0 ? '+' : ''}$${trade.pnl}</div>
-            <div style="flex: 1; text-align: right;"><span class="badge">CLOSED</span></div>
+            
+            <div style="flex: 1; text-align: right; display: flex; justify-content: flex-end; align-items: center; gap: 15px;">
+                <span class="badge" style="background: rgba(255,255,255,0.05);">CLOSED</span>
+                <button onclick="deleteTrade('${trade.id}')" style="background: transparent; border: none; color: #ff3366; cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; opacity: 0.6; transition: 0.3s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">
+                    <i class="ph ph-trash"></i>
+                </button>
+            </div>
         </div>
     `).join("");
+}
+
+// FUNKCJA USUWANIA Z BAZY
+async function deleteTrade(id) {
+    if(!confirm("Czy na pewno chcesz usunąć tę pozycję?")) return;
+
+    const { error } = await db.from('trades').delete().eq('id', id);
+
+    if (error) {
+        alert("Błąd podczas usuwania: " + error.message);
+    } else {
+        loadTradesFromSupabase(); // Odśwież listę po usunięciu
+    }
 }
 
 async function addNewTrade() {
@@ -94,10 +117,15 @@ async function loadTradesFromSupabase() {
         if(startingCapitalInput) startingCapitalInput.value = startingCapital;
     }
 
-    // Pobierz Trady
+    // Pobierz Trady (dodano pobieranie pola 'id')
     const { data, error } = await db.from('trades').select('*').order('created_at', { ascending: false });
     if (!error && data) {
-        trades = data.map(d => ({ token: d.token_name, pnl: parseFloat(d.pnl), date: d.formatted_date }));
+        trades = data.map(d => ({ 
+            id: d.id, // Ważne do usuwania
+            token: d.token_name, 
+            pnl: parseFloat(d.pnl), 
+            date: d.formatted_date 
+        }));
         updateJournalStats();
     }
 }
