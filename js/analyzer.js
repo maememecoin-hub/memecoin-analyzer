@@ -1,4 +1,4 @@
-// --- LOGIKA ANALIZATORA I DEXSCREENERA ---
+// --- LOGIKA ANALIZATORA I SUPABASE ---
 let tokenHistory = [];
 
 function formatMoney(num) {
@@ -7,6 +7,18 @@ function formatMoney(num) {
     return '$' + num.toFixed(0);
 }
 
+// 1. Zwiększanie licznika skanowań w bazie (id=1)
+async function incrementScanCount() {
+    const { data, error } = await db.from('user_settings').select('tokens_analyzed').eq('id', 1).single();
+    if (!error && data) {
+        let newCount = data.tokens_analyzed + 1;
+        await db.from('user_settings').update({ tokens_analyzed: newCount }).eq('id', 1);
+        const counterEl = document.getElementById('main-tokens-count');
+        if(counterEl) counterEl.innerText = newCount;
+    }
+}
+
+// 2. Główna funkcja analizy
 async function analyzeToken() {
     const addressInput = document.getElementById("tokenInput");
     if(!addressInput) return;
@@ -19,7 +31,6 @@ async function analyzeToken() {
         return;
     }
 
-    // Animacja ładowania
     resultBox.style.display = "block";
     resultBox.innerHTML = `<div style="text-align: center; color: var(--accent-blue); padding: 20px;"><i class="ph ph-spinner ph-spin" style="font-size: 2rem;"></i><br>Scanning Blockchain...</div>`;
 
@@ -47,7 +58,6 @@ async function analyzeToken() {
         age = created ? (Date.now() - created) / 60000 : 0;
     }
 
-    // Logika punktacji
     const liq_mc = fdv ? liquidity / fdv : 0;
     const vol_liq = liquidity ? volume / liquidity : 0;
 
@@ -78,11 +88,9 @@ async function analyzeToken() {
         borderColor = "rgba(0, 210, 255, 0.4)";
     }
 
-    // Zmiana koloru obramowania karty wyniku
     resultBox.style.border = `1px solid ${borderColor}`;
     resultBox.style.boxShadow = `inset 0 0 20px ${borderColor.replace('0.4', '0.05')}, 0 0 20px ${borderColor.replace('0.4', '0.1')}`;
 
-    // Wstrzyknięcie wyniku do HTML
     resultBox.innerHTML = `
         <div class="result-header">
             <div class="token-name" id="copyTokenName">
@@ -102,16 +110,49 @@ async function analyzeToken() {
         </div>
     `;
 
-    // Dodaj do historii
     addToHistory(pair.baseToken.symbol, decision, colorClass, arrow);
+    
+    // Zwiększ licznik w bazie po udanej analizie
+    incrementScanCount();
 }
 
+// 3. Synchronizacja wszystkich statystyk (Kapitał, Licznik, Success Rate)
+async function syncMainStats() {
+    // Pobierz ustawienia (Starting Capital i Licznik)
+    const { data: settings, error: setErr } = await db.from('user_settings').select('*').eq('id', 1).single();
+    
+    let startCap = settings ? parseFloat(settings.starting_capital) : 1000;
+    
+    // Aktualizacja licznika skanów na ekranie
+    if(settings) {
+        const counterEl = document.getElementById('main-tokens-count');
+        if(counterEl) counterEl.innerText = settings.tokens_analyzed;
+    }
+
+    // Pobierz wszystkie trady, aby wyliczyć PnL i Win Rate
+    const { data: trades, error: tradesErr } = await db.from('trades').select('pnl');
+    
+    if (!tradesErr && trades) {
+        let totalPnl = trades.reduce((sum, trade) => sum + parseFloat(trade.pnl), 0);
+        let currentCap = startCap + totalPnl;
+        
+        // Wyświetl Kapitał
+        const capDisplay = document.getElementById('main-total-capital');
+        if(capDisplay) capDisplay.innerText = `$${currentCap.toFixed(2)}`;
+
+        // Wyświetl Success Rate
+        const won = trades.filter(t => parseFloat(t.pnl) > 0).length;
+        const rate = trades.length > 0 ? Math.round((won / trades.length) * 100) : 0;
+        const rateDisplay = document.getElementById('main-success-rate');
+        if(rateDisplay) rateDisplay.innerText = `${rate}%`;
+    }
+}
+
+// Reszta funkcji pomocniczych
 function addToHistory(symbol, decision, colorClass, arrow) {
     if(tokenHistory.length > 0 && tokenHistory[0].symbol === symbol) return;
-
     tokenHistory.unshift({symbol, decision, colorClass, arrow});
-    if(tokenHistory.length > 5) tokenHistory.pop(); // Pamiętaj 5 ostatnich
-
+    if(tokenHistory.length > 5) tokenHistory.pop();
     const historyList = document.getElementById("historyList");
     if(historyList) {
         historyList.innerHTML = tokenHistory.map(t => `
@@ -130,38 +171,16 @@ function copyResult() {
     const dec = document.getElementById("copyDecision")?.innerText.trim() || "";
     const score = document.getElementById("copyScore")?.innerText.trim() || "";
     const stats = document.getElementById("copyStats")?.innerText.trim().replace(/\s+\|\s+/g, ' | ') || "";
-    
-    if(!name) {
-        alert("Nothing to copy!");
-        return;
-    }
-
+    if(!name) { alert("Nothing to copy!"); return; }
     const textToCopy = `🎯 ${name}\n🚨 Signal: ${dec}\n📊 Score: ${score}/7\n💰 ${stats}`;
     navigator.clipboard.writeText(textToCopy);
-    alert("Wynik skopiowany do schowka!");
+    alert("Wynik skopiowany!");
 }
 
-// Auto odświeżanie co 30 sek
 setInterval(() => {
     const input = document.getElementById("tokenInput");
     if(input && input.value.trim()) analyzeToken();
 }, 30000);
 
-// Funkcja synchronizująca kapitał na stronie głównej
-async function syncMainCapital() {
-    const { data, error } = await db.from('trades').select('pnl');
-    if (!error && data) {
-        let totalPnl = data.reduce((sum, trade) => sum + parseFloat(trade.pnl), 0);
-        // Zakładamy, że początkowy kapitał to 1000 (możesz to potem też brać z bazy)
-        let currentCap = 1000 + totalPnl;
-        
-        // Szukamy elementu kapitału na stronie głównej (czwarta karta statystyk)
-        const capDisplay = document.querySelector('.stat-card:nth-child(4) .stat-value');
-        if(capDisplay) {
-            capDisplay.innerText = `$${currentCap.toFixed(0)}`;
-        }
-    }
-}
-
-// Odpal synchronizację przy starcie
-document.addEventListener("DOMContentLoaded", syncMainCapital);
+// Inicjalizacja przy starcie
+document.addEventListener("DOMContentLoaded", syncMainStats);
