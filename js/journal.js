@@ -106,28 +106,57 @@ function renderTradesList() {
 }
 
 // Funkcja dodająca pozycję (podpięta pod guzik ADD NEW TRADE)
-function addNewTrade() {
+async function addNewTrade() {
     let tokenName = prompt("Podaj nazwę tokena (np. SHIBA):");
     if (!tokenName) return;
     
-    let pnlInput = prompt("Ile $ zyskałeś lub straciłeś? (Wpisz np. 150 dla zysku, -50 dla straty):");
+    let pnlInput = prompt("Ile $ zyskałeś lub straciłeś? (Wpisz np. 150 lub -50):");
     if (pnlInput === null || pnlInput === "") return;
 
     let pnl = Number(pnlInput);
+    if (isNaN(pnl)) return alert("Błędna liczba!");
 
-    if (isNaN(pnl)) {
-        alert("Proszę wpisać poprawną liczbę dla zysku/straty!");
-        return;
-    }
-
-    // Pobierz aktualną datę i czas
     let date = new Date();
     let formattedDate = date.toLocaleDateString('pl-PL') + ' ' + date.toLocaleTimeString('pl-PL', {hour: '2-digit', minute:'2-digit'});
 
-    // Dodaj do pamięci i przelicz (unshift dodaje na samą górę listy)
-    trades.unshift({ token: tokenName.toUpperCase(), pnl: pnl, date: formattedDate });
-    updateJournalStats();
+    // WYŚLIJ DO SUPABASE
+    const { data, error } = await supabase
+        .from('trades')
+        .insert([
+            { token_name: tokenName.toUpperCase(), pnl: pnl, formatted_date: formattedDate }
+        ]);
+
+    if (error) {
+        console.error("Błąd zapisu:", error);
+        alert("Błąd bazy danych!");
+    } else {
+        // Po sukcesie odśwież dane z bazy
+        loadTradesFromSupabase();
+    }
 }
+
+// Funkcja do pobierania danych przy starcie strony
+async function loadTradesFromSupabase() {
+    const { data, error } = await supabase
+        .from('trades')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+    if (!error && data) {
+        // Mapujemy dane z bazy na nasz format i odświeżamy UI
+        trades = data.map(d => ({
+            token: d.token_name,
+            pnl: parseFloat(d.pnl),
+            date: d.formatted_date
+        }));
+        updateJournalStats();
+    }
+}
+
+// Zamiast zwykłego updateJournalStats, odpalaj pobieranie przy starcie
+document.addEventListener("DOMContentLoaded", () => {
+    loadTradesFromSupabase();
+});
 
 // Odpalenie obliczeń przy starcie strony
 document.addEventListener("DOMContentLoaded", () => {
