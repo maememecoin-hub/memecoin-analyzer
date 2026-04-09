@@ -27,13 +27,13 @@
         }
 
         body {
-    background: radial-gradient(circle at 50% 0%, #1a1025 0%, #050508 70%, #000000 100%);
-    color: var(--text-main);
-    min-height: 100vh;
-    overflow-x: hidden;
-    display: flex;
-    flex-direction: column;
-}
+            background: radial-gradient(circle at 50% 0%, #1a1025 0%, #050508 70%, #000000 100%);
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+        }
 
 
         /* Klasa pomocnicza dla efektu szkła */
@@ -189,11 +189,11 @@
 
         /* --- ANALIZATOR --- */
         .analyzer-box {
-    padding: 25px;
-    margin-bottom: 15px;
-    position: relative;
-    box-shadow: 0 0 20px rgba(245, 166, 35, 0.1); /* <--- TA LINIJKA ROBI POŚWIATĘ */
-}
+            padding: 25px;
+            margin-bottom: 15px;
+            position: relative;
+            box-shadow: 0 0 20px rgba(245, 166, 35, 0.1); 
+        }
 
         .analyzer-header { margin-bottom: 15px; }
         .analyzer-header h3 { color: var(--accent-orange); font-size: 1rem; margin-bottom: 5px; }
@@ -204,7 +204,7 @@
             gap: 15px;
             align-items: center;
         }
-        .input-group input[type="text"] {
+        .input-group input[type="text"], .input-group input[type="number"] {
             flex: 1;
             background: rgba(0, 0, 0, 0.3);
             border: 1px solid var(--glass-border);
@@ -213,7 +213,7 @@
             color: white;
             font-family: monospace;
         }
-        .input-group input[type="text"]:focus {
+        .input-group input[type="text"]:focus, .input-group input[type="number"]:focus {
             outline: none;
             border-color: var(--accent-purple);
         }
@@ -310,8 +310,6 @@
         /* =========================================
            RESPONSYWNOŚĆ (TELEFONY I TABLETY)
            ========================================= */
-
-        /* Tablety i mniejsze ekrany */
         @media (max-width: 900px) {
             .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
@@ -321,7 +319,6 @@
             }
         }
 
-        /* Telefony poziomo / małe tablety */
         @media (max-width: 768px) {
             header {
                 flex-direction: column;
@@ -340,7 +337,7 @@
             }
 
             .hero h1 {
-                font-size: 2.5rem; /* Zmniejszony tytuł */
+                font-size: 2.5rem; 
             }
 
             .input-group {
@@ -348,7 +345,7 @@
                 align-items: stretch;
             }
 
-            .input-group input[type="text"] {
+            .input-group input[type="text"], .input-group input[type="number"] {
                 width: 100%;
             }
 
@@ -358,15 +355,14 @@
             }
 
             .settings-sidebar {
-                width: 100%; /* Panel boczny zajmuje cały ekran na tel */
+                width: 100%; 
                 right: -100%;
             }
         }
 
-        /* Małe telefony (pionowo) */
         @media (max-width: 480px) {
             .stats-grid {
-                grid-template-columns: 1fr; /* Jedna kolumna ze statystykami */
+                grid-template-columns: 1fr; 
             }
             
             .hero h1 {
@@ -390,54 +386,54 @@
         }
         
         .alert-box {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: #111;
-    border: 1px solid rgba(255,255,255,0.1);
-    padding: 20px;
-    border-radius: 10px;
-    margin-top: 15px;
-}
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #111;
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
 
-.alert-box.high { background: rgba(0, 208, 132, 0.1); }
-.alert-box.medium { background: rgba(245, 166, 35, 0.1); }
-.alert-box.low { background: rgba(255, 51, 51, 0.1); }
+        .alert-box.high { background: rgba(0, 208, 132, 0.1); }
+        .alert-box.medium { background: rgba(245, 166, 35, 0.1); }
+        .alert-box.low { background: rgba(255, 51, 51, 0.1); }
 
-.score-display {
-    text-align: center;
-    border-right: 1px solid rgba(255,255,255,0.1);
-    padding-right: 20px;
-}
+        .score-display {
+            text-align: center;
+            border-right: 1px solid rgba(255,255,255,0.1);
+            padding-right: 20px;
+        }
 
-.score-value {
-    font-size: 2.5rem;
-    font-weight: 800;
-}
+        .score-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+        }
 
-.score-max {
-    font-size: 1.2rem;
-    color: var(--text-muted);
-}
+        .score-max {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+        }
 
-.alert-details {
-    flex: 1;
-    padding-left: 20px;
-    text-align: center;
-}
+        .alert-details {
+            flex: 1;
+            padding-left: 20px;
+            text-align: center;
+        }
 
-.strong-buy {
-    font-size: 1.5rem;
-    font-weight: 700;
-    margin-bottom: 10px;
-}
+        .strong-buy {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
 
-.stats-row {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    font-size: 0.9rem;
-}
+        .stats-row {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            font-size: 0.9rem;
+        }
 
     </style>
 </head>
@@ -448,10 +444,10 @@
             <i class="fa-solid fa-crosshairs"></i> MEMECOIN SNIPER
         </div>
         <nav class="nav-tabs">
-            <button class="active" onclick="switchTab('analyzer')">ANALYZER</button>
+            <button class="active" onclick="switchTab('analyzer', this)">ANALYZER</button>
             <button onclick="switchTab('watchlist', this)">DZIENNIK</button>
-            <button onclick="switchTab('leaderboard')">LEADERBOARD</button>
-            <button onclick="switchTab('docs')">DOCS</button>
+            <button onclick="switchTab('leaderboard', this)">LEADERBOARD</button>
+            <button onclick="switchTab('docs', this)">DOCS</button>
         </nav>
         <div class="nav-icons">
             <i class="fa-brands fa-github"></i>
@@ -507,41 +503,71 @@
             </section>
 
             <button class="btn-copy glass" onclick="copyResult()">
-    <i class="fa-regular fa-copy"></i> COPY RESULT
-</button>
+                <i class="fa-regular fa-copy"></i> COPY RESULT
+            </button>
 
-<div id="analyzerResult" class="glass" style="padding:20px; margin-bottom:20px;"></div>
+            <div id="analyzerResult" class="glass" style="padding:20px; margin-bottom:20px; display: none;"></div>
 
-<section class="bottom-grid">
-    <div class="list-panel glass">
-        <div class="list-header">
-            <span>LAST TOKENS</span>
-        </div>
+            <section class="bottom-grid">
+                <div class="list-panel glass">
+                    <div class="list-header">
+                        <span>LAST TOKENS</span>
+                    </div>
 
-        <div id="historyList"></div>
-    </div>
-</section>
+                    <div id="historyList"></div>
+                </div>
+                
+                 <div class="list-panel glass">
+                    <div class="list-header">
+                        <span style="color: var(--accent-green);">• LIVE FEED</span>
+                        <span class="badge-live">LIVE</span>
+                    </div>
+                    <div class="list-item">
+                        <div class="item-left">
+                            <i class="fa-solid fa-wallet" style="color: #70a1ff; font-size: 1.2rem;"></i>
+                            <div class="item-name"><h4>Whale bought $PEPE 2.0</h4><p>2s ago</p></div>
+                        </div>
+                        <div class="item-right" style="color: var(--accent-green);">+12.4 SOL</div>
+                    </div>
+                    <div class="list-item">
+                        <div class="item-left">
+                            <i class="fa-solid fa-water" style="color: #eccc68; font-size: 1.2rem;"></i>
+                            <div class="item-name"><h4>New pool created: $DOGE AI</h4><p>5s ago</p></div>
+                        </div>
+                        <div class="item-right">Raydium</div>
+                    </div>
+                    <div class="list-item">
+                        <div class="item-left">
+                            <i class="fa-solid fa-crosshairs" style="color: var(--accent-orange); font-size: 1.2rem;"></i>
+                            <div class="item-name"><h4>Sniper user earned 3.2x</h4><p>18s ago</p></div>
+                        </div>
+                        <div class="item-right" style="color: var(--accent-green);">$1,240</div>
+                    </div>
+                </div>
+            </section>
         </div>
 
         <div id="watchlist" class="tab-content">
 
-    <div class="list-panel glass" style="margin-bottom:20px;">
-        <h2>Dziennik Tradingowy</h2>
+            <div class="list-panel glass" style="margin-bottom:20px;">
+                <h2>Dziennik Tradingowy</h2>
 
-        <div style="display:flex; gap:10px; margin-top:15px; flex-wrap:wrap;">
-            <input id="tokenName" placeholder="Token" />
-            <input id="entry" type="number" placeholder="Entry $" />
-            <input id="exit" type="number" placeholder="Exit $" />
-            <button class="btn-primary" onclick="addTrade()">Dodaj</button>
+                <div class="input-group" style="margin-top:15px;">
+                    <input id="tokenName" type="text" placeholder="Token" />
+                    <input id="entry" type="number" placeholder="Entry $" />
+                    <input id="exit" type="number" placeholder="Exit $" />
+                    <button class="btn-primary" onclick="addTrade()">Dodaj</button>
+                </div>
+            </div>
+
+            <div class="list-panel glass">
+                <div class="list-header">
+                    <span>Twoje trady</span>
+                </div>
+                <div id="tradesList"></div>
+            </div>
+
         </div>
-    </div>
-
-    <div class="list-panel glass">
-        <h3>Twoje trady</h3>
-        <div id="tradesList"></div>
-    </div>
-
-</div>
         
         <div id="leaderboard" class="tab-content glass">
             <div class="empty-state">
@@ -575,257 +601,300 @@
         </div>
     </aside>
     
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
     
-<script>
-const SUPABASE_URL = "sb_publishable_PxtU4UQIu7kd7R6LjkwhZw_SAYvIJnU";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1kYXVidmRnZ2Zhb3Rqb2JmbXhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU3MjU5ODYsImV4cCI6MjA5MTMwMTk4Nn0.A5FaBNCeC5IXEM1bLP04n4GjKm4Wl1hgPCBWLwXp-oU";
+    <script>
+        const SUPABASE_URL = "sb_publishable_PxtU4UQIu7kd7R6LjkwhZw_SAYvIJnU";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1kYXVidmRnZ2Zhb3Rqb2JmbXhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU3MjU5ODYsImV4cCI6MjA5MTMwMTk4Nn0.A5FaBNCeC5IXEM1bLP04n4GjKm4Wl1hgPCBWLwXp-oU";
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-let history = [];
-const START_CAPITAL = 1000;
+        async function addTrade() {
+            const token = document.getElementById("tokenName").value;
+            const entry = parseFloat(document.getElementById("entry").value);
+            const exit = parseFloat(document.getElementById("exit").value);
 
-// ====================== TRADES ======================
+            if (!token || !entry || !exit) return alert("Uzupełnij dane");
 
-async function addTrade() {
-    const token = document.getElementById("tokenName").value;
-    const entry = parseFloat(document.getElementById("entry").value);
-    const exit = parseFloat(document.getElementById("exit").value);
+            const profit = exit - entry;
 
-    if (!token || isNaN(entry) || isNaN(exit)) {
-        alert("Uzupełnij dane");
-        return;
-    }
+            await supabase.from("trades").insert([
+                { token, entry, exit, profit }
+            ]);
+            
+            // Wyczyść pola po dodaniu
+            document.getElementById("tokenName").value = '';
+            document.getElementById("entry").value = '';
+            document.getElementById("exit").value = '';
+            
+            loadTrades();
+        }
 
-    const profit = exit - entry;
+        let history = [];
 
-    const { error } = await supabase.from("trades").insert([
-        { token, entry, exit, profit }
-    ]);
+        async function deleteTrade(id) {
+            const confirmDelete = confirm("Usunąć trade?");
+            if (!confirmDelete) return;
 
-    if (error) {
-        console.error(error);
-        alert("Błąd zapisu");
-        return;
-    }
+            const { error } = await supabase
+                .from("trades")
+                .delete()
+                .eq("id", id);
 
-    loadTrades();
-}
+            if (error) {
+                console.error(error);
+                alert("Błąd usuwania");
+                return;
+            }
 
-async function deleteTrade(id) {
-    if (!confirm("Usunąć trade?")) return;
+            loadTrades();
+        }
 
-    const { error } = await supabase
-        .from("trades")
-        .delete()
-        .eq("id", id);
+        function addToHistory(pairData) {
+            const tokenObj = {
+                symbol: pairData.baseToken.symbol,
+                score: pairData.score || 0
+            };
 
-    if (error) {
-        console.error(error);
-        alert("Błąd usuwania");
-        return;
-    }
+            if(history[0] && history[0].symbol === tokenObj.symbol) return;
 
-    loadTrades();
-}
+            history.unshift(tokenObj);
+            if(history.length > 5) history.pop();
 
-async function loadTrades() {
-    const { data, error } = await supabase
-        .from("trades")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-    if (error) {
-        console.error(error);
-        return;
-    }
-
-    let totalProfit = 0;
-    let wins = 0;
-
-    document.getElementById("tradesList").innerHTML = data.map(t => {
-        totalProfit += t.profit;
-        if (t.profit > 0) wins++;
-
-        return `
-        <div class="list-item">
-            <div class="item-left">
-                <div class="item-name">
-                    <h4>${t.token}</h4>
-                    <p>Entry: $${t.entry} → Exit: $${t.exit}</p>
+            document.getElementById("historyList").innerHTML =
+                history.map(t => `
+                <div class="list-item">
+                    <div class="item-left">
+                        <div class="item-icon"></div>
+                        <div class="item-name">
+                            <h4>${t.symbol}</h4>
+                            <p>Score: ${t.score}</p>
+                        </div>
+                    </div>
+                    <span class="badge-buy">${t.score >= 6 ? "STRONG BUY" : "CHECK"}</span>
                 </div>
-            </div>
+                `).join("");
+        }
 
-            <div class="item-right">
-                $${t.profit.toFixed(2)}
-                <br>
-                <button onclick="deleteTrade('${t.id}')" style="
-                    margin-top:5px;
-                    background:#ff3333;
-                    border:none;
-                    padding:5px 10px;
-                    border-radius:6px;
-                    color:white;
-                    cursor:pointer;
-                    font-size:0.7rem;
-                ">
-                    DELETE
-                </button>
-            </div>
-        </div>
-        `;
-    }).join("");
+        function copyResult() {
+            const el = document.getElementById("analyzerResult");
+            if (el.style.display === 'none' || el.innerText.trim() === '') {
+                alert("Najpierw wykonaj analizę tokena!");
+                return;
+            }
+            navigator.clipboard.writeText(el.innerText);
+            alert("Skopiowano wynik!");
+        }
 
-    updateStats(data.length, totalProfit, wins);
-}
+        async function analyze() {
+            const resultBox = document.getElementById("analyzerResult");
+            resultBox.style.display = "block";
+            resultBox.innerHTML = "Wczytywanie z API...";
 
-// ====================== ANALYZER ======================
+            const address = document.getElementById("tokenInput").value;
+            if (!address) {
+                resultBox.style.display = "none";
+                return alert("Wklej adres!");
+            }
 
-function addToHistory(pairData) {
-    const tokenObj = {
-        symbol: pairData.baseToken.symbol,
-        score: pairData.score || 0
-    };
+            let data;
+            try {
+                const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${address}`);
+                data = await res.json();
+            } catch (err) {
+                data = null;
+            }
 
-    if (history[0] && history[0].symbol === tokenObj.symbol) return;
+            let pair, fdv, liquidity, volume, change1m, created, age;
 
-    history.unshift(tokenObj);
-    if (history.length > 5) history.pop();
+            if (!data || !data.pairs || data.pairs.length === 0) {
+                pair = { baseToken: { name: "UNKNOWN", symbol: address.toUpperCase() } };
+                fdv = liquidity = volume = change1m = created = 0;
+                age = 0;
+            } else {
+                pair = data.pairs[0];
+                fdv = pair.fdv || 0;
+                liquidity = pair.liquidity?.usd || 0;
+                volume = pair.volume?.h24 || 0;
+                change1m = pair.priceChange?.m1 || 0;
+                created = pair.pairCreatedAt || 0;
+                age = created ? (Date.now() - created) / 60000 : 0;
+            }
 
-    document.getElementById("historyList").innerHTML =
-        history.map(t => `
-        <div class="list-item">
-            <div class="item-left">
-                <div class="item-icon"></div>
-                <div class="item-name">
-                    <h4>${t.symbol}</h4>
-                    <p>Score: ${t.score}</p>
+            const liq_mc = fdv ? liquidity / fdv : 0;
+            const vol_liq = liquidity ? volume / liquidity : 0;
+
+            let score = 0;
+            if (liq_mc > 0.02) score += 2;
+            if (vol_liq < 5) score += 2;
+            if (change1m > 0.5) score += 1;
+            if (volume > 1000) score += 1;
+            if (age < 60) score += 1;
+
+            addToHistory({ baseToken: pair.baseToken, score });
+
+            let decision = "SKIP";
+            let color = "#ff3333";
+            const strongBuyThreshold = Number(document.getElementById("strongBuyThreshold").value);
+
+            if(score >= strongBuyThreshold) {
+                decision = "🔥 STRONG BUY";
+                color = "#00d084";
+            } else if(score >= 4) {
+                decision = "⚡ SCALP";
+                color = "#f5a623";
+            }
+
+            let alertClass = "low";
+            if(score >= strongBuyThreshold) alertClass = "high";
+            else if(score >= 4) alertClass = "medium";
+
+            resultBox.innerHTML = `
+                <h3>${pair.baseToken.name} (${pair.baseToken.symbol})</h3>
+
+                <div class="alert-box ${alertClass}">
+                    <div class="score-display">
+                        <div class="score-title">SCORE</div>
+                        <span class="score-value">${score}</span><span class="score-max">/7</span>
+                    </div>
+                    <div class="alert-details">
+                        <div class="strong-buy" style="color:${color}">
+                            ${data && data.pairs && data.pairs.length > 0 ? decision : "❌ TOKEN NOT FOUND"}
+                        </div>
+                        <div class="stats-row">
+                            <div><span>MC:</span> $${Math.round(fdv).toLocaleString()}</div> |
+                            <div><span>LIQ:</span> $${Math.round(liquidity).toLocaleString()}</div> |
+                            <div><span>VOL:</span> $${Math.round(volume).toLocaleString()}</div>
+                        </div>
+                        <div class="stats-row" style="margin-top:10px;">
+                            <div><span>AGE:</span> ${age.toFixed(1)}m</div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <span class="badge-buy">${t.score >= 6 ? "STRONG BUY" : "CHECK"}</span>
-        </div>
-        `).join("");
-}
+            `;
+        }
 
-async function analyze() {
-    const resultEl = document.getElementById("analyzerResult");
-    resultEl.innerHTML = "Loading...";
+        setInterval(() => {
+            const addr = document.getElementById("tokenInput").value;
+            if(addr) analyze();
+        }, 30000);
 
-    const address = document.getElementById("tokenInput").value;
-    if (!address) return alert("Wklej adres!");
+        function switchTab(tabId, el) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.nav-tabs button').forEach(btn => btn.classList.remove('active'));
+            
+            document.getElementById(tabId).classList.add('active');
+            if (el) el.classList.add('active');
 
-    let data;
+            localStorage.setItem("activeTab", tabId);
+        }
 
-    try {
-        const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${address}`);
-        data = await res.json();
-    } catch {
-        data = null;
-    }
+        const settingsSidebar = document.getElementById('settingsSidebar');
+        const settingsBtn = document.getElementById('settingsBtn');
+        const closeSettings = document.getElementById('closeSettings');
 
-    let pair = data?.pairs?.[0] || {
-        baseToken: { name: "UNKNOWN", symbol: address.toUpperCase() }
-    };
+        settingsBtn.addEventListener('click', () => {
+            settingsSidebar.classList.add('open');
+        });
 
-    let fdv = pair.fdv || 0;
-    let liquidity = pair.liquidity?.usd || 0;
-    let volume = pair.volume?.h24 || 0;
-    let change1m = pair.priceChange?.m1 || 0;
-    let created = pair.pairCreatedAt || 0;
-    let age = created ? (Date.now() - created) / 60000 : 0;
+        closeSettings.addEventListener('click', () => {
+            settingsSidebar.classList.remove('open');
+        });
+        
+        // 🔥 Przy starcie strony ustaw ostatnią zakładkę
+        window.addEventListener("DOMContentLoaded", () => {
+            loadTrades();
 
-    const liq_mc = fdv ? liquidity / fdv : 0;
-    const vol_liq = liquidity ? volume / liquidity : 0;
+            const savedTab = localStorage.getItem("activeTab");
 
-    let score = 0;
-    if (liq_mc > 0.02) score += 2;
-    if (vol_liq < 5) score += 2;
-    if (change1m > 0.5) score += 1;
-    if (volume > 1000) score += 1;
-    if (age < 60) score += 1;
+            if (savedTab) {
+                document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+                document.querySelectorAll('.nav-tabs button').forEach(btn => btn.classList.remove('active'));
 
-    addToHistory({ baseToken: pair.baseToken, score });
+                const targetTab = document.getElementById(savedTab);
+                if(targetTab) targetTab.classList.add('active');
 
-    const strongBuyThreshold = Number(document.getElementById("strongBuyThreshold").value);
+                document.querySelectorAll('.nav-tabs button').forEach(btn => {
+                    if (btn.getAttribute("onclick").includes(savedTab)) {
+                        btn.classList.add('active');
+                    }
+                });
+            }
+        });
 
-    let decision = "SKIP";
-    let color = "#ff3333";
+        async function loadTrades() {
+            const { data, error } = await supabase
+                .from("trades")
+                .select("*")
+                .order("created_at", { ascending: false });
 
-    if (score >= strongBuyThreshold) {
-        decision = "🔥 STRONG BUY";
-        color = "#00d084";
-    } else if (score >= 4) {
-        decision = "⚡ SCALP";
-        color = "#f5a623";
-    }
+            if (error) {
+                console.error("Supabase error:", error);
+                document.getElementById("tradesList").innerHTML = `<p style="color:red; text-align:center;">Błąd ładowania danych. Sprawdź konsolę.</p>`;
+                return;
+            }
+            
+            if (!data || data.length === 0) {
+                 document.getElementById("tradesList").innerHTML = `<div style="text-align: center; color: var(--text-muted); font-size: 0.8rem; padding: 20px;">Brak wpisów w dzienniku</div>`;
+                 updateStats(0, 0, 0);
+                 return;
+            }
 
-    let alertClass = score >= strongBuyThreshold ? "high" : score >= 4 ? "medium" : "low";
+            let totalProfit = 0;
+            let wins = 0;
 
-    resultEl.innerHTML = `
-    <h3>${pair.baseToken.name} (${pair.baseToken.symbol})</h3>
+            document.getElementById("tradesList").innerHTML = data.map(t => {
+                totalProfit += t.profit;
+                if (t.profit > 0) wins++;
 
-    <div class="alert-box ${alertClass}">
-        <div class="score-display">
-            <div>SCORE</div>
-            <span class="score-value">${score}</span><span class="score-max">/7</span>
-        </div>
-        <div class="alert-details">
-            <div class="strong-buy" style="color:${color}">
-                ${data?.pairs?.length ? decision : "❌ TOKEN NOT FOUND"}
-            </div>
-            <div class="stats-row">
-                MC: $${Math.round(fdv)} | LIQ: $${Math.round(liquidity)} | VOL: $${Math.round(volume)}
-            </div>
-            <div class="stats-row">AGE: ${age.toFixed(1)}m</div>
-        </div>
-    </div>
-    `;
-}
+               return `
+                <div class="list-item">
+                    <div class="item-left">
+                        <div class="item-icon" style="background: ${t.profit >= 0 ? 'rgba(0, 208, 132, 0.2)' : 'rgba(255, 51, 51, 0.2)'}; color: ${t.profit >= 0 ? 'var(--accent-green)' : '#ff3333'}; display:flex; align-items:center; justify-content:center;">
+                            <i class="fa-solid ${t.profit >= 0 ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down'}"></i>
+                        </div>
+                        <div class="item-name">
+                            <h4>${t.token}</h4>
+                            <p>Entry: $${t.entry} → Exit: $${t.exit}</p>
+                        </div>
+                    </div>
 
-// ====================== UI ======================
+                    <div class="item-right">
+                        <span style="font-weight: bold; color: ${t.profit >= 0 ? 'var(--accent-green)' : '#ff3333'}">$${t.profit.toFixed(2)}</span>
+                        <br>
+                        <button onclick="deleteTrade('${t.id}')" style="
+                            margin-top:5px;
+                            background:rgba(255, 51, 51, 0.2);
+                            border: 1px solid rgba(255, 51, 51, 0.5);
+                            padding:4px 8px;
+                            border-radius:4px;
+                            color:#ff3333;
+                            cursor:pointer;
+                            font-size:0.6rem;
+                            transition: 0.3s;
+                        " onmouseover="this.style.background='#ff3333'; this.style.color='white';" onmouseout="this.style.background='rgba(255, 51, 51, 0.2)'; this.style.color='#ff3333';">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                `;
+            }).join("");
 
-function switchTab(tabId, btn = null) {
-    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.nav-tabs button').forEach(b => b.classList.remove('active'));
+            updateStats(data.length, totalProfit, wins);
+        }
 
-    document.getElementById(tabId).classList.add('active');
+        const START_CAPITAL = 1000; 
 
-    if (btn) {
-        btn.classList.add('active');
-    } else {
-        document.querySelector(`.nav-tabs button[onclick*="${tabId}"]`)?.classList.add('active');
-    }
+        function updateStats(totalTrades, totalProfit, wins) {
+            const capital = START_CAPITAL + totalProfit;
+            const successRate = totalTrades ? (wins / totalTrades) * 100 : 0;
 
-    localStorage.setItem("activeTab", tabId);
-}
+            document.getElementById("capital").innerText = "$" + capital.toFixed(2);
 
-function updateStats(totalTrades, totalProfit, wins) {
-    const capital = START_CAPITAL + totalProfit;
-    const successRate = totalTrades ? (wins / totalTrades) * 100 : 0;
+            document.querySelectorAll(".stat-card")[2]
+                .querySelector("h3").innerText = successRate.toFixed(1) + "%";
+        }
 
-    document.getElementById("capital").innerText = "$" + capital.toFixed(2);
-    document.querySelectorAll(".stat-card")[2]
-        .querySelector("h3").innerText = successRate.toFixed(1) + "%";
-}
-
-// ====================== INIT ======================
-
-window.addEventListener("DOMContentLoaded", () => {
-    loadTrades();
-
-    const savedTab = localStorage.getItem("activeTab");
-    if (savedTab) {
-        switchTab(savedTab);
-    }
-});
-
-// auto refresh analyzer
-setInterval(() => {
-    const addr = document.getElementById("tokenInput").value;
-    if (addr) analyze();
-}, 30000);
-</script>
+    </script>
 </body>
 </html>
-
