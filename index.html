@@ -35,10 +35,12 @@
             overflow-x: hidden;
         }
 
+        /* NAWIGACJA */
         .navbar {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
             padding: 15px 40px;
             border-bottom: 1px solid var(--border-color);
             background: rgba(6, 9, 19, 0.8);
@@ -61,7 +63,7 @@
         .nav-links {
             list-style: none;
             display: flex;
-            gap: 20px;
+            gap: 10px;
             background: rgba(255, 255, 255, 0.03);
             padding: 5px;
             border-radius: 8px;
@@ -76,6 +78,7 @@
             font-size: 0.85rem;
             font-weight: 600;
             transition: all 0.3s ease;
+            white-space: nowrap;
         }
 
         .nav-links a.active, .nav-links a:hover {
@@ -99,6 +102,7 @@
             color: var(--text-main);
         }
 
+        /* GŁÓWNA ZAWARTOŚĆ */
         .main-content {
             max-width: 1000px;
             margin: 40px auto;
@@ -118,6 +122,7 @@
             transform: translateY(0);
         }
 
+        /* HERO */
         .hero {
             text-align: center;
             margin-bottom: 40px;
@@ -143,6 +148,13 @@
             -webkit-text-fill-color: transparent;
         }
 
+        .description {
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+        }
+
+        /* KARTY STATYSTYK */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -179,6 +191,7 @@
         .stat-value { font-size: 1.5rem; font-weight: bold; }
         .stat-sub { font-size: 0.7rem; color: var(--text-muted); }
 
+        /* PANELE */
         .panel {
             background: var(--bg-panel);
             border: 1px solid var(--border-color);
@@ -225,12 +238,14 @@
             cursor: pointer;
             font-weight: bold;
             transition: all 0.3s;
+            white-space: nowrap;
         }
 
         .btn-primary:hover {
             box-shadow: 0 0 15px rgba(0, 210, 255, 0.4);
         }
 
+        /* WYNIK GŁÓWNY */
         .glow-border {
             border: 1px solid rgba(0, 210, 255, 0.4);
             box-shadow: inset 0 0 20px rgba(0, 210, 255, 0.05), 0 0 20px rgba(0, 210, 255, 0.1);
@@ -272,11 +287,25 @@
         .token-stats { text-align: right; color: var(--text-muted); font-size: 0.85rem;}
         .token-meta { margin-top: 10px; }
 
+        /* LISTA OSTATNICH TOKENÓW */
+        .token-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .token-list-item:last-child { border-bottom: none; padding-bottom: 0; }
+        .token-list-info { display: flex; align-items: center; gap: 10px; font-weight: bold; }
+        .token-list-info i { font-size: 1.2rem; }
+
+        /* USTAWIENIA */
         .settings-panel {
             position: fixed;
             top: 0;
             right: -350px;
             width: 350px;
+            max-width: 100vw;
             height: 100vh;
             background: #0b0e17;
             border-left: 1px solid var(--border-color);
@@ -313,16 +342,44 @@
             opacity: 0;
             transition: opacity 0.3s ease;
         }
-
         .overlay.active { display: block; opacity: 1; }
 
+        /* --- RESPONSIVE / TELEFONY --- */
         @media (max-width: 768px) {
-            .navbar { padding: 15px 20px; }
-            .stats-grid { grid-template-columns: 1fr 1fr; }
-            .result-body { flex-direction: column; align-items: flex-start; gap: 20px; }
+            .navbar {
+                padding: 15px;
+            }
+            .logo {
+                flex: 1; /* Pcha ikony na prawo */
+            }
+            .nav-links {
+                order: 3; /* Zrzuca menu na sam dół navigacji */
+                width: 100%;
+                justify-content: center;
+                margin-top: 15px;
+                flex-wrap: wrap; /* Pozwala zakładkom przechodzić do nowej linii jeśli braknie miejsca */
+            }
+            .nav-links a {
+                padding: 8px 12px;
+                font-size: 0.8rem;
+            }
+            
+            .title { font-size: 2.2rem; }
+            .stats-grid { grid-template-columns: 1fr 1fr; } /* Dwie kolumny na telefonie */
+            
+            .input-group {
+                flex-direction: column;
+            }
+            .btn-primary {
+                width: 100%;
+            }
+
+            .result-body { flex-direction: column; align-items: flex-start; gap: 15px; }
             .token-stats { text-align: left; }
-            .nav-links { display: none; }
-            .title { font-size: 2.5rem; }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid { grid-template-columns: 1fr; } /* Jedna kolumna na bardzo małych ekranach */
         }
     </style>
 </head>
@@ -333,16 +390,16 @@
             <i class="ph ph-target"></i>
             <span>MEMECOIN SNIPER</span>
         </div>
-        <ul class="nav-links">
-            <li><a href="#" class="active" data-target="analyzer">ANALYZER</a></li>
-            <li><a href="#" data-target="dziennik">DZIENNIK</a></li>
-            <li><a href="#" data-target="leaderboard">LEADERBOARD</a></li>
-        </ul>
         <div class="nav-icons">
             <i class="ph ph-github-logo"></i>
             <i class="ph ph-twitter-logo"></i>
             <i class="ph ph-gear" id="settings-btn" title="Ustawienia"></i>
         </div>
+        <ul class="nav-links">
+            <li><a href="#" class="active" data-target="analyzer">ANALYZER</a></li>
+            <li><a href="#" data-target="dziennik">DZIENNIK</a></li>
+            <li><a href="#" data-target="leaderboard">LEADERBOARD</a></li>
+        </ul>
     </nav>
 
     <aside id="settings-panel" class="settings-panel">
@@ -428,6 +485,34 @@
                     </div>
                 </div>
             </div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <i class="ph ph-list-dashes"></i> LAST TOKENS
+                </div>
+                
+                <div class="token-list-item">
+                    <div class="token-list-info">
+                        <i class="ph ph-eye" style="color: #00d2ff;"></i> SAFEMOON <span class="ticker">(SAF)</span>
+                    </div>
+                    <div class="badge green">STRONG BUY ↗</div>
+                </div>
+                
+                <div class="token-list-item">
+                    <div class="token-list-info">
+                        <i class="ph ph-cat" style="color: #ff9900;"></i> FLOKI <span class="ticker">(FLOKI)</span>
+                    </div>
+                    <div class="badge green">STRONG BUY ↗</div>
+                </div>
+                
+                <div class="token-list-item">
+                    <div class="token-list-info">
+                        <i class="ph ph-cloud" style="color: #b800ff;"></i> DOBO <span class="ticker">(DOBO)</span>
+                    </div>
+                    <div class="badge green">STRONG BUY ↗</div>
+                </div>
+            </div>
+
         </section>
 
         <section id="dziennik" class="tab-content">
@@ -445,7 +530,7 @@
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             
-            // Obsługa zakładek
+            // Obsługa zakładek (Tabs)
             const navLinks = document.querySelectorAll('.nav-links a');
             const tabContents = document.querySelectorAll('.tab-content');
 
