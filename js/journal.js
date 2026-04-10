@@ -1,6 +1,6 @@
 // --- LOGIKA DZIENNIKA (journal.js) ---
-var startingCapital = 1000;
-var trades = [];
+let startingCapital = 1000;
+let trades = [];
 
 const startingCapitalInput = document.getElementById('startingCapital');
 const currentCapitalDisplay = document.getElementById('currentCapital');
@@ -12,16 +12,21 @@ const journalList = document.getElementById('journalList');
 if(startingCapitalInput) {
     startingCapitalInput.addEventListener('change', async (e) => {
         const newVal = parseFloat(e.target.value);
+        if (isNaN(newVal)) return;
+
         const { error } = await db.from('user_settings').update({ starting_capital: newVal }).eq('id', 1);
         if(!error) {
             startingCapital = newVal;
             updateJournalStats();
+            // Odśwież też statystyki na stronie głównej jeśli funkcja istnieje
+            if(typeof syncMainStats === 'function') syncMainStats();
         }
     });
 }
 
 function updateJournalStats() {
     if(!currentCapitalDisplay) return;
+    
     let totalPnl = 0;
     let won = 0;
     let lost = 0;
@@ -56,23 +61,34 @@ function updateJournalStats() {
     renderTradesList();
 }
 
-// RENDEROWANIE LISTY Z PRZYCISKIEM USUWANIA
+// RENDEROWANIE LISTY
 function renderTradesList() {
     if(!journalList) return;
+    
+    if (trades.length === 0) {
+        journalList.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-muted);">Brak zapisanych transakcji.</div>`;
+        return;
+    }
+
     journalList.innerHTML = trades.map(trade => `
         <div class="journal-item" style="display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
-            <div style="flex: 2; display: flex; align-items: center; gap: 10px;">
-                <i class="ph ${trade.pnl >= 0 ? 'ph-rocket' : 'ph-ghost'}" style="font-size: 1.5rem; color: ${trade.pnl >= 0 ? 'var(--accent-blue)' : 'var(--text-muted)'};"></i>
+            <div style="flex: 2; display: flex; align-items: center; gap: 12px;">
+                <div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 8px; display: flex; align-items: center;">
+                    <i class="ph ${trade.pnl >= 0 ? 'ph-trend-up' : 'ph-trend-down'}" style="font-size: 1.2rem; color: ${trade.pnl >= 0 ? 'var(--accent-green)' : 'var(--accent-red)'};"></i>
+                </div>
                 <div>
-                    <div style="font-weight: bold;">${trade.token}</div>
-                    <div style="font-size: 0.75rem; color: var(--text-muted);">${trade.date}</div>
+                    <div style="font-weight: bold; font-size: 0.95rem;">${trade.token}</div>
+                    <div style="font-size: 0.7rem; color: var(--text-muted);">${trade.date}</div>
                 </div>
             </div>
-            <div style="flex: 1; text-align: right; font-weight: bold; color: ${trade.pnl >= 0 ? 'var(--accent-green)' : 'var(--accent-red)'};">${trade.pnl >= 0 ? '+' : ''}$${trade.pnl}</div>
+            
+            <div style="flex: 1; text-align: right; font-weight: bold; color: ${trade.pnl >= 0 ? 'var(--accent-green)' : 'var(--accent-red)'};">
+                ${trade.pnl >= 0 ? '+' : ''}$${trade.pnl.toFixed(2)}
+            </div>
             
             <div style="flex: 1; text-align: right; display: flex; justify-content: flex-end; align-items: center; gap: 15px;">
-                <span class="badge" style="background: rgba(255,255,255,0.05);">CLOSED</span>
-                <button onclick="deleteTrade('${trade.id}')" style="background: transparent; border: none; color: #ff3366; cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; opacity: 0.6; transition: 0.3s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">
+                <span class="badge" style="background: rgba(255,255,255,0.05); font-size: 0.6rem;">CLOSED</span>
+                <button onclick="deleteTrade('${trade.id}')" class="trash-btn">
                     <i class="ph ph-trash"></i>
                 </button>
             </div>
@@ -80,53 +96,68 @@ function renderTradesList() {
     `).join("");
 }
 
-// FUNKCJA USUWANIA Z BAZY
-async function deleteTrade(id) {
-    if(!confirm("Czy na pewno chcesz usunąć tę pozycję?")) return;
+// FUNKCJA USUWANIA
+window.deleteTrade = async function(id) {
+    if(!confirm("Usuń transakcję z historii?")) return;
 
     const { error } = await db.from('trades').delete().eq('id', id);
 
     if (error) {
-        alert("Błąd podczas usuwania: " + error.message);
+        alert("Błąd usuwania: " + error.message);
     } else {
-        loadTradesFromSupabase(); // Odśwież listę po usunięciu
+        await loadTradesFromSupabase();
+        if(typeof syncMainStats === 'function') syncMainStats();
     }
 }
 
-async function addNewTrade() {
-    let tokenName = prompt("Nazwa tokena:");
-    let pnlInput = prompt("PnL (np. 150 lub -50):");
-    if (!tokenName || pnlInput === null) return;
+// FUNKCJA DODAWANIA
+window.addNewTrade = async function() {
+    const tokenName = prompt("Nazwa tokena (np. PEPE):");
+    if (!tokenName) return;
 
-    let pnl = Number(pnlInput);
-    let date = new Date().toLocaleString('pl-PL');
+    const pnlInput = prompt("PnL w USD (np. 150 lub -50):");
+    if (pnlInput === null || pnlInput === "" || isNaN(pnlInput)) {
+        alert("Podaj poprawną liczbę!");
+        return;
+    }
+
+    const pnl = parseFloat(pnlInput);
+    const date = new Date().toLocaleString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
     const { error } = await db.from('trades').insert([
         { token_name: tokenName.toUpperCase(), pnl: pnl, formatted_date: date }
     ]);
 
-    if (error) alert("Błąd zapisu: " + error.message);
-    else loadTradesFromSupabase();
+    if (error) {
+        alert("Błąd zapisu: " + error.message);
+    } else {
+        await loadTradesFromSupabase();
+        if(typeof syncMainStats === 'function') syncMainStats();
+    }
 }
 
 async function loadTradesFromSupabase() {
-    // Pobierz Starting Capital
-    const { data: settings } = await db.from('user_settings').select('starting_capital').eq('id', 1).single();
-    if (settings) {
-        startingCapital = parseFloat(settings.starting_capital);
-        if(startingCapitalInput) startingCapitalInput.value = startingCapital;
-    }
+    try {
+        // Pobierz Starting Capital
+        const { data: settings } = await db.from('user_settings').select('starting_capital').eq('id', 1).single();
+        if (settings) {
+            startingCapital = parseFloat(settings.starting_capital);
+            if(startingCapitalInput) startingCapitalInput.value = startingCapital;
+        }
 
-    // Pobierz Trady (dodano pobieranie pola 'id')
-    const { data, error } = await db.from('trades').select('*').order('created_at', { ascending: false });
-    if (!error && data) {
-        trades = data.map(d => ({ 
-            id: d.id, // Ważne do usuwania
-            token: d.token_name, 
-            pnl: parseFloat(d.pnl), 
-            date: d.formatted_date 
-        }));
-        updateJournalStats();
+        // Pobierz Tradery
+        const { data, error } = await db.from('trades').select('*').order('created_at', { ascending: false });
+        if (!error && data) {
+            trades = data.map(d => ({ 
+                id: d.id,
+                token: d.token_name, 
+                pnl: parseFloat(d.pnl), 
+                date: d.formatted_date 
+            }));
+            updateJournalStats();
+        }
+    } catch (e) {
+        console.error("Błąd ładowania danych:", e);
     }
 }
 
