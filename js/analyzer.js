@@ -7,17 +7,17 @@ function formatMoney(num) {
     return '$' + num.toFixed(0);
 }
 
-// 1. Zwiększanie licznika skanowań
+// 1. Zwiększanie licznika skanowań w bazie
 async function incrementScanCount() {
     try {
         const { data, error } = await db.from('user_settings').select('tokens_analyzed').eq('id', 1).single();
         if (!error && data) {
-            let newCount = data.tokens_analyzed + 1;
+            let newCount = (data.tokens_analyzed || 0) + 1;
             await db.from('user_settings').update({ tokens_analyzed: newCount }).eq('id', 1);
             const counterEl = document.getElementById('main-tokens-count');
             if(counterEl) counterEl.innerText = newCount;
         }
-    } catch (e) { console.error(e); }
+    } catch (e) { console.error("Błąd licznika:", e); }
 }
 
 // 2. Główna funkcja analizy
@@ -29,82 +29,122 @@ async function analyzeToken() {
     if (!address) return alert("Paste token CA!");
 
     resultBox.style.display = "block";
-    resultBox.innerHTML = `<div style="text-align: center; color: var(--accent-blue); padding: 20px;"><i class="ph ph-spinner ph-spin" style="font-size: 2rem;"></i><br>Scanning...</div>`;
+    resultBox.innerHTML = `<div style="text-align: center; color: var(--accent-blue); padding: 20px;"><i class="ph ph-spinner ph-spin" style="font-size: 2rem;"></i><br>Scanning Blockchain...</div>`;
 
     try {
         const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${address}`);
         const data = await res.json();
         const pair = data.pairs ? data.pairs[0] : null;
 
-        if (pair) {
-            const fdv = pair.fdv || 0;
-            const liquidity = pair.liquidity?.usd || 0;
-            const volume = pair.volume?.h24 || 0;
-            const change1m = pair.priceChange?.m1 || 0;
-            const score = Math.floor(Math.random() * 4) + 3; // Tutaj Twoja logika score
-
-            const decision = score >= 6 ? "STRONG BUY" : (score >= 4 ? "SCALP" : "SKIP");
-            const colorClass = score >= 6 ? "green" : (score >= 4 ? "blue" : "red");
-
-            resultBox.innerHTML = `
-                <div class="result-header">
-                    <div class="token-name"><i class="ph ph-diamond"></i> ${pair.baseToken.name} <span>$${pair.baseToken.symbol}</span></div>
-                    <div class="badge ${colorClass}">${decision}</div>
-                </div>
-                <div class="result-body">
-                    <div class="score"><span class="score-big" style="color: var(--accent-${colorClass})">${score}</span>/7</div>
-                    <div class="token-stats">MC: ${formatMoney(fdv)} | LIQ: ${formatMoney(liquidity)} | VOL: ${formatMoney(volume)}</div>
-                </div>`;
-            
-            addToHistory(pair.baseToken.symbol, decision, colorClass, "↗");
-            incrementScanCount();
+        if (!pair) {
+            resultBox.innerHTML = `<div style="text-align: center; color: var(--accent-red); padding: 20px;">Token not found or no liquidity!</div>`;
+            return;
         }
-    } catch (e) { console.error(e); }
+
+        const fdv = pair.fdv || 0;
+        const liquidity = pair.liquidity?.usd || 0;
+        const volume = pair.volume?.h24 || 0;
+        const change1m = pair.priceChange?.m1 || 0;
+        const created = pair.pairCreatedAt || 0;
+        const age = created ? (Date.now() - created) / 60000 : 0;
+
+        // REALNA LOGIKA PUNKTACJI
+        let score = 0;
+        const liq_mc = fdv ? liquidity / fdv : 0;
+        const vol_liq = liquidity ? volume / liquidity : 0;
+
+        if (liq_mc > 0.02) score += 2;
+        if (vol_liq < 5) score += 2;
+        if (change1m > 0.5) score += 1;
+        if (volume > 1000) score += 1;
+        if (age < 60) score += 1;
+
+        const thresholdInput = document.getElementById("strongBuyThreshold");
+        const threshold = thresholdInput ? Number(thresholdInput.value) : 6;
+        
+        const decision = score >= threshold ? "STRONG BUY" : (score >= 4 ? "SCALP" : "SKIP");
+        const colorClass = score >= threshold ? "green" : (score >= 4 ? "blue" : "red");
+
+        resultBox.innerHTML = `
+            <div class="result-header">
+                <div class="token-name" id="copyTokenName">
+                    <i class="ph ph-diamond"></i> ${pair.baseToken.name} <span class="ticker">$${pair.baseToken.symbol}</span>
+                </div>
+                <div class="badge ${colorClass}" id="copyDecision">${decision}</div>
+            </div>
+            <div class="result-body">
+                <div class="score">
+                    <span class="score-big" style="color: var(--accent-${colorClass})" id="copyScore">${score}</span><span class="score-small">/7</span>
+                </div>
+                <div class="token-stats" id="copyStats">
+                    <span>MC: ${formatMoney(fdv)}</span> | <span>LIQ: ${formatMoney(liquidity)}</span> | <span>VOL: ${formatMoney(volume)}</span>
+                    <div class="token-meta">AGE: ${Math.round(age)}m <span class="badge blue">ONLINE</span></div>
+                </div>
+            </div>`;
+        
+        addToHistory(pair.baseToken.symbol, decision, colorClass, "↗");
+        incrementScanCount();
+        
+    } catch (e) { 
+        console.error(e);
+        resultBox.innerHTML = `<div style="text-align: center; color: var(--accent-red); padding: 20px;">API Error. Try again.</div>`;
+    }
 }
 
-// 3. Synchronizacja statystyk (Kapitał, Licznik, Success Rate)
+// 3. Synchronizacja statystyk z bazą
 async function syncMainStats() {
-    const { data: settings } = await db.from('user_settings').select('*').eq('id', 1).single();
-    const { data: trades } = await db.from('trades').select('pnl');
-    
-    let startCap = settings ? parseFloat(settings.starting_capital) : 1000;
-    
-    if (settings) {
-        const scanEl = document.getElementById('main-tokens-count');
-        if(scanEl) scanEl.innerText = settings.tokens_analyzed;
-    }
-
-    if (trades) {
-        let totalPnl = trades.reduce((sum, t) => sum + parseFloat(t.pnl), 0);
-        let currentCap = startCap + totalPnl;
+    try {
+        const { data: settings } = await db.from('user_settings').select('*').eq('id', 1).single();
+        const { data: trades } = await db.from('trades').select('pnl');
         
-        const capEl = document.getElementById('main-total-capital');
-        if(capEl) capEl.innerText = `$${currentCap.toFixed(2)}`;
-
-        const rateEl = document.getElementById('main-success-rate');
-        if(rateEl && trades.length > 0) {
-            let won = trades.filter(t => t.pnl > 0).length;
-            rateEl.innerText = `${Math.round((won / trades.length) * 100)}%`;
+        let startCap = settings ? parseFloat(settings.starting_capital) : 1000;
+        
+        if (settings) {
+            const scanEl = document.getElementById('main-tokens-count');
+            if(scanEl) scanEl.innerText = settings.tokens_analyzed || 0;
         }
-    }
+
+        if (trades) {
+            let totalPnl = trades.reduce((sum, t) => sum + parseFloat(t.pnl), 0);
+            let currentCap = startCap + totalPnl;
+            
+            const capEl = document.getElementById('main-total-capital');
+            if(capEl) capEl.innerText = `$${currentCap.toFixed(2)}`;
+
+            const rateEl = document.getElementById('main-success-rate');
+            if(rateEl && trades.length > 0) {
+                let won = trades.filter(t => parseFloat(t.pnl) > 0).length;
+                rateEl.innerText = `${Math.round((won / trades.length) * 100)}%`;
+            }
+        }
+    } catch (e) { console.error("Błąd synchronizacji:", e); }
 }
 
 function addToHistory(symbol, decision, colorClass, arrow) {
     tokenHistory.unshift({symbol, decision, colorClass, arrow});
     if(tokenHistory.length > 5) tokenHistory.pop();
     const hList = document.getElementById("historyList");
-    if(hList) hList.innerHTML = tokenHistory.map(t => `<div class="token-list-item"><span>${t.symbol}</span> <span class="badge ${t.colorClass}">${t.decision}</span></div>`).join("");
+    if(hList) {
+        hList.innerHTML = tokenHistory.map(t => `
+            <div class="token-list-item">
+                <div class="token-list-info">
+                    <i class="ph ph-magnifying-glass" style="color: var(--accent-blue);"></i> ${t.symbol}
+                </div>
+                <div class="badge ${t.colorClass}">${t.decision}</div>
+            </div>`).join("");
+    }
 }
 
-function copyResult() {
+window.copyResult = function() {
     const name = document.getElementById("copyTokenName")?.innerText.trim() || "";
     const dec = document.getElementById("copyDecision")?.innerText.trim() || "";
     const score = document.getElementById("copyScore")?.innerText.trim() || "";
-    const stats = document.getElementById("copyStats")?.innerText.trim() || "";
-    if(!name) return;
+    const stats = document.getElementById("copyStats")?.innerText.trim().replace(/\s*\|\s*/g, ' | ') || "";
+    
+    if(!name) return alert("Nothing to copy!");
+    
     const text = `🎯 ${name}\n🚨 Signal: ${dec}\n📊 Score: ${score}/7\n💰 ${stats}`;
-    navigator.clipboard.writeText(text);
-    alert("Copied!");
+    navigator.clipboard.writeText(text).then(() => alert("Result copied to clipboard!"));
 }
 
 document.addEventListener("DOMContentLoaded", syncMainStats);
