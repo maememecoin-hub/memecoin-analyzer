@@ -7,11 +7,16 @@ document.addEventListener("DOMContentLoaded", () => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
             
+            const targetId = link.getAttribute('data-target');
+            
+            // Jeśli już jesteśmy na tej zakładce, nic nie rób
+            if(link.classList.contains('active')) return;
+
+            // Zmiana klas w nawigacji
             navLinks.forEach(l => l.classList.remove('active'));
             link.classList.add('active');
 
-            const targetId = link.getAttribute('data-target');
-
+            // Ukrywanie starych i pokazywanie nowych zakładek
             tabContents.forEach(tab => {
                 tab.style.opacity = 0;
                 tab.style.transform = "translateY(10px)";
@@ -22,13 +27,19 @@ document.addEventListener("DOMContentLoaded", () => {
                     
                     if(tab.id === targetId) {
                         tab.style.display = "block";
+                        
+                        // Jeśli wracamy do analizatora, odświeżamy statystyki z bazy
+                        if(targetId === 'analyzer' && typeof syncMainStats === 'function') {
+                            syncMainStats();
+                        }
+
                         setTimeout(() => {
                             tab.classList.add('active');
                             tab.style.opacity = 1;
                             tab.style.transform = "translateY(0)";
                         }, 50);
                     }
-                }, 300);
+                }, 200); // Nieco szybciej niż wcześniej (było 300)
             });
         });
     });
@@ -40,27 +51,27 @@ document.addEventListener("DOMContentLoaded", () => {
     const overlay = document.getElementById('overlay');
 
     function openSettings() {
-        settingsPanel.classList.add('open');
-        overlay.classList.add('active');
+        if(overlay) overlay.style.display = "block";
+        setTimeout(() => {
+            if(settingsPanel) settingsPanel.classList.add('open');
+            if(overlay) overlay.classList.add('active');
+        }, 10);
     }
 
     function closeSettingsPanel() {
-        settingsPanel.classList.remove('open');
-        overlay.classList.remove('active');
+        if(settingsPanel) settingsPanel.classList.remove('open');
+        if(overlay) overlay.classList.remove('active');
+        
+        // Czekamy na koniec animacji wysuwania, zanim schowamy overlay całkowicie
         setTimeout(() => {
-            if(!settingsPanel.classList.contains('open')){
+            if(overlay && !settingsPanel.classList.contains('open')){
                 overlay.style.display = "none";
             }
-        }, 300);
+        }, 400);
     }
 
-    if(settingsBtn) {
-        settingsBtn.addEventListener('click', () => {
-            overlay.style.display = "block";
-            setTimeout(openSettings, 10);
-        });
-    }
-
+    // Event Listeners dla ustawień
+    if(settingsBtn) settingsBtn.addEventListener('click', openSettings);
     if(closeSettings) closeSettings.addEventListener('click', closeSettingsPanel);
     if(overlay) overlay.addEventListener('click', closeSettingsPanel);
 });
