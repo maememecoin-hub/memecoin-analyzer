@@ -39,7 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             tab.style.transform = "translateY(0)";
                         }, 50);
                     }
-                }, 200); // Nieco szybciej niż wcześniej (było 300)
+                }, 200); 
             });
         });
     });
@@ -70,8 +70,58 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 400);
     }
 
-    // Event Listeners dla ustawień
     if(settingsBtn) settingsBtn.addEventListener('click', openSettings);
     if(closeSettings) closeSettings.addEventListener('click', closeSettingsPanel);
     if(overlay) overlay.addEventListener('click', closeSettingsPanel);
+
+    // --- LOGIKA SUWAKA (Threshold Slider) ---
+    const thresholdSlider = document.getElementById('strongBuyThreshold');
+    const thresholdValue = document.getElementById('thresholdValue');
+
+    // Wczytaj zapisaną wartość z pamięci (domyślnie 6)
+    const savedThreshold = localStorage.getItem('sniperThreshold') || '6';
+    if(thresholdSlider && thresholdValue) {
+        thresholdSlider.value = savedThreshold;
+        thresholdValue.innerText = `${savedThreshold} / 7`;
+
+        thresholdSlider.addEventListener('input', (e) => {
+            const val = e.target.value;
+            thresholdValue.innerText = `${val} / 7`;
+            localStorage.setItem('sniperThreshold', val); // Zapis do pamięci przeglądarki
+        });
+    }
+
+    // --- LOGIKA MOTYWÓW (Theme Switcher) ---
+    const themeBtns = document.querySelectorAll('.theme-btn');
+    const savedTheme = localStorage.getItem('sniperTheme') || 'cyber';
+
+    // Aplikuj zapamiętany motyw od razu po załadowaniu
+    if(savedTheme !== 'cyber') {
+        document.body.setAttribute('data-theme', savedTheme);
+    }
+
+    themeBtns.forEach(btn => {
+        // Zaznacz odpowiedni przycisk na start
+        if(btn.getAttribute('data-theme') === savedTheme) {
+            themeBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        // Obsługa kliknięcia
+        btn.addEventListener('click', () => {
+            themeBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            const theme = btn.getAttribute('data-theme');
+            
+            // Cyberpunk (domyślny) usuwa atrybut, inne go dodają
+            if (theme === 'cyber') {
+                document.body.removeAttribute('data-theme');
+            } else {
+                document.body.setAttribute('data-theme', theme);
+            }
+            
+            localStorage.setItem('sniperTheme', theme); // Zapis do pamięci
+        });
+    });
 });
