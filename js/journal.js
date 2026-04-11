@@ -7,6 +7,7 @@ const currentCapitalDisplay = document.getElementById('currentCapital');
 const totalPnlDisplay = document.getElementById('totalPnl');
 const pnlCard = document.getElementById('pnlCard');
 const journalList = document.getElementById('journalList');
+const leaderboardList = document.getElementById('leaderboardList'); // Nowy element
 
 // Zapisywanie Starting Capital do bazy przy zmianie
 if(startingCapitalInput) {
@@ -18,7 +19,6 @@ if(startingCapitalInput) {
         if(!error) {
             startingCapital = newVal;
             updateJournalStats();
-            // Odśwież też statystyki na stronie głównej jeśli funkcja istnieje
             if(typeof syncMainStats === 'function') syncMainStats();
         }
     });
@@ -43,11 +43,11 @@ function updateJournalStats() {
     if (totalPnl >= 0) {
         totalPnlDisplay.innerText = `+$${totalPnl.toFixed(2)}`;
         totalPnlDisplay.style.color = 'var(--accent-green)';
-        if(pnlCard) pnlCard.className = 'stat-card glow-green';
+        if(pnlCard) pnlCard.className = 'stat-card glass-panel glow-green';
     } else {
         totalPnlDisplay.innerText = `-$${Math.abs(totalPnl).toFixed(2)}`;
         totalPnlDisplay.style.color = 'var(--accent-red)';
-        if(pnlCard) pnlCard.className = 'stat-card glow-red';
+        if(pnlCard) pnlCard.className = 'stat-card glass-panel glow-red';
     }
     
     let totalClosed = won + lost;
@@ -59,9 +59,10 @@ function updateJournalStats() {
     if(winLossEl) winLossEl.innerText = `${won}W / ${lost}L`;
 
     renderTradesList();
+    renderLeaderboard(); // Odpalenie rankingu
 }
 
-// RENDEROWANIE LISTY
+// RENDEROWANIE LISTY W DZIENNIKU
 function renderTradesList() {
     if(!journalList) return;
     
@@ -94,6 +95,46 @@ function renderTradesList() {
             </div>
         </div>
     `).join("");
+}
+
+// RENDEROWANIE LEADERBOARDU
+function renderLeaderboard() {
+    if(!leaderboardList) return;
+
+    // Filtrujemy tylko na plusie i sortujemy malejąco, ucinając do TOP 10
+    const topTrades = [...trades]
+        .filter(t => t.pnl > 0)
+        .sort((a, b) => b.pnl - a.pnl)
+        .slice(0, 10);
+
+    if (topTrades.length === 0) {
+        leaderboardList.innerHTML = `<div style="text-align:center; padding:30px; color:var(--text-muted);">Zrób swój pierwszy zyskowny trade, aby trafić do Hall of Fame!</div>`;
+        return;
+    }
+
+    leaderboardList.innerHTML = topTrades.map((trade, index) => {
+        let rankClass = "rank-other";
+        let icon = `<span style="font-size: 1rem;">#${index + 1}</span>`;
+        
+        // Medale dla podium
+        if(index === 0) { rankClass = "rank-1"; icon = '<i class="ph ph-trophy"></i>'; }
+        else if(index === 1) { rankClass = "rank-2"; icon = '<i class="ph ph-medal"></i>'; }
+        else if(index === 2) { rankClass = "rank-3"; icon = '<i class="ph ph-medal"></i>'; }
+
+        return `
+        <div class="leaderboard-item">
+            <div class="leaderboard-info">
+                <div class="rank-badge ${rankClass}">${icon}</div>
+                <div>
+                    <div style="font-weight: 800; font-size: 1.15rem; color: var(--text-main); letter-spacing: 1px;">${trade.token}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">${trade.date}</div>
+                </div>
+            </div>
+            <div class="leaderboard-pnl">
+                + $${trade.pnl.toFixed(2)}
+            </div>
+        </div>`;
+    }).join("");
 }
 
 // FUNKCJA USUWANIA
@@ -138,14 +179,12 @@ window.addNewTrade = async function() {
 
 async function loadTradesFromSupabase() {
     try {
-        // Pobierz Starting Capital
         const { data: settings } = await db.from('user_settings').select('starting_capital').eq('id', 1).single();
         if (settings) {
             startingCapital = parseFloat(settings.starting_capital);
             if(startingCapitalInput) startingCapitalInput.value = startingCapital;
         }
 
-        // Pobierz Tradery
         const { data, error } = await db.from('trades').select('*').order('created_at', { ascending: false });
         if (!error && data) {
             trades = data.map(d => ({ 
@@ -154,7 +193,7 @@ async function loadTradesFromSupabase() {
                 pnl: parseFloat(d.pnl), 
                 date: d.formatted_date 
             }));
-            updateJournalStats();
+            updateJournalStats(); // Tutaj wewnątrz teraz odpala się też renderLeaderboard()
         }
     } catch (e) {
         console.error("Błąd ładowania danych:", e);
