@@ -199,9 +199,37 @@
                 <p class="setting-desc">Minimalny wynik punktowy wymagany do wyświetlenia sygnału kupna.</p>
                 <input type="range" id="strongBuyThreshold" min="4" max="7" value="6" step="1" class="slider">
             </div>
+            
+                        <hr class="settings-divider">
+
+            <div class="setting-group">
+                <label><i class="ph ph-sliders-horizontal"></i> FILTRY SKANERA</label>
+                <p class="setting-desc">Dostosuj kryteria przyznawania punktów przez bota.</p>
+
+                <div class="filter-item">
+                    <span>Min. Liq/MC Ratio (%)</span>
+                    <input type="number" id="filterLiqMc" value="2" step="0.5">
+                </div>
+                <div class="filter-item">
+                    <span>Max. Vol/Liq Ratio</span>
+                    <input type="number" id="filterVolLiq" value="5" step="0.5">
+                </div>
+                <div class="filter-item">
+                    <span>Min. Price Change 1m (%)</span>
+                    <input type="number" id="filterChange" value="0.5" step="0.1">
+                </div>
+                <div class="filter-item">
+                    <span>Min. Volume 24h ($)</span>
+                    <input type="number" id="filterVol" value="1000" step="100">
+                </div>
+                <div class="filter-item">
+                    <span>Max. Token Age (min)</span>
+                    <input type="number" id="filterAge" value="60" step="5">
+                </div>
+            </div>
 
             <hr class="settings-divider">
-
+            
             <div class="setting-group">
                 <label>TERMINAL THEME</label>
                 <p class="setting-desc">Wybierz kolorystykę główną interfejsu.</p>
