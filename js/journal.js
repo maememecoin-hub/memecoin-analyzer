@@ -7,7 +7,7 @@ const currentCapitalDisplay = document.getElementById('currentCapital');
 const totalPnlDisplay = document.getElementById('totalPnl');
 const pnlCard = document.getElementById('pnlCard');
 const journalList = document.getElementById('journalList');
-const leaderboardList = document.getElementById('leaderboardList'); // Nowy element
+const leaderboardList = document.getElementById('leaderboardList');
 
 // Zapisywanie Starting Capital do bazy przy zmianie
 if(startingCapitalInput) {
@@ -20,6 +20,7 @@ if(startingCapitalInput) {
             startingCapital = newVal;
             updateJournalStats();
             if(typeof syncMainStats === 'function') syncMainStats();
+            showToast("Zaktualizowano kapitał początkowy.", "info");
         }
     });
 }
@@ -144,8 +145,9 @@ window.deleteTrade = async function(id) {
     const { error } = await db.from('trades').delete().eq('id', id);
 
     if (error) {
-        alert("Błąd usuwania: " + error.message);
+        showToast("Błąd usuwania: " + error.message, "error");
     } else {
+        showToast("Usunięto transakcję z historii.", "info");
         await loadTradesFromSupabase();
         if(typeof syncMainStats === 'function') syncMainStats();
     }
@@ -158,7 +160,7 @@ window.addNewTrade = async function() {
 
     const pnlInput = prompt("PnL w USD (np. 150 lub -50):");
     if (pnlInput === null || pnlInput === "" || isNaN(pnlInput)) {
-        alert("Podaj poprawną liczbę!");
+        showToast("Nieprawidłowa wartość PnL!", "warning");
         return;
     }
 
@@ -170,8 +172,9 @@ window.addNewTrade = async function() {
     ]);
 
     if (error) {
-        alert("Błąd zapisu: " + error.message);
+        showToast("Błąd zapisu: " + error.message, "error");
     } else {
+        showToast("Zapisano nową transakcję!", "success");
         await loadTradesFromSupabase();
         if(typeof syncMainStats === 'function') syncMainStats();
     }
@@ -193,7 +196,7 @@ async function loadTradesFromSupabase() {
                 pnl: parseFloat(d.pnl), 
                 date: d.formatted_date 
             }));
-            updateJournalStats(); // Tutaj wewnątrz teraz odpala się też renderLeaderboard()
+            updateJournalStats(); 
         }
     } catch (e) {
         console.error("Błąd ładowania danych:", e);
