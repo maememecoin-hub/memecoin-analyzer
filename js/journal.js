@@ -39,16 +39,31 @@ function updateJournalStats() {
     });
 
     let currentCapital = startingCapital + totalPnl;
-    currentCapitalDisplay.innerText = `$${currentCapital.toFixed(2)}`;
     
+    // Animacja Aktualnego Kapitału
+    if (typeof animateCounter === 'function') {
+        animateCounter('currentCapital', currentCapital, 1500, '$', '', 2);
+    } else {
+        currentCapitalDisplay.innerText = `$${currentCapital.toFixed(2)}`;
+    }
+    
+    // Animacja i stylowanie Total PnL
     if (totalPnl >= 0) {
-        totalPnlDisplay.innerText = `+$${totalPnl.toFixed(2)}`;
         totalPnlDisplay.style.color = 'var(--accent-green)';
         if(pnlCard) pnlCard.className = 'stat-card glass-panel glow-green';
+        if (typeof animateCounter === 'function') {
+            animateCounter('totalPnl', totalPnl, 1500, '+$', '', 2);
+        } else {
+            totalPnlDisplay.innerText = `+$${totalPnl.toFixed(2)}`;
+        }
     } else {
-        totalPnlDisplay.innerText = `-$${Math.abs(totalPnl).toFixed(2)}`;
         totalPnlDisplay.style.color = 'var(--accent-red)';
         if(pnlCard) pnlCard.className = 'stat-card glass-panel glow-red';
+        if (typeof animateCounter === 'function') {
+            animateCounter('totalPnl', totalPnl, 1500, '$', '', 2); 
+        } else {
+            totalPnlDisplay.innerText = `-$${Math.abs(totalPnl).toFixed(2)}`;
+        }
     }
     
     let totalClosed = won + lost;
@@ -56,7 +71,14 @@ function updateJournalStats() {
     
     const winRateEl = document.getElementById('winRate');
     const winLossEl = document.getElementById('winLossCount');
-    if(winRateEl) winRateEl.innerText = `${winRate}%`;
+    
+    // Animacja Win Rate
+    if (typeof animateCounter === 'function' && winRateEl) {
+        animateCounter('winRate', winRate, 1500, '', '%', 0);
+    } else if (winRateEl) {
+        winRateEl.innerText = `${winRate}%`;
+    }
+    
     if(winLossEl) winLossEl.innerText = `${won}W / ${lost}L`;
 
     renderTradesList();
