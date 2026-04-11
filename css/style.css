@@ -346,6 +346,27 @@ body[data-theme="sith"] .glow-2 { background: rgba(153, 0, 0, 0.1); }
 .toast.warning i { color: var(--accent-yellow); }
 .toast.info i { color: var(--accent-blue); }
 
+/* === WYKRES DEXSCREENER === */
+.chart-container {
+    margin-top: 25px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border-light);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    height: 400px;
+    position: relative;
+    background: #000;
+}
+.chart-container iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+}
+@media (max-width: 768px) {
+    .chart-container { height: 300px; }
+}
+
 /* === RESPONSIVE === */
 @media (max-width: 768px) {
     .navbar { padding: 15px; border-radius: 0; }
