@@ -34,7 +34,6 @@ async function analyzeToken() {
         return showToast("Wklej adres kontraktu (CA)!", "warning");
     }
 
-    // DŹWIĘK SKANOWANIA
     if(typeof playSound === 'function') playSound('scan');
 
     resultBox.style.display = "block";
@@ -80,11 +79,11 @@ async function analyzeToken() {
         const decision = score >= threshold ? "STRONG BUY" : (score >= 4 ? "SCALP" : "SKIP");
         const colorClass = score >= threshold ? "green" : (score >= 4 ? "blue" : "red");
 
-        // DŹWIĘK SUKCESU (jeśli STRONG BUY)
         if (decision === "STRONG BUY" && typeof playSound === 'function') {
             playSound('strong_buy');
         }
 
+        // Renderowanie statystyk ORAZ wykresu Iframe
         resultBox.innerHTML = `
             <div class="result-header">
                 <div class="token-name" id="copyTokenName">
@@ -100,7 +99,11 @@ async function analyzeToken() {
                     <span>MC: ${formatMoney(fdv)}</span> | <span>LIQ: ${formatMoney(liquidity)}</span> | <span>VOL: ${formatMoney(volume)}</span>
                     <div class="token-meta">AGE: ${Math.round(age)}m <span class="badge blue">ONLINE</span></div>
                 </div>
-            </div>`;
+            </div>
+            <div class="chart-container">
+                <iframe src="https://dexscreener.com/${pair.chainId}/${pair.pairAddress}?embed=1&theme=dark&info=0" frameborder="0"></iframe>
+            </div>
+            `;
         
         addToHistory(pair.baseToken.symbol, decision, colorClass, "↗");
         incrementScanCount();
