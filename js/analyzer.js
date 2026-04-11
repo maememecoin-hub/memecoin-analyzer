@@ -7,15 +7,12 @@ function formatMoney(num) {
     return '$' + num.toFixed(0);
 }
 
-// 1. Zwiększanie licznika skanowań w bazie
 async function incrementScanCount() {
     try {
         const { data, error } = await db.from('user_settings').select('tokens_analyzed').eq('id', 1).single();
         if (!error && data) {
             let newCount = (data.tokens_analyzed || 0) + 1;
             await db.from('user_settings').update({ tokens_analyzed: newCount }).eq('id', 1);
-            
-            // Animacja licznika
             if (typeof animateCounter === 'function') {
                 animateCounter('main-tokens-count', newCount);
             } else {
@@ -26,13 +23,19 @@ async function incrementScanCount() {
     } catch (e) { console.error("Błąd licznika:", e); }
 }
 
-// 2. Główna funkcja analizy
 async function analyzeToken() {
     const addressInput = document.getElementById("tokenInput");
     if(!addressInput) return;
     const address = addressInput.value.trim();
     const resultBox = document.getElementById("analyzerResultBox");
-    if (!address) return showToast("Wklej adres kontraktu (CA)!", "warning");
+    
+    if (!address) {
+        if(typeof playSound === 'function') playSound('error');
+        return showToast("Wklej adres kontraktu (CA)!", "warning");
+    }
+
+    // DŹWIĘK SKANOWANIA
+    if(typeof playSound === 'function') playSound('scan');
 
     resultBox.style.display = "block";
     resultBox.innerHTML = `<div style="text-align: center; color: var(--accent-blue); padding: 20px;"><i class="ph ph-spinner ph-spin" style="font-size: 2rem;"></i><br>Scanning Blockchain...</div>`;
@@ -43,6 +46,7 @@ async function analyzeToken() {
         const pair = data.pairs ? data.pairs[0] : null;
 
         if (!pair) {
+            if(typeof playSound === 'function') playSound('error');
             resultBox.innerHTML = `<div style="text-align: center; color: var(--accent-red); padding: 20px;">Token not found or no liquidity!</div>`;
             return;
         }
@@ -54,7 +58,6 @@ async function analyzeToken() {
         const created = pair.pairCreatedAt || 0;
         const age = created ? (Date.now() - created) / 60000 : 0;
 
-        // REALNA LOGIKA PUNKTACJI
         let score = 0;
         const liq_mc = fdv ? liquidity / fdv : 0;
         const vol_liq = liquidity ? volume / liquidity : 0;
@@ -65,8 +68,7 @@ async function analyzeToken() {
         if (volume > 1000) score += 1;
         if (age < 60) score += 1;
 
-        // POBIERANIE PROGU Z NOWYCH USTAWIEŃ (LOCAL STORAGE)
-        let threshold = 6; // Domyślnie
+        let threshold = 6;
         const savedThreshold = localStorage.getItem('sniperThreshold');
         if (savedThreshold) {
             threshold = Number(savedThreshold);
@@ -77,6 +79,11 @@ async function analyzeToken() {
         
         const decision = score >= threshold ? "STRONG BUY" : (score >= 4 ? "SCALP" : "SKIP");
         const colorClass = score >= threshold ? "green" : (score >= 4 ? "blue" : "red");
+
+        // DŹWIĘK SUKCESU (jeśli STRONG BUY)
+        if (decision === "STRONG BUY" && typeof playSound === 'function') {
+            playSound('strong_buy');
+        }
 
         resultBox.innerHTML = `
             <div class="result-header">
@@ -100,11 +107,11 @@ async function analyzeToken() {
         
     } catch (e) { 
         console.error(e);
+        if(typeof playSound === 'function') playSound('error');
         resultBox.innerHTML = `<div style="text-align: center; color: var(--accent-red); padding: 20px;">API Error. Try again.</div>`;
     }
 }
 
-// 3. Synchronizacja statystyk z bazą
 async function syncMainStats() {
     try {
         const { data: settings } = await db.from('user_settings').select('*').eq('id', 1).single();
@@ -112,25 +119,21 @@ async function syncMainStats() {
         
         let startCap = settings ? parseFloat(settings.starting_capital) : 1000;
         
-        // Aktualizacja animowanego licznika skanów
         if (settings) {
             let scans = settings.tokens_analyzed || 0;
-            if (typeof animateCounter === 'function') {
-                animateCounter('main-tokens-count', scans);
-            } else {
+            if (typeof animateCounter === 'function') animateCounter('main-tokens-count', scans);
+            else {
                 const scanEl = document.getElementById('main-tokens-count');
                 if(scanEl) scanEl.innerText = scans;
             }
         }
 
-        // Aktualizacja animowanych liczników kapitału i win-rate
         if (trades) {
             let totalPnl = trades.reduce((sum, t) => sum + parseFloat(t.pnl), 0);
             let currentCap = startCap + totalPnl;
             
-            if (typeof animateCounter === 'function') {
-                animateCounter('main-total-capital', currentCap, 1500, '$', '', 2);
-            } else {
+            if (typeof animateCounter === 'function') animateCounter('main-total-capital', currentCap, 1500, '$', '', 2);
+            else {
                 const capEl = document.getElementById('main-total-capital');
                 if(capEl) capEl.innerText = `$${currentCap.toFixed(2)}`;
             }
@@ -139,9 +142,8 @@ async function syncMainStats() {
                 let won = trades.filter(t => parseFloat(t.pnl) > 0).length;
                 let winRate = Math.round((won / trades.length) * 100);
                 
-                if (typeof animateCounter === 'function') {
-                    animateCounter('main-success-rate', winRate, 1500, '', '%');
-                } else {
+                if (typeof animateCounter === 'function') animateCounter('main-success-rate', winRate, 1500, '', '%');
+                else {
                     const rateEl = document.getElementById('main-success-rate');
                     if(rateEl) rateEl.innerText = `${winRate}%`;
                 }
@@ -171,7 +173,10 @@ window.copyResult = function() {
     const score = document.getElementById("copyScore")?.innerText.trim() || "";
     const stats = document.getElementById("copyStats")?.innerText.trim().replace(/\s*\|\s*/g, ' | ') || "";
     
-    if(!name) return showToast("Brak danych do skopiowania!", "error");
+    if(!name) {
+        if(typeof playSound === 'function') playSound('error');
+        return showToast("Brak danych do skopiowania!", "error");
+    }
     
     const text = `🎯 ${name}\n🚨 Signal: ${dec}\n📊 Score: ${score}/7\n💰 ${stats}`;
     navigator.clipboard.writeText(text).then(() => showToast("Skopiowano wynik do schowka!", "success"));
