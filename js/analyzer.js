@@ -59,8 +59,15 @@ async function analyzeToken() {
         if (volume > 1000) score += 1;
         if (age < 60) score += 1;
 
-        const thresholdInput = document.getElementById("strongBuyThreshold");
-        const threshold = thresholdInput ? Number(thresholdInput.value) : 6;
+        // POBIERANIE PROGU Z NOWYCH USTAWIEŃ (LOCAL STORAGE)
+        let threshold = 6; // Domyślnie
+        const savedThreshold = localStorage.getItem('sniperThreshold');
+        if (savedThreshold) {
+            threshold = Number(savedThreshold);
+        } else {
+            const thresholdInput = document.getElementById("strongBuyThreshold");
+            if (thresholdInput) threshold = Number(thresholdInput.value);
+        }
         
         const decision = score >= threshold ? "STRONG BUY" : (score >= 4 ? "SCALP" : "SKIP");
         const colorClass = score >= threshold ? "green" : (score >= 4 ? "blue" : "red");
