@@ -80,11 +80,6 @@
             </div>
 
             <div class="glass-panel control-bar">
-                <div class="threshold-box">
-                    <span class="muted">SCORE ≥</span>
-                    <input type="number" id="strongBuyThreshold" value="6" min="1" max="7">
-                </div>
-                <div class="divider"></div>
                 <input type="text" id="tokenInput" placeholder="Paste token contract address here..." onkeypress="if(event.key==='Enter'){analyzeToken()}">
                 <button class="btn-primary" onclick="analyzeToken()"><i class="ph ph-scan"></i> SCAN</button>
             </div>
@@ -177,13 +172,35 @@
     </main>
 
     <div id="overlay" class="overlay"></div>
+    
     <aside id="settings-panel" class="settings-panel">
         <div class="settings-header">
             <h3><i class="ph ph-faders"></i> TERMINAL SETTINGS</h3>
             <i class="ph ph-x" id="close-settings" style="cursor:pointer;"></i>
         </div>
         <div class="settings-content">
-            <p style="color: var(--text-muted); font-size: 0.85rem;">Konfiguracja interfejsu i API.</p>
+            
+            <div class="setting-group">
+                <label for="strongBuyThreshold">
+                    <span>STRONG BUY THRESHOLD</span>
+                    <span id="thresholdValue" class="badge blue">6 / 7</span>
+                </label>
+                <p class="setting-desc">Minimalny wynik punktowy wymagany do wyświetlenia sygnału kupna.</p>
+                <input type="range" id="strongBuyThreshold" min="4" max="7" value="6" step="1" class="slider">
+            </div>
+
+            <hr class="settings-divider">
+
+            <div class="setting-group">
+                <label>TERMINAL THEME</label>
+                <p class="setting-desc">Wybierz kolorystykę główną interfejsu.</p>
+                <div class="theme-options">
+                    <div class="theme-btn active" data-theme="cyber" style="--t-color: #00d2ff;"></div>
+                    <div class="theme-btn" data-theme="matrix" style="--t-color: #00ff41;"></div>
+                    <div class="theme-btn" data-theme="sith" style="--t-color: #ff3333;"></div>
+                </div>
+            </div>
+
         </div>
     </aside>
 
