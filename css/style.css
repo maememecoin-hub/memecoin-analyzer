@@ -367,6 +367,11 @@ body[data-theme="sith"] .glow-2 { background: rgba(153, 0, 0, 0.1); }
     .chart-container { height: 300px; }
 }
 
+/* === FILTRY SKANERA === */
+.filter-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 0.75rem; color: var(--text-main); font-weight: 600;}
+.filter-item input { background: rgba(0,0,0,0.5); border: 1px solid var(--border-light); color: var(--accent-blue); padding: 5px 8px; border-radius: 6px; width: 65px; text-align: center; font-weight: bold; outline: none; transition: 0.3s;}
+.filter-item input:focus { border-color: var(--accent-blue); box-shadow: 0 0 10px rgba(0,210,255,0.2);}
+
 /* === RESPONSIVE === */
 @media (max-width: 768px) {
     .navbar { padding: 15px; border-radius: 0; }
