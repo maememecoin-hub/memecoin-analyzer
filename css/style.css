@@ -29,6 +29,7 @@ body {
     min-height: 100vh;
     overflow-x: hidden;
     position: relative;
+    transition: background-color 0.5s ease;
 }
 
 /* === AMBIENT GLOW (Światła w tle) === */
@@ -39,6 +40,7 @@ body {
     z-index: -1;
     opacity: 0.4;
     pointer-events: none;
+    transition: background 0.5s ease;
 }
 .glow-1 {
     top: -100px;
@@ -218,6 +220,76 @@ body {
 
 .overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 1999; display: none; opacity: 0; transition: opacity 0.3s ease; }
 .overlay.active { display: block; opacity: 1; }
+
+/* === ELEMENTY W USTAWIENIACH === */
+.setting-group { margin-bottom: 25px; }
+.setting-group label { display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; font-weight: 800; color: var(--text-main); letter-spacing: 1px; margin-bottom: 5px; }
+.setting-desc { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 12px; }
+
+/* Custom Slider */
+.slider {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.1);
+    outline: none;
+    transition: 0.3s;
+}
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--accent-blue);
+    cursor: pointer;
+    box-shadow: 0 0 10px var(--accent-blue);
+    transition: 0.2s;
+}
+.slider::-webkit-slider-thumb:hover { transform: scale(1.3); }
+
+.settings-divider { border: none; height: 1px; background: var(--border-light); margin: 25px 0; }
+
+/* Theme Buttons */
+.theme-options { display: flex; gap: 15px; margin-top: 10px;}
+.theme-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--t-color);
+    cursor: pointer;
+    opacity: 0.5;
+    border: 2px solid transparent;
+    transition: 0.3s;
+    box-shadow: 0 0 0px var(--t-color);
+}
+.theme-btn:hover { opacity: 0.8; transform: translateY(-2px); }
+.theme-btn.active {
+    opacity: 1;
+    border-color: #fff;
+    box-shadow: 0 0 15px var(--t-color);
+    transform: scale(1.1);
+}
+
+/* THEME MODIFIERS (Dynamiczne zmienne dla JS) */
+body[data-theme="matrix"] {
+    --bg-main: #020a04;
+    --accent-blue: #00ff41;
+    --accent-purple: #008f11;
+    --border-glow: rgba(0, 255, 65, 0.3);
+}
+body[data-theme="matrix"] .glow-1 { background: rgba(0, 255, 65, 0.15); }
+body[data-theme="matrix"] .glow-2 { background: rgba(0, 143, 17, 0.1); }
+
+body[data-theme="sith"] {
+    --bg-main: #0a0202;
+    --accent-blue: #ff3333;
+    --accent-purple: #990000;
+    --border-glow: rgba(255, 51, 51, 0.3);
+}
+body[data-theme="sith"] .glow-1 { background: rgba(255, 51, 51, 0.15); }
+body[data-theme="sith"] .glow-2 { background: rgba(153, 0, 0, 0.1); }
 
 /* === RESPONSIVE === */
 @media (max-width: 768px) {
