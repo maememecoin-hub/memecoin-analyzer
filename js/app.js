@@ -43,6 +43,32 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         });
     });
+    
+    // --- GLOBALNA FUNKCJA TOASTÓW ---
+window.showToast = function(message, type = 'info') {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    
+    let icon = 'ph-info';
+    if(type === 'success') icon = 'ph-check-circle';
+    if(type === 'error') icon = 'ph-warning-circle';
+    if(type === 'warning') icon = 'ph-warning';
+
+    toast.innerHTML = `<i class="ph ${icon}"></i> <span>${message}</span>`;
+    container.appendChild(toast);
+
+    // Animacja wjazdu
+    setTimeout(() => toast.classList.add('show'), 10);
+
+    // Automatyczne usuwanie po 3 sekundach
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 400); // Czekamy na koniec animacji wyjazdu
+    }, 3000);
+};
 
     // --- Obsługa panelu ustawień ---
     const settingsBtn = document.getElementById('settings-btn');
