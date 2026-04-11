@@ -14,8 +14,14 @@ async function incrementScanCount() {
         if (!error && data) {
             let newCount = (data.tokens_analyzed || 0) + 1;
             await db.from('user_settings').update({ tokens_analyzed: newCount }).eq('id', 1);
-            const counterEl = document.getElementById('main-tokens-count');
-            if(counterEl) counterEl.innerText = newCount;
+            
+            // Animacja licznika
+            if (typeof animateCounter === 'function') {
+                animateCounter('main-tokens-count', newCount);
+            } else {
+                const counterEl = document.getElementById('main-tokens-count');
+                if(counterEl) counterEl.innerText = newCount;
+            }
         }
     } catch (e) { console.error("Błąd licznika:", e); }
 }
@@ -106,22 +112,39 @@ async function syncMainStats() {
         
         let startCap = settings ? parseFloat(settings.starting_capital) : 1000;
         
+        // Aktualizacja animowanego licznika skanów
         if (settings) {
-            const scanEl = document.getElementById('main-tokens-count');
-            if(scanEl) scanEl.innerText = settings.tokens_analyzed || 0;
+            let scans = settings.tokens_analyzed || 0;
+            if (typeof animateCounter === 'function') {
+                animateCounter('main-tokens-count', scans);
+            } else {
+                const scanEl = document.getElementById('main-tokens-count');
+                if(scanEl) scanEl.innerText = scans;
+            }
         }
 
+        // Aktualizacja animowanych liczników kapitału i win-rate
         if (trades) {
             let totalPnl = trades.reduce((sum, t) => sum + parseFloat(t.pnl), 0);
             let currentCap = startCap + totalPnl;
             
-            const capEl = document.getElementById('main-total-capital');
-            if(capEl) capEl.innerText = `$${currentCap.toFixed(2)}`;
+            if (typeof animateCounter === 'function') {
+                animateCounter('main-total-capital', currentCap, 1500, '$', '', 2);
+            } else {
+                const capEl = document.getElementById('main-total-capital');
+                if(capEl) capEl.innerText = `$${currentCap.toFixed(2)}`;
+            }
 
-            const rateEl = document.getElementById('main-success-rate');
-            if(rateEl && trades.length > 0) {
+            if (trades.length > 0) {
                 let won = trades.filter(t => parseFloat(t.pnl) > 0).length;
-                rateEl.innerText = `${Math.round((won / trades.length) * 100)}%`;
+                let winRate = Math.round((won / trades.length) * 100);
+                
+                if (typeof animateCounter === 'function') {
+                    animateCounter('main-success-rate', winRate, 1500, '', '%');
+                } else {
+                    const rateEl = document.getElementById('main-success-rate');
+                    if(rateEl) rateEl.innerText = `${winRate}%`;
+                }
             }
         }
     } catch (e) { console.error("Błąd synchronizacji:", e); }
