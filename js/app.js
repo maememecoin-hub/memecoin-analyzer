@@ -181,6 +181,24 @@ document.addEventListener("DOMContentLoaded", () => {
             localStorage.setItem('sniperThreshold', val);
         });
     }
+    
+        // --- Zaawansowane Filtry Skanera ---
+    const filters = ['filterLiqMc', 'filterVolLiq', 'filterChange', 'filterVol', 'filterAge'];
+    const defaultFilters = { filterLiqMc: 2, filterVolLiq: 5, filterChange: 0.5, filterVol: 1000, filterAge: 60 };
+
+    filters.forEach(id => {
+        const el = document.getElementById(id);
+        if(el) {
+            // Załaduj z pamięci lub użyj domyślnej
+            el.value = localStorage.getItem(id) || defaultFilters[id];
+            
+            // Zapisz przy każdej zmianie
+            el.addEventListener('change', (e) => {
+                localStorage.setItem(id, e.target.value);
+                if(typeof showToast === 'function') showToast("Zaktualizowano filtr skanera.", "success");
+            });
+        }
+    });
 
     const themeBtns = document.querySelectorAll('.theme-btn');
     const savedTheme = localStorage.getItem('sniperTheme') || 'cyber';
