@@ -1,6 +1,51 @@
-// --- NARZĘDZIA GLOBALNE ---
+// --- SILNIK DŹWIĘKOWY (Web Audio API) ---
+window.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-// 1. Toasty (Powiadomienia)
+window.playSound = function(type) {
+    // Przeglądarki wymagają interakcji użytkownika przed odtworzeniem dźwięku
+    if(window.audioCtx.state === 'suspended') window.audioCtx.resume();
+    
+    const osc = window.audioCtx.createOscillator();
+    const gainNode = window.audioCtx.createGain();
+    
+    osc.connect(gainNode);
+    gainNode.connect(window.audioCtx.destination);
+    
+    const now = window.audioCtx.currentTime;
+    
+    if (type === 'scan') {
+        // Krótki, hakerski "skan"
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(800, now);
+        osc.frequency.exponentialRampToValueAtTime(300, now + 0.1);
+        gainNode.gain.setValueAtTime(0.1, now); // Głośność
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+        osc.start(now);
+        osc.stop(now + 0.1);
+    } else if (type === 'strong_buy') {
+        // Podwójny, agresywny alarm sukcesu
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(1000, now);
+        osc.frequency.setValueAtTime(1500, now + 0.15);
+        gainNode.gain.setValueAtTime(0.05, now);
+        gainNode.gain.setValueAtTime(0, now + 0.1);
+        gainNode.gain.setValueAtTime(0.05, now + 0.15);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+        osc.start(now);
+        osc.stop(now + 0.4);
+    } else if (type === 'error') {
+        // Głuchy dźwięk błędu
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(150, now);
+        osc.frequency.exponentialRampToValueAtTime(50, now + 0.3);
+        gainNode.gain.setValueAtTime(0.1, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+        osc.start(now);
+        osc.stop(now + 0.3);
+    }
+};
+
+// --- NARZĘDZIA GLOBALNE ---
 window.showToast = function(message, type = 'info') {
     const container = document.getElementById('toast-container');
     if (!container) return;
@@ -24,17 +69,14 @@ window.showToast = function(message, type = 'info') {
     }, 3000);
 };
 
-// 2. Animowane Liczniki (Nowość!)
 window.animateCounter = function(elementId, endValue, duration = 1500, prefix = '', suffix = '', decimals = 0) {
     const obj = document.getElementById(elementId);
     if (!obj) return;
     
-    // Próbujemy wyciągnąć obecną wartość (żeby animacja startowała od tego, co już jest na ekranie)
     let start = 0;
     const currentText = obj.innerText.replace(/[^\d.-]/g, '');
     if(currentText && !isNaN(currentText)) start = parseFloat(currentText);
     
-    // Jeśli nie ma zmiany, nie animujemy
     if (start === endValue) {
         obj.innerText = prefix + endValue.toFixed(decimals) + suffix;
         return;
@@ -45,11 +87,9 @@ window.animateCounter = function(elementId, endValue, duration = 1500, prefix = 
         if (!startTimestamp) startTimestamp = timestamp;
         const progress = Math.min((timestamp - startTimestamp) / duration, 1);
         
-        // Efekt zwalniania na końcu (ease-out expo)
         const easeOut = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
         const current = start + (endValue - start) * easeOut;
         
-        // Zapobiega "minusowemu zeru" itp.
         let displayValue = current;
         if(Math.abs(displayValue) < 0.01) displayValue = 0;
 
@@ -58,7 +98,7 @@ window.animateCounter = function(elementId, endValue, duration = 1500, prefix = 
         if (progress < 1) {
             window.requestAnimationFrame(step);
         } else {
-            obj.innerText = prefix + endValue.toFixed(decimals) + suffix; // Gwarancja precyzji na końcu
+            obj.innerText = prefix + endValue.toFixed(decimals) + suffix; 
         }
     };
     window.requestAnimationFrame(step);
@@ -67,7 +107,6 @@ window.animateCounter = function(elementId, endValue, duration = 1500, prefix = 
 // --- LOGIKA INTERFEJSU (UI) ---
 document.addEventListener("DOMContentLoaded", () => {
     
-    // Obsługa zakładek (Tabs)
     const navLinks = document.querySelectorAll('.nav-links a');
     const tabContents = document.querySelectorAll('.tab-content');
 
@@ -90,7 +129,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     
                     if(tab.id === targetId) {
                         tab.style.display = "block";
-                        
                         if(targetId === 'analyzer' && typeof syncMainStats === 'function') syncMainStats();
 
                         setTimeout(() => {
@@ -104,7 +142,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // Obsługa panelu ustawień
     const settingsBtn = document.getElementById('settings-btn');
     const closeSettings = document.getElementById('close-settings');
     const settingsPanel = document.getElementById('settings-panel');
@@ -121,7 +158,6 @@ document.addEventListener("DOMContentLoaded", () => {
     function closeSettingsPanel() {
         if(settingsPanel) settingsPanel.classList.remove('open');
         if(overlay) overlay.classList.remove('active');
-        
         setTimeout(() => {
             if(overlay && !settingsPanel.classList.contains('open')) overlay.style.display = "none";
         }, 400);
@@ -131,7 +167,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if(closeSettings) closeSettings.addEventListener('click', closeSettingsPanel);
     if(overlay) overlay.addEventListener('click', closeSettingsPanel);
 
-    // Suwak Threshold
     const thresholdSlider = document.getElementById('strongBuyThreshold');
     const thresholdValue = document.getElementById('thresholdValue');
     const savedThreshold = localStorage.getItem('sniperThreshold') || '6';
@@ -147,7 +182,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Motywy (Theme Switcher)
     const themeBtns = document.querySelectorAll('.theme-btn');
     const savedTheme = localStorage.getItem('sniperTheme') || 'cyber';
 
