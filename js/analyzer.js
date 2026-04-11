@@ -57,16 +57,25 @@ async function analyzeToken() {
         const created = pair.pairCreatedAt || 0;
         const age = created ? (Date.now() - created) / 60000 : 0;
 
+        // REALNA LOGIKA PUNKTACJI (POBIERANA Z USTAWIEŃ)
         let score = 0;
         const liq_mc = fdv ? liquidity / fdv : 0;
         const vol_liq = liquidity ? volume / liquidity : 0;
 
-        if (liq_mc > 0.02) score += 2;
-        if (vol_liq < 5) score += 2;
-        if (change1m > 0.5) score += 1;
-        if (volume > 1000) score += 1;
-        if (age < 60) score += 1;
+        // Pobieranie filtrów z ustawień użytkownika (lub wartości domyślne)
+        const f_liqMc = parseFloat(localStorage.getItem('filterLiqMc') || 2) / 100;
+        const f_volLiq = parseFloat(localStorage.getItem('filterVolLiq') || 5);
+        const f_change = parseFloat(localStorage.getItem('filterChange') || 0.5);
+        const f_vol = parseFloat(localStorage.getItem('filterVol') || 1000);
+        const f_age = parseFloat(localStorage.getItem('filterAge') || 60);
 
+        if (liq_mc > f_liqMc) score += 2;
+        if (vol_liq < f_volLiq) score += 2;
+        if (change1m > f_change) score += 1;
+        if (volume > f_vol) score += 1;
+        if (age < f_age) score += 1;
+
+        // POBIERANIE PROGU Z NOWYCH USTAWIEŃ
         let threshold = 6;
         const savedThreshold = localStorage.getItem('sniperThreshold');
         if (savedThreshold) {
