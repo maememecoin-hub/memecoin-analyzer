@@ -26,7 +26,7 @@ async function analyzeToken() {
     if(!addressInput) return;
     const address = addressInput.value.trim();
     const resultBox = document.getElementById("analyzerResultBox");
-    if (!address) return alert("Paste token CA!");
+    if (!address) return showToast("Wklej adres kontraktu (CA)!", "warning");
 
     resultBox.style.display = "block";
     resultBox.innerHTML = `<div style="text-align: center; color: var(--accent-blue); padding: 20px;"><i class="ph ph-spinner ph-spin" style="font-size: 2rem;"></i><br>Scanning Blockchain...</div>`;
@@ -148,10 +148,10 @@ window.copyResult = function() {
     const score = document.getElementById("copyScore")?.innerText.trim() || "";
     const stats = document.getElementById("copyStats")?.innerText.trim().replace(/\s*\|\s*/g, ' | ') || "";
     
-    if(!name) return alert("Nothing to copy!");
+    if(!name) return showToast("Brak danych do skopiowania!", "error");
     
     const text = `🎯 ${name}\n🚨 Signal: ${dec}\n📊 Score: ${score}/7\n💰 ${stats}`;
-    navigator.clipboard.writeText(text).then(() => alert("Result copied to clipboard!"));
+    navigator.clipboard.writeText(text).then(() => showToast("Skopiowano wynik do schowka!", "success"));
 }
 
 document.addEventListener("DOMContentLoaded", syncMainStats);
