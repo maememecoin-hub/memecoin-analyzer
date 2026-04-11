@@ -3,22 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Memecoin Sniper</title>
+    <title>Memecoin Sniper PRO</title>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
-    <nav class="navbar">
+    <div class="ambient-glow glow-1"></div>
+    <div class="ambient-glow glow-2"></div>
+
+    <nav class="navbar glass-panel">
         <div class="logo">
             <i class="ph ph-target"></i>
             <span>MEMECOIN SNIPER</span>
         </div>
         <ul class="nav-links">
-            <li><a href="#" class="active" data-target="analyzer">ANALYZER</a></li>
-            <li><a href="#" data-target="dziennik">DZIENNIK</a></li>
-            <li><a href="#" data-target="leaderboard">LEADERBOARD</a></li>
+            <li><a href="#" class="active" data-target="analyzer"><i class="ph ph-radar"></i> ANALYZER</a></li>
+            <li><a href="#" data-target="dziennik"><i class="ph ph-book-bookmark"></i> DZIENNIK</a></li>
+            <li><a href="#" data-target="leaderboard"><i class="ph ph-trophy"></i> LEADERBOARD</a></li>
         </ul>
         <div class="nav-icons">
             <i class="ph ph-github-logo"></i>
@@ -30,130 +33,145 @@
     <main class="main-content">
         
         <section id="analyzer" class="tab-content active">
-            <header class="hero">
-                <p class="subtitle">REAL-TIME ANALYZER • EDGE TOOL</p>
+            <header class="hero compact-hero">
                 <h1 class="title">MEMECOIN <span class="gradient-text">SNIPER</span></h1>
-                <p class="description">FIND. ANALYZE. SNIPE. BEFORE THE CROWD.</p>
+                <p class="description">REAL-TIME ON-CHAIN ANALYSIS TERMINAL</p>
             </header>
 
             <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr);">
-                <div class="stat-card glow-yellow">
-                    <div class="stat-icon yellow"><i class="ph ph-lightning"></i></div>
-                    <div class="stat-info">
+                <div class="stat-card glass-panel glow-yellow">
+                    <div class="stat-header">
                         <span class="stat-label">TOKENS ANALYZED</span>
+                        <div class="stat-icon yellow"><i class="ph ph-lightning"></i></div>
+                    </div>
+                    <div class="stat-body">
                         <span class="stat-value" id="main-tokens-count">...</span>
-                        <span class="stat-sub">Total</span>
+                    </div>
+                    <div class="sparkline yellow-line">
+                        <svg viewBox="0 0 100 20" preserveAspectRatio="none"><path d="M0,15 L20,10 L40,18 L60,5 L80,12 L100,2" fill="none" stroke="currentColor" stroke-width="2"/></svg>
                     </div>
                 </div>
                 
-                <div class="stat-card glow-purple">
-                    <div class="stat-icon purple"><i class="ph ph-target"></i></div>
-                    <div class="stat-info">
+                <div class="stat-card glass-panel glow-purple">
+                    <div class="stat-header">
                         <span class="stat-label">SUCCESS RATE</span>
+                        <div class="stat-icon purple"><i class="ph ph-target"></i></div>
+                    </div>
+                    <div class="stat-body">
                         <span class="stat-value" id="main-success-rate">0%</span>
-                        <span class="stat-sub">All Trades</span>
+                    </div>
+                    <div class="sparkline purple-line">
+                        <svg viewBox="0 0 100 20" preserveAspectRatio="none"><path d="M0,18 L20,15 L40,8 L60,10 L80,5 L100,2" fill="none" stroke="currentColor" stroke-width="2"/></svg>
                     </div>
                 </div>
 
-                <div class="stat-card glow-blue">
-                    <div class="stat-icon blue"><i class="ph ph-banknotes"></i></div>
-                    <div class="stat-info">
-                        <span class="stat-label">KAPITAŁ</span>
+                <div class="stat-card glass-panel glow-blue">
+                    <div class="stat-header">
+                        <span class="stat-label">LIVE CAPITAL</span>
+                        <div class="stat-icon blue"><i class="ph ph-banknotes"></i></div>
+                    </div>
+                    <div class="stat-body">
                         <span class="stat-value" id="main-total-capital">$0</span>
-                        <span class="stat-sub">Live from Journal</span>
+                    </div>
+                    <div class="sparkline blue-line">
+                        <svg viewBox="0 0 100 20" preserveAspectRatio="none"><path d="M0,18 L30,15 L50,5 L70,8 L100,2" fill="none" stroke="currentColor" stroke-width="2"/></svg>
                     </div>
                 </div>
             </div>
 
-            <div class="analyzer-box panel">
-                <div class="panel-header" style="display: flex; justify-content: space-between;">
-                    <span><i class="ph ph-text-align-left"></i> ANALYZER</span>
-                    <label style="font-size: 0.7rem; color: var(--text-muted); display: flex; align-items: center; gap: 5px;">
-                        SCORE ≥ <input type="number" id="strongBuyThreshold" value="6" style="width: 40px; background: rgba(0,0,0,0.5); border: 1px solid var(--border-color); color: white; padding: 2px 5px; border-radius: 4px; outline: none; text-align: center;">
-                    </label>
+            <div class="glass-panel control-bar">
+                <div class="threshold-box">
+                    <span class="muted">SCORE ≥</span>
+                    <input type="number" id="strongBuyThreshold" value="6" min="1" max="7">
                 </div>
-                <div class="input-group">
-                    <input type="text" id="tokenInput" placeholder="Paste token CA..." onkeypress="if(event.key==='Enter'){analyzeToken()}">
-                    <button class="btn-primary" onclick="analyzeToken()">ANALYZE TOKEN</button>
-                </div>
+                <div class="divider"></div>
+                <input type="text" id="tokenInput" placeholder="Paste token contract address here..." onkeypress="if(event.key==='Enter'){analyzeToken()}">
+                <button class="btn-primary" onclick="analyzeToken()"><i class="ph ph-scan"></i> SCAN</button>
             </div>
 
-            <div id="analyzerResultBox" class="result-box panel glow-border" style="display: none;"></div>
+            <div id="analyzerResultBox" class="result-box glass-panel glow-border" style="display: none;"></div>
 
-            <div class="panel">
+            <div class="glass-panel">
                 <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center;">
-                    <span><i class="ph ph-list-dashes"></i> LAST TOKENS</span>
-                    <button onclick="copyResult()" style="background: transparent; border: 1px solid var(--border-color); color: var(--text-muted); padding: 3px 8px; border-radius: 4px; cursor: pointer; font-size: 0.7rem; display: flex; align-items: center; gap: 4px; transition: 0.3s;"><i class="ph ph-copy"></i> COPY RESULT</button>
+                    <span><i class="ph ph-clock-counter-clockwise"></i> RECENT SCANS</span>
+                    <button onclick="copyResult()" class="btn-outline"><i class="ph ph-copy"></i> COPY LATEST</button>
                 </div>
                 <div id="historyList">
-                    <div style="color: var(--text-muted); font-size: 0.8rem; padding: 10px 0; text-align: center;">Awaiting scan...</div>
+                    <div style="color: var(--text-muted); font-size: 0.8rem; padding: 10px 0; text-align: center;">Awaiting first scan...</div>
                 </div>
             </div>
         </section>
 
         <section id="dziennik" class="tab-content">
-            <header class="hero" style="margin-bottom: 20px;">
-                <h2 class="title" style="font-size: 2.5rem;">TRADING <span class="gradient-text">JOURNAL</span></h2>
+            <header class="hero compact-hero" style="margin-bottom: 20px;">
+                <h2 class="title"><span class="gradient-text">TRADING</span> JOURNAL</h2>
                 <p class="description">TRACK YOUR SNIPES AND PNL.</p>
             </header>
 
             <div class="stats-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 30px;">
-                <div class="stat-card">
-                    <div class="stat-icon blue"><i class="ph ph-wallet"></i></div>
-                    <div class="stat-info">
+                <div class="stat-card glass-panel">
+                    <div class="stat-header">
                         <span class="stat-label">STARTING CAPITAL</span>
-                        <div style="display: flex; align-items: center; gap: 2px; margin-top: 5px;">
-                            <span style="font-size: 1.2rem; font-weight: bold; color: var(--text-muted);">$</span>
-                            <input type="number" id="startingCapital" value="1000" style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); color: white; font-size: 1.2rem; font-weight: bold; width: 80px; padding: 2px 5px; border-radius: 4px; outline: none;">
-                        </div>
+                        <div class="stat-icon blue"><i class="ph ph-wallet"></i></div>
+                    </div>
+                    <div class="stat-body input-body">
+                        <span>$</span>
+                        <input type="number" id="startingCapital" value="1000">
                     </div>
                 </div>
-                <div class="stat-card glow-blue">
-                    <div class="stat-icon blue"><i class="ph ph-coins"></i></div>
-                    <div class="stat-info">
+                
+                <div class="stat-card glass-panel glow-blue">
+                    <div class="stat-header">
                         <span class="stat-label">CURRENT CAPITAL</span>
+                        <div class="stat-icon blue"><i class="ph ph-coins"></i></div>
+                    </div>
+                    <div class="stat-body">
                         <span class="stat-value" id="currentCapital">$0.00</span>
-                        <span class="stat-sub">Live Updated</span>
                     </div>
                 </div>
-                <div class="stat-card glow-green" id="pnlCard">
-                    <div class="stat-icon green" id="pnlIcon"><i class="ph ph-trend-up"></i></div>
-                    <div class="stat-info">
+
+                <div class="stat-card glass-panel glow-green" id="pnlCard">
+                    <div class="stat-header">
                         <span class="stat-label">TOTAL PNL</span>
+                        <div class="stat-icon green" id="pnlIcon"><i class="ph ph-trend-up"></i></div>
+                    </div>
+                    <div class="stat-body">
                         <span class="stat-value" id="totalPnl">+$0.00</span>
-                        <span class="stat-sub">All Time</span>
                     </div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-icon purple"><i class="ph ph-crosshair"></i></div>
-                    <div class="stat-info">
+
+                <div class="stat-card glass-panel">
+                    <div class="stat-header">
                         <span class="stat-label">WIN RATE</span>
+                        <div class="stat-icon purple"><i class="ph ph-crosshair"></i></div>
+                    </div>
+                    <div class="stat-body" style="flex-direction: row; align-items: baseline; justify-content: space-between;">
                         <span class="stat-value" id="winRate">0%</span>
-                        <span class="stat-sub" id="winLossCount">0W / 0L</span>
+                        <span class="stat-sub" id="winLossCount" style="font-size:0.8rem;">0W / 0L</span>
                     </div>
                 </div>
             </div>
 
-            <div class="panel" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
-                <div class="panel-header" style="margin-bottom: 0;">
-                    <i class="ph ph-book-open"></i> RECENT TRADES
+            <div class="glass-panel" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <div class="panel-header" style="margin: 0;">
+                    <i class="ph ph-book-open"></i> TRADE HISTORY
                 </div>
-                <button class="btn-primary" onclick="addNewTrade()" style="display: flex; align-items: center; gap: 5px;"><i class="ph ph-plus-circle"></i> ADD NEW TRADE</button>
+                <button class="btn-primary" onclick="addNewTrade()"><i class="ph ph-plus"></i> NEW TRADE</button>
             </div>
 
-            <div class="panel">
-                <div class="journal-header" style="display: flex; justify-content: space-between; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); color: var(--text-muted); font-size: 0.8rem; font-weight: bold;">
-                    <span style="flex: 2;">TOKEN</span>
-                    <span style="flex: 1; text-align: right;">PNL</span>
-                    <span style="flex: 1; text-align: right;">STATUS</span>
+            <div class="glass-panel">
+                <div class="journal-header" style="display: flex; justify-content: space-between; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); color: var(--text-muted); font-size: 0.75rem; font-weight: 700; letter-spacing: 1px;">
+                    <span style="flex: 2;">ASSET</span>
+                    <span style="flex: 1; text-align: right;">NET PNL</span>
+                    <span style="flex: 1; text-align: right;">ACTION</span>
                 </div>
-                <div id="journalList"></div>
+                <div id="journalList" style="margin-top: 10px;"></div>
             </div>
         </section>
 
         <section id="leaderboard" class="tab-content">
             <h2 class="title" style="font-size: 2rem;">LEADERBOARD</h2>
-            <div class="panel">Miejsce na tablicę wyników...</div>
+            <div class="glass-panel">Miejsce na tablicę wyników...</div>
         </section>
 
     </main>
@@ -161,11 +179,11 @@
     <div id="overlay" class="overlay"></div>
     <aside id="settings-panel" class="settings-panel">
         <div class="settings-header">
-            <h3>Ustawienia</h3>
+            <h3><i class="ph ph-faders"></i> TERMINAL SETTINGS</h3>
             <i class="ph ph-x" id="close-settings" style="cursor:pointer;"></i>
         </div>
         <div class="settings-content">
-            <p>Konfiguracja interfejsu i bota.</p>
+            <p style="color: var(--text-muted); font-size: 0.85rem;">Konfiguracja interfejsu i API.</p>
         </div>
     </aside>
 
