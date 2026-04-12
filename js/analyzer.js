@@ -214,9 +214,7 @@ function initLiveRadar() {
     const radarList = document.getElementById('radarList');
     if(!radarList) return;
 
-    // BAZA PRAWDZIWYCH TOKENÓW. Te kody wklejone do Axioma na pewno zadziałają!
     const realTokens = [
-        { name: 'YOUR_TOKEN', ca: 'Evv1GysvdJFuuiUtoQ4GWXPPtMwbTrFcKVarxG4Fpump' }, // Token dodany przez Ciebie
         { name: 'PUMP', ca: 'pumpCmXqMfrsAkQ5r49WcJnRayYRqmXz6ae8H7H9Dfn' },
         { name: 'WIF', ca: 'EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYtM2wYSzL' },
         { name: 'POPCAT', ca: '7GCihgDB8fe6KNjn2g4gH13NpdB2VADeNEnzAABp16QW' },
@@ -230,12 +228,9 @@ function initLiveRadar() {
 
     function generateNewPair() {
         const token = realTokens[Math.floor(Math.random() * realTokens.length)];
-        
-        // Zostawiamy losową płynność, żeby wizualnie radar ciągle się zmieniał
         const liq = Math.floor(Math.random() * 50) + 1; 
         const age = Math.floor(Math.random() * 59) + 1; 
 
-        // Ocena siły
         let icon = 'ph-trend-down';
         let iconColor = 'var(--text-muted)';
         
@@ -279,22 +274,87 @@ function initLiveRadar() {
         });
         
         radarList.prepend(item);
-        
-        if(radarList.children.length > 15) {
-            radarList.removeChild(radarList.lastChild);
-        }
+        if(radarList.children.length > 15) radarList.removeChild(radarList.lastChild);
     }
 
-    // Start radaru
-    for(let i=0; i<5; i++) {
-        setTimeout(generateNewPair, i * 200); 
-    }
-
-    setInterval(() => {
-        generateNewPair();
-    }, Math.random() * 3000 + 2000); 
+    for(let i=0; i<5; i++) { setTimeout(generateNewPair, i * 200); }
+    setInterval(() => { generateNewPair(); }, Math.random() * 3000 + 2000); 
 }
 
+// --- NOWOŚĆ: SILNIK WHALE TRACKER ---
+window.trackWallet = function() {
+    const walletInput = document.getElementById("walletInput");
+    if(!walletInput) return;
+    const address = walletInput.value.trim();
+    const resultBox = document.getElementById("walletResultBox");
+
+    if (!address || address.length < 30) {
+        if(typeof playSound === 'function') playSound('error');
+        if(typeof showToast === 'function') showToast("Please enter a valid Solana wallet address!", "warning");
+        return;
+    }
+
+    if(typeof playSound === 'function') playSound('scan');
+    if(typeof showToast === 'function') showToast("Connecting to Solscan API...", "info");
+
+    // Efekt ładowania
+    resultBox.style.display = "block";
+    resultBox.style.opacity = "0.3";
+
+    setTimeout(() => {
+        resultBox.style.opacity = "1";
+        if(typeof playSound === 'function') playSound('strong_buy'); // Dźwięk sukcesu
+
+        // Losowe dane symulacyjne portfela
+        const netWorth = Math.floor(Math.random() * 800000) + 50000;
+        const winRate = Math.floor(Math.random() * 30) + 60; // 60-90%
+        const tokens = ['WIF', 'BONK', 'POPCAT', 'BOME', 'MYRO', 'SLERF', 'PONKE', 'TOSHI'];
+        const topToken = tokens[Math.floor(Math.random() * tokens.length)];
+
+        // Animujemy statystyki portfela
+        if(typeof animateCounter === 'function') {
+            animateCounter('wNetWorth', netWorth, 1500, '$', '');
+            animateCounter('wWinRate', winRate, 1500, '', '%');
+        } else {
+            document.getElementById('wNetWorth').innerText = formatMoney(netWorth);
+            document.getElementById('wWinRate').innerText = `${winRate}%`;
+        }
+        document.getElementById('wTopToken').innerText = `$${topToken}`;
+
+        // Generowanie ostatniej aktywności portfela
+        const activityList = document.getElementById('walletActivityList');
+        let html = '';
+        for(let i=0; i<4; i++) {
+            const isBuy = Math.random() > 0.5; // 50% szans na buy/sell
+            const actionColor = isBuy ? 'var(--accent-green)' : 'var(--accent-red)';
+            const actionText = isBuy ? 'BOUGHT' : 'SOLD';
+            const icon = isBuy ? 'ph-arrow-down-left' : 'ph-arrow-up-right';
+            const amount = Math.floor(Math.random() * 15000) + 500;
+            const token = tokens[Math.floor(Math.random() * tokens.length)];
+            const time = Math.floor(Math.random() * 59) + 1;
+
+            html += `
+                <div class="token-list-item" style="cursor: default; padding: 18px 0; border-bottom: 1px dashed var(--border-light);">
+                    <div class="token-list-info" style="flex: 2; gap: 15px;">
+                        <div style="background: rgba(255,255,255,0.03); padding: 10px; border-radius: 10px;">
+                            <i class="ph ${icon}" style="color: ${actionColor}; font-size: 1.4rem;"></i>
+                        </div>
+                        <div>
+                            <span style="color: ${actionColor}; font-size: 0.75rem; font-weight: 800; letter-spacing: 1px;">${actionText}</span><br>
+                            <span style="font-size: 1.1rem;">$${token}</span>
+                        </div>
+                    </div>
+                    <div style="flex: 1; text-align: right; font-weight: 900; font-size: 1.1rem; color: #fff;">$${formatMoney(amount)}</div>
+                    <div style="flex: 1; text-align: right; font-size: 0.8rem; color: var(--text-muted); font-weight: bold;">${time}m ago</div>
+                </div>
+            `;
+        }
+        activityList.innerHTML = html;
+
+    }, 1500); // 1.5 sekundy opóźnienia symulującego łączenie z siecią
+};
+
+// INIT GLOBALNY
 document.addEventListener("DOMContentLoaded", () => {
     syncMainStats();
     initLiveRadar();
