@@ -210,29 +210,30 @@ window.copyResult = function() {
 }
 
 // --- SILNIK LIVE RADAR (Tylko sieć SOLANA) ---
+// --- SILNIK LIVE RADAR (Tylko SOLANA - symulacja PUMP.FUN) ---
 function initLiveRadar() {
     const radarList = document.getElementById('radarList');
     if(!radarList) return;
 
-    // Baza PRAWDZIWYCH tokenów, TYLKO z sieci SOL
-    const realTokens = [
-        { name: 'WIF', chain: 'SOL', ca: 'EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYtM2wYSzL' },
-        { name: 'BONK', chain: 'SOL', ca: 'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263' },
-        { name: 'POPCAT', chain: 'SOL', ca: '7GCihgDB8fe6KNjn2g4gH13NpdB2VADeNEnzAABp16QW' },
-        { name: 'MYRO', chain: 'SOL', ca: 'HhJpBhRRn4g56VsyLuT8VD5egXqDvd9L4N9J8YxdyQ9w' },
-        { name: 'BOME', chain: 'SOL', ca: 'ukHH6c7mMyiWCf1b9pnWe25TSpkDDt3H5pQZgZ74J82' },
-        { name: 'SLERF', chain: 'SOL', ca: '7BgBvyjrZX1YKz4oh9mjb8ZScatkkwb8A9D9q58K6xG' },
-        { name: 'WEN', chain: 'SOL', ca: 'WENWENvqqNya429ubCdR81ZmD69brwQaaBYY6p3LCpk' },
-        { name: 'PONKE', chain: 'SOL', ca: '5z3EqYQo9HiCEs3R84RCDMu2nH1BfB1qN1Z74Y3n1qT' }
-    ];
+    // Prefiksy i sufiksy do tworzenia absurdalnych, degen-owych nazw memów
+    const prefixes = ['PEPE', 'BASED', 'TRUMP', 'MAGA', 'BODEN', 'SHIB', 'DOGE', 'WIF', 'CAT', 'HAT', 'RETARD', 'NINJA', 'AI'];
+    const suffixes = [' INU', ' AI', ' ON SOL', ' 2.0', ' CEO', ' ELON', ' MOON', ' WIF HAT'];
 
     function generateNewPair() {
-        // Losujemy prawdziwy token z naszej bazy
-        const token = realTokens[Math.floor(Math.random() * realTokens.length)];
+        const name = prefixes[Math.floor(Math.random() * prefixes.length)] + suffixes[Math.floor(Math.random() * suffixes.length)];
         
-        // Generujemy losowe statystyki płynności i wieku (żeby radar "żył")
-        const liq = Math.floor(Math.random() * 50) + 1; 
-        const age = Math.floor(Math.random() * 59) + 1; 
+        const liq = Math.floor(Math.random() * 50) + 1; // 1-50K Liquidity
+        const age = Math.floor(Math.random() * 59) + 1; // 1-59 sekund
+
+        // Generowanie poprawnego adresu (CA) dla pump.fun na Solanie
+        // Solana używa Base58. Adres ma 44 znaki. Zakończymy go słowem "pump".
+        const chars = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+        let ca = '';
+        // 40 znaków losowych + 4 znaki 'pump' = 44 znaki (standard)
+        for(let i=0; i<40; i++) {
+            ca += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        ca += 'pump';
 
         // Ocena siły (Ikony i kolory)
         let icon = 'ph-trend-down'; // Słaby
@@ -248,55 +249,56 @@ function initLiveRadar() {
 
         const item = document.createElement('div');
         item.className = 'radar-item';
-        item.title = "Kliknij, aby skopiować CA";
+        item.title = "Kliknij, aby skopiować CA z pump.fun";
         
         item.innerHTML = `
             <div class="radar-top">
                 <span style="color: #fff; display: flex; align-items: center; gap: 6px;">
                     <i class="ph ${icon}" style="color: ${iconColor}; font-size: 1.1rem; filter: drop-shadow(0 0 5px ${iconColor});"></i> 
-                    ${token.name} / W${token.chain}
+                    ${name}
                 </span>
-                <span class="new-badge">LIVE</span>
+                <span class="new-badge" style="color: var(--accent-green); text-shadow: 0 0 5px var(--accent-green);">PUMP.FUN</span>
             </div>
             <div class="radar-bot">
                 <span>LIQ: $${liq}K</span>
-                <span>AGE: ${age}s <span class="radar-chain">${token.chain}</span></span>
+                <span>AGE: ${age}s <span class="radar-chain">SOL</span></span>
             </div>
             <div class="radar-ca">
-                <span>CA: ${token.ca.substring(0, 8)}...${token.ca.substring(token.ca.length - 4)}</span>
+                <span>CA: ${ca.substring(0, 8)}...${ca.substring(ca.length - 6)}</span>
                 <i class="ph ph-copy copy-icon"></i>
             </div>
         `;
         
-        // Zdarzenie kliknięcia -> kopiowanie do schowka
         item.addEventListener('click', () => {
-            navigator.clipboard.writeText(token.ca).then(() => {
+            navigator.clipboard.writeText(ca).then(() => {
                 if(typeof showToast === 'function') {
-                    showToast(`Skopiowano CA: ${token.name}`, "success");
+                    showToast(`Skopiowano CA: ${name}`, "success");
                 }
             });
             if(typeof playSound === 'function') playSound('scan'); 
         });
         
-        // Dodajemy na początek listy
         radarList.prepend(item);
         
-        // Ograniczamy listę do 15 elementów
         if(radarList.children.length > 15) {
             radarList.removeChild(radarList.lastChild);
         }
     }
 
-    // Generujemy kilka na start
     for(let i=0; i<5; i++) {
         setTimeout(generateNewPair, i * 200); 
     }
 
-    // Nieskończona pętla
     setInterval(() => {
         generateNewPair();
     }, Math.random() * 3000 + 2000); 
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+    syncMainStats();
+    initLiveRadar();
+});
+
 
 document.addEventListener("DOMContentLoaded", () => {
     syncMainStats();
