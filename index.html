@@ -1,248 +1,189 @@
-:root {
-    /* Prawdziwa, absolutna czerń */
-    --bg-main: #000000;
-    --bg-panel: #050505;
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MEME_OS // TERMINAL</title>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+    <div class="crt-scanlines"></div>
+
+    <div class="os-wrapper">
+        <header class="sys-header">
+            <div class="sys-brand">
+                <i class="ph ph-terminal-window"></i> 
+                <span>ROOT@SNIPER_OS:~</span>
+            </div>
+            <nav class="sys-tabs nav-links">
+                <a href="#" class="active" data-target="analyzer">[ ANALYZER.exe ]</a>
+                <a href="#" data-target="dziennik">[ JOURNAL.sys ]</a>
+                <a href="#" data-target="leaderboard">[ RANKS.dat ]</a>
+            </nav>
+            <div class="sys-status">
+                <span class="blink">[REC]</span>
+                <span style="color: var(--sys-green);">API: CONNECTED</span>
+                <i class="ph ph-faders" id="settings-btn" title="Config"></i>
+            </div>
+        </header>
+
+        <main class="sys-main">
+            
+            <aside class="panel left-panel">
+                <div class="panel-head">>> LIVE_RADAR_FEED</div>
+                <div class="panel-body scrollable" id="historyList">
+                    <div class="sys-msg text-muted">> awaiting_contract_data...</div>
+                </div>
+            </aside>
+
+            <section class="panel center-panel">
+                
+                <div id="analyzer" class="tab-content active">
+                    <div class="cli-input-box">
+                        <span class="cli-prompt">target_ca ></span>
+                        <input type="text" id="tokenInput" placeholder="ENTER_ADDRESS_HERE..." onkeypress="if(event.key==='Enter'){analyzeToken()}">
+                        <button class="cli-btn" onclick="analyzeToken()">[ EXECUTE ]</button>
+                    </div>
+
+                    <div id="analyzerResultBox" class="result-box" style="display: none;"></div>
+                    
+                    <div id="idleScreen" class="idle-screen">
+                        <i class="ph ph-crosshair"></i>
+                        <p>SYSTEM IDLE // READY FOR INPUT</p>
+                    </div>
+                </div>
+
+                <div id="dziennik" class="tab-content">
+                    <div class="panel-head">>> TRADE_DATABASE</div>
+                    <div class="journal-controls">
+                        <button class="cli-btn" onclick="addNewTrade()">[ + INSERT_TRADE ]</button>
+                    </div>
+                    <div class="journal-table-header">
+                        <span>ASSET_ID</span>
+                        <span class="text-right">NET_PNL</span>
+                        <span class="text-right">CMD</span>
+                    </div>
+                    <div class="panel-body scrollable" id="journalList" style="height: calc(100vh - 250px);"></div>
+                </div>
+
+                <div id="leaderboard" class="tab-content">
+                    <div class="panel-head">>> HALL_OF_FAME.dat</div>
+                    <div class="panel-body scrollable" id="leaderboardList" style="height: calc(100vh - 150px);">
+                        <div class="sys-msg">> fetching_data...</div>
+                    </div>
+                </div>
+
+            </section>
+
+            <aside class="panel right-panel">
+                <div class="panel-head">>> WALLET_METRICS</div>
+                <div class="panel-body stats-dense">
+                    
+                    <div class="data-block">
+                        <div class="data-label">START_CAPITAL</div>
+                        <div class="data-val flex-input">
+                            <span>$</span><input type="number" id="startingCapital" value="1000">
+                        </div>
+                    </div>
+                    
+                    <div class="data-block highlight-blue">
+                        <div class="data-label">LIVE_CAPITAL</div>
+                        <div class="data-val" id="currentCapital">$0.00</div>
+                    </div>
+
+                    <div class="data-block" id="pnlCard">
+                        <div class="data-label">TOTAL_PNL</div>
+                        <div class="data-val" id="totalPnl">+$0.00</div>
+                    </div>
+
+                    <div class="data-separator">--- ALGO_STATS ---</div>
+
+                    <div class="data-block">
+                        <div class="data-label">SCANS_EXECUTED</div>
+                        <div class="data-val" id="main-tokens-count">0</div>
+                    </div>
+
+                    <div class="data-block">
+                        <div class="data-label">WIN_RATE</div>
+                        <div class="data-val" id="winRate">0%</div>
+                        <div class="data-sub" id="winLossCount">0W / 0L</div>
+                    </div>
+
+                    <div class="data-block">
+                        <div class="data-label">GLOBAL_SUCCESS</div>
+                        <div class="data-val" id="main-success-rate">0%</div>
+                    </div>
+
+                    <div class="data-separator">--- SYS_WARNING ---</div>
+                    <div class="sys-msg text-red blink-slow">! HIGH VOLATILITY !</div>
+                </div>
+            </aside>
+
+        </main>
+    </div>
+
+    <div id="overlay" class="overlay"></div>
+    <div id="toast-container" class="toast-container"></div>
     
-    /* Kolory techniczne (Cyber domyślnie) */
-    --sys-green: #00ff41;
-    --sys-blue: #00e5ff;
-    --sys-red: #ff003c;
-    --sys-yellow: #ffea00;
-    --sys-white: #ffffff;
-    --sys-muted: #555555;
+    <aside id="settings-panel" class="settings-panel">
+        <div class="settings-header">
+            <h3>[ CONFIG_MENU ]</h3>
+            <span id="close-settings" class="close-btn">[ X ]</span>
+        </div>
+        <div class="settings-content">
+            
+            <div class="config-block">
+                <label>BUY_THRESHOLD: <span id="thresholdValue" class="text-blue">6 / 7</span></label>
+                <input type="range" id="strongBuyThreshold" min="4" max="7" value="6" step="1" class="cli-slider">
+            </div>
+            
+            <div class="data-separator">--- FILTERS ---</div>
+
+            <div class="config-block filter-row">
+                <span>LIQ_MC_RATIO(%)</span><input type="number" id="filterLiqMc" value="2" step="0.5">
+            </div>
+            <div class="config-block filter-row">
+                <span>MAX_VOL_LIQ</span><input type="number" id="filterVolLiq" value="5" step="0.5">
+            </div>
+            <div class="config-block filter-row">
+                <span>MIN_CHANGE_1M(%)</span><input type="number" id="filterChange" value="0.5" step="0.1">
+            </div>
+            <div class="config-block filter-row">
+                <span>MIN_VOL_24H($)</span><input type="number" id="filterVol" value="1000" step="100">
+            </div>
+            <div class="config-block filter-row">
+                <span>MAX_AGE(MIN)</span><input type="number" id="filterAge" value="60" step="5">
+            </div>
+
+            <div class="data-separator">--- THEMES ---</div>
+            
+            <div class="theme-options">
+                <div class="theme-btn active" data-theme="cyber" style="--t-color: #00e5ff;">CYBER</div>
+                <div class="theme-btn" data-theme="matrix" style="--t-color: #00ff41;">MATRIX</div>
+                <div class="theme-btn" data-theme="sith" style="--t-color: #ff003c;">SITH</div>
+            </div>
+
+        </div>
+    </aside>
+
+    <script src="js/supabase-config.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/analyzer.js"></script>
+    <script src="js/journal.js"></script>
     
-    --border-color: #333333;
-    --border-active: var(--sys-blue);
-    
-    /* Font maszyny do pisania / programistyczny */
-    --font-sys: 'Consolas', 'Courier New', Courier, monospace;
-}
-
-* { box-sizing: border-box; margin: 0; padding: 0; }
-
-body {
-    background-color: var(--bg-main);
-    color: var(--sys-green);
-    font-family: var(--font-sys);
-    height: 100vh;
-    overflow: hidden; /* Blokujemy przewijanie całej strony */
-    text-transform: uppercase; /* Wszystko dużymi literami jak w konsoli */
-    font-size: 13px; /* Mały, gęsty tekst */
-}
-
-/* EFEKT CRT MONITORA (Lekkie paski) */
-.crt-scanlines {
-    position: fixed;
-    top: 0; left: 0; width: 100vw; height: 100vh;
-    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.2) 50%);
-    background-size: 100% 4px;
-    pointer-events: none;
-    z-index: 9999;
-}
-
-/* === GŁÓWNA STRUKTURA === */
-.os-wrapper {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    padding: 10px;
-    gap: 10px;
-}
-
-/* === TOP BAR === */
-.sys-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border: 1px solid var(--border-color);
-    background: var(--bg-panel);
-    padding: 5px 15px;
-    height: 40px;
-    flex-shrink: 0;
-}
-.sys-brand { font-weight: bold; color: var(--sys-white); display: flex; align-items: center; gap: 10px; letter-spacing: 1px;}
-.sys-brand i { color: var(--border-active); font-size: 16px;}
-
-.sys-tabs { display: flex; gap: 15px; }
-.sys-tabs a { color: var(--sys-muted); text-decoration: none; font-weight: bold; transition: 0.2s; }
-.sys-tabs a:hover { color: var(--sys-white); }
-.sys-tabs a.active { color: var(--border-active); text-shadow: 0 0 5px var(--border-active); }
-
-.sys-status { display: flex; align-items: center; gap: 15px; font-weight: bold; color: var(--sys-muted); }
-.sys-status i { cursor: pointer; color: var(--sys-white); font-size: 16px; transition: 0.2s; }
-.sys-status i:hover { color: var(--border-active); }
-
-.blink { animation: blinker 1s linear infinite; color: var(--sys-red); }
-.blink-slow { animation: blinker 2s linear infinite; }
-@keyframes blinker { 50% { opacity: 0; } }
-
-/* === MAIN GRID === */
-.sys-main {
-    display: flex;
-    flex: 1;
-    gap: 10px;
-    height: calc(100vh - 60px);
-}
-
-.panel {
-    border: 1px solid var(--border-color);
-    background: var(--bg-panel);
-    display: flex;
-    flex-direction: column;
-}
-.panel-head {
-    background: var(--sys-white);
-    color: var(--bg-main);
-    font-weight: bold;
-    padding: 4px 10px;
-    font-size: 12px;
-    flex-shrink: 0;
-}
-.panel-body { padding: 10px; flex: 1; display: flex; flex-direction: column; gap: 5px; }
-.scrollable { overflow-y: auto; }
-.scrollable::-webkit-scrollbar { width: 5px; }
-.scrollable::-webkit-scrollbar-track { background: var(--bg-main); }
-.scrollable::-webkit-scrollbar-thumb { background: var(--border-color); }
-
-/* Panele boczne */
-.left-panel { width: 300px; flex-shrink: 0; }
-.right-panel { width: 250px; flex-shrink: 0; }
-.center-panel { flex: 1; position: relative; }
-
-/* === COMMAND LINE INPUT === */
-.cli-input-box {
-    display: flex;
-    align-items: center;
-    border-bottom: 1px dashed var(--border-color);
-    padding: 10px;
-    gap: 10px;
-    background: #080808;
-}
-.cli-prompt { color: var(--border-active); font-weight: bold; }
-.cli-input-box input {
-    flex: 1;
-    background: transparent;
-    border: none;
-    color: var(--sys-white);
-    font-family: var(--font-sys);
-    font-size: 14px;
-    outline: none;
-    text-transform: uppercase;
-}
-.cli-input-box input::placeholder { color: var(--sys-muted); }
-.cli-btn {
-    background: transparent;
-    border: none;
-    color: var(--sys-white);
-    font-family: var(--font-sys);
-    font-weight: bold;
-    cursor: pointer;
-    transition: 0.2s;
-}
-.cli-btn:hover { color: var(--border-active); text-shadow: 0 0 5px var(--border-active); }
-
-/* === ZAKŁADKI === */
-.tab-content { display: none; height: 100%; flex-direction: column; }
-.tab-content.active { display: flex; }
-
-/* === IDLE SCREEN === */
-.idle-screen { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--border-color); }
-.idle-screen i { font-size: 64px; margin-bottom: 10px; animation: pulse 4s infinite;}
-@keyframes pulse { 0% { opacity: 0.2; } 50% { opacity: 0.8; } 100% { opacity: 0.2; } }
-
-/* === ANALYZER RESULT PRO === */
-.result-box { flex: 1; display: flex; flex-direction: column; padding: 10px; gap: 10px; }
-.result-header { display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border-color); padding: 10px; background: #000;}
-.token-name { font-size: 18px; font-weight: bold; color: var(--sys-white); display: flex; align-items: center; gap: 10px;}
-.ticker { color: var(--sys-muted); font-size: 12px; }
-.badge { border: 1px solid currentColor; padding: 2px 8px; font-weight: bold; }
-.badge.green { color: var(--sys-green); }
-.badge.blue { color: var(--sys-blue); }
-.badge.red { color: var(--sys-red); }
-
-.result-body { display: flex; justify-content: space-between; align-items: flex-end; padding: 0 5px;}
-.score-big { font-size: 36px; font-weight: bold; line-height: 1; color: var(--sys-white);}
-.score-small { color: var(--sys-muted); font-size: 14px;}
-.token-stats { text-align: right; line-height: 1.5; color: var(--sys-white); }
-.token-stats span { color: var(--border-active); margin: 0 5px; }
-
-.chart-container { flex: 1; border: 1px solid var(--border-color); min-height: 300px; background: #000; }
-.chart-container iframe { width: 100%; height: 100%; display: block; }
-
-/* === STATYSTYKI PRAWEGO PANELU (DENSE) === */
-.stats-dense { padding: 10px; gap: 15px;}
-.data-block { display: flex; flex-direction: column; margin-bottom: 5px; }
-.data-label { color: var(--sys-muted); font-size: 11px; margin-bottom: 2px; }
-.data-val { color: var(--sys-white); font-size: 18px; font-weight: bold; }
-.data-sub { color: var(--sys-muted); font-size: 11px; }
-
-.highlight-blue .data-val { color: var(--sys-blue); text-shadow: 0 0 5px rgba(0, 229, 255, 0.5); }
-.text-red { color: var(--sys-red) !important; }
-.text-blue { color: var(--sys-blue) !important; }
-.text-muted { color: var(--sys-muted) !important; }
-.text-right { text-align: right; }
-
-.data-separator { color: var(--border-color); font-size: 10px; text-align: center; margin: 10px 0; letter-spacing: 2px; }
-
-/* Inputy w statystykach */
-.flex-input { display: flex; align-items: baseline; gap: 2px;}
-.flex-input span { color: var(--sys-muted); }
-.flex-input input { background: transparent; border: none; border-bottom: 1px solid var(--sys-muted); color: var(--sys-white); font-family: var(--font-sys); font-size: 18px; font-weight: bold; width: 80px; outline: none; text-align: left; }
-.flex-input input:focus { border-color: var(--border-active); }
-
-/* === LISTY (RADAR / JOURNAL) === */
-.token-list-item { border-left: 2px solid var(--sys-muted); padding: 5px 10px; display: flex; flex-direction: column; gap: 3px; cursor: pointer;}
-.token-list-item:hover { border-left-color: var(--border-active); background: #080808; }
-.token-list-info { display: flex; justify-content: space-between; color: var(--sys-white); }
-.token-list-item .badge { align-self: flex-start; font-size: 10px; }
-
-.journal-controls { padding: 10px; border-bottom: 1px dashed var(--border-color); text-align: right;}
-.journal-table-header { display: flex; justify-content: space-between; padding: 10px; color: var(--sys-muted); font-size: 11px; border-bottom: 1px solid var(--border-color); }
-.journal-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px dashed var(--border-color); color: var(--sys-white); }
-.journal-item:hover { background: #080808; }
-.trash-btn { background: transparent; border: 1px solid var(--sys-red); color: var(--sys-red); cursor: pointer; padding: 2px 5px; font-family: var(--font-sys); font-size: 10px;}
-.trash-btn:hover { background: var(--sys-red); color: #000; }
-
-/* === USTAWIENIA === */
-.settings-panel { position: fixed; top: 0; right: -300px; width: 300px; height: 100vh; background: var(--bg-main); border-left: 1px solid var(--border-active); z-index: 2000; transition: right 0.2s linear; padding: 20px; box-shadow: -10px 0 30px rgba(0,0,0,0.9); }
-.settings-panel.open { right: 0; }
-.settings-header { display: flex; justify-content: space-between; margin-bottom: 20px; color: var(--border-active); font-weight: bold;}
-.close-btn { cursor: pointer; color: var(--sys-muted); transition: 0.2s;}
-.close-btn:hover { color: var(--sys-red); }
-.overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 1999; display: none; }
-.overlay.active { display: block; }
-
-.config-block { margin-bottom: 15px; display: flex; flex-direction: column; gap: 5px;}
-.filter-row { flex-direction: row; justify-content: space-between; align-items: center; }
-.filter-row input { width: 60px; background: #080808; border: 1px solid var(--border-color); color: var(--sys-white); font-family: var(--font-sys); text-align: right; padding: 2px; }
-.filter-row input:focus { border-color: var(--border-active); outline: none; }
-.cli-slider { -webkit-appearance: none; width: 100%; height: 2px; background: var(--border-color); outline: none; }
-.cli-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 10px; height: 16px; background: var(--border-active); cursor: pointer; border-radius: 0; }
-
-.theme-options { display: flex; flex-direction: column; gap: 5px; }
-.theme-btn { border: 1px solid var(--border-color); color: var(--sys-muted); padding: 5px; cursor: pointer; text-align: center; transition: 0.2s; }
-.theme-btn.active { border-color: var(--t-color); color: var(--t-color); font-weight: bold;}
-.theme-btn:hover { border-color: var(--sys-white); color: var(--sys-white); }
-
-/* TOASTS (W stylu logów błędu) */
-.toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 5px; pointer-events: none;}
-.toast { background: #000; border: 1px solid var(--border-active); color: var(--sys-white); padding: 10px; font-size: 11px; display: flex; align-items: center; gap: 10px; transform: translateX(120%); opacity: 0; transition: 0.2s; }
-.toast.show { transform: translateX(0); opacity: 1; }
-.toast.success { border-color: var(--sys-green); color: var(--sys-green); }
-.toast.error { border-color: var(--sys-red); color: var(--sys-red); }
-.toast.warning { border-color: var(--sys-yellow); color: var(--sys-yellow); }
-
-/* THEME MODIFIERS */
-body[data-theme="matrix"] {
-    --border-active: var(--sys-green);
-    --bg-panel: #020502;
-    color: var(--sys-green);
-}
-body[data-theme="matrix"] .sys-white, body[data-theme="matrix"] .data-val { color: var(--sys-green); }
-
-body[data-theme="sith"] {
-    --border-active: var(--sys-red);
-    --bg-panel: #050101;
-    color: var(--sys-red);
-}
-body[data-theme="sith"] .sys-white, body[data-theme="sith"] .data-val { color: var(--sys-red); }
+    <script>
+        // Mały trik by ukryć idleScreen, gdy pojawia się wynik
+        const observer = new MutationObserver((mutations) => {
+            const idle = document.getElementById('idleScreen');
+            const res = document.getElementById('analyzerResultBox');
+            if(res && idle && res.style.display === 'block') {
+                idle.style.display = 'none';
+            }
+        });
+        observer.observe(document.getElementById('analyzerResultBox'), { attributes: true });
+    </script>
+</body>
+</html>
