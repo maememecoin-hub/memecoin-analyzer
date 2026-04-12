@@ -97,8 +97,8 @@ async function analyzeToken() {
         // TWITTER AI
         const hypeLevel = isSafe ? (Math.floor(Math.random() * 20) + 80) : (Math.floor(Math.random() * 40) + 10);
         const symbol = pair.baseToken.symbol;
-        const bullishTweets = [`Just aped into $${symbol}, to the moon! 🚀`, `Smart money accumulating $${symbol}. Do fade.`, `$${symbol} dev is cooking massive. 🔥`];
-        const bearishTweets = [`$${symbol} looks slow rug.🚩`, `Dev wallet holds 80% $${symbol}. Huge red flag`, `Volume $${symbol} is dead.`];
+        const bullishTweets = [`Just aped into $${symbol}, this is going to the moon! 🚀`, `Smart money accumulating $${symbol} right now. Don't fade.`, `$${symbol} dev is cooking something massive. 100x incoming! 🔥`];
+        const bearishTweets = [`$${symbol} looks like a slow rug. Be careful...`, `Dev wallet holds 80% of $${symbol}. Huge red flag 🚩`, `Volume on $${symbol} is dead. Everyone left.`];
         let selectedTweets = [];
         if(hypeLevel > 50) {
             selectedTweets.push(bullishTweets[Math.floor(Math.random() * bullishTweets.length)]);
@@ -120,83 +120,7 @@ async function analyzeToken() {
             publicPercent = 100 - lpPercent - devPercent; 
         }
 
-        // --- SILNIK BUBBLE MAP PRO (Axiom Style z SVG) ---
-        let mapHTML = '';
-        const width = 1000;
-        const height = 1000; // Używamy koordynatów wektorowych
-        const mainDev = { x: 500, y: 350, r: 65, colorClass: 'wallet-dev' };
-        
-        let clusters = [];
-        let connections = '';
-
-        if (!isSafe) {
-            // Niebezpieczny (Scam/Rug) - Symulujemy Wallet Splitting (Pęczki portfeli)
-            // Generujemy 3-5 klastrów
-            const numClusters = Math.floor(Math.random() * 3) + 3;
-            for(let i=0; i<numClusters; i++) {
-                const clusterMain = {
-                    x: 200 + Math.floor(Math.random() * 600),
-                    y: 600 + Math.floor(Math.random() * 250),
-                    r: 45,
-                    colorClass: 'wallet-cluster'
-                };
-                clusters.push(clusterMain);
-
-                // Połączenia od Głównego Dev do Klastra
-                connections += `<line class="wallet-link link-dev-cluster" x1="${mainDev.x}" y1="${mainDev.y}" x2="${clusterMain.x}" y2="${clusterMain.y}" />`;
-
-                // Małe portfele wewnątrz klastra (钱包splitting symulacja)
-                const numInner = Math.floor(Math.random() * 3) + 2;
-                for(let j=0; j<numInner; j++) {
-                    const innerWallet = {
-                        x: clusterMain.x + (Math.random() * 200 - 100),
-                        y: clusterMain.y + (Math.random() * 200 - 100),
-                        r: 25,
-                        colorClass: 'wallet-cluster'
-                    };
-                    clusters.push(innerWallet);
-                    // Połączenie od głównego portfela klastra do małych portfeli
-                    connections += `<line class="wallet-link link-cluster-inner" x1="${clusterMain.x}" y1="${clusterMain.y}" x2="${innerWallet.x}" y2="${innerWallet.y}" />`;
-                }
-            }
-        } else {
-            // Bezpieczny - Głuwny twórca jest jeden, ewentualnie ma jeden powiązany portfel LP
-            mainDev.r = 55;
-            clusters.push({ x: mainDev.x + 150, y: mainDev.y + 100, r: 35, colorClass: 'wallet-dev' });
-            connections += `<line class="wallet-link link-dev-cluster" x1="${mainDev.x}" y1="${mainDev.y}" x2="${mainDev.x+150}" y2="${mainDev.y+100}" />`;
-        }
-
-        // Zwykłe portfele - szare, puste, niepowiązane
-        const numOthers = isSafe ? 25 : 15;
-        let othersHTML = '';
-        for(let i=0; i<numOthers; i++) {
-            const size = Math.floor(Math.random() * 30) + 20;
-            const x = Math.floor(Math.random() * 900) + 50;
-            const y = Math.floor(Math.random() * 900) + 50;
-            
-            // Unikamy nakładania się z Głuwnym Dev
-            const dist = Math.sqrt(Math.pow(x - mainDev.x, 2) + Math.pow(y - mainDev.y, 2));
-            if (dist > 250) {
-                othersHTML += `<circle class="wallet-circle wallet-other" cx="${x}" cy="${y}" r="${size}" />`;
-            }
-        }
-
-        // Składamy SVG w całość
-        let svgContent = `<svg viewBox="0 0 1000 1000" class="bubble-svg" id="copyBubbleMap">`;
-        svgContent += connections; // Linie na spodzie
-        svgContent += `<circle class="wallet-circle ${mainDev.colorClass}" cx="${mainDev.x}" cy="${mainDev.y}" r="${mainDev.r}" />`; // Główny Dev
-        // Klastry/Dzielenie portfeli
-        for(let c of clusters) {
-            svgContent += `<circle class="wallet-circle ${c.colorClass}" cx="${c.x}" cy="${c.y}" r="${c.r}" />`;
-        }
-        svgContent += othersHTML; // Inne portfele
-        svgContent += `</svg>`;
-
-        // Tekst ostrzegawczy
-        const warningHTML = !isSafe ? `<div style="position:absolute; top: 10px; left: 10px; color: #fff; font-size: 0.65rem; font-weight: 900; background: var(--accent-red); padding: 4px 8px; border-radius: 4px; animation: blinkBadge 1s infinite; z-index: 20; box-shadow: 0 0 10px var(--accent-red);">⚠️ WALLET SPLITTING DETECTED</div>` : '';
-
-
-        // Generowanie HTML całej strony
+        // Generowanie szkieletu HTML
         resultBox.innerHTML = `
             <div class="result-header">
                 <div class="token-name" id="copyTokenName">
@@ -257,20 +181,17 @@ async function analyzeToken() {
                     <span class="bubble-map-title"><i class="ph-fill ph-target"></i> HOLDER BUBBLE MAP</span>
                 </div>
                 <div class="bubble-container">
-                    <div class="bubble-controls">
-                        <button class="bubble-btn bubble-refresh"><i class="ph ph-arrows-clockwise"></i> Refresh</button>
-                        <button class="bubble-btn bubble-time"><i class="ph ph-calendar-blank"></i> 1m <i class="ph ph-caret-down"></i></button>
-                        <button class="bubble-btn"><i class="ph ph-funnel"></i> Filters</button>
-                        <button class="bubble-btn"><i class="ph ph-chart-line-up"></i></button>
-                        <button class="bubble-btn"><i class="ph ph-users"></i></button>
+                    <div class="bubble-top-bar">
+                        <button class="bubble-refresh-btn" onclick="refreshBubbleMap()"><i class="ph ph-arrows-clockwise"></i> Refresh Map</button>
+                        ${!isSafe ? `<div class="wallet-splitting-warning"><i class="ph ph-warning"></i> WALLET SPLITTING DETECTED</div>` : ''}
                     </div>
-                    ${warningHTML}
-                    ${svgContent}
+                    <div id="bubbleMapSVGContainer" style="width: 100%; height: 100%;">
+                        </div>
                 </div>
                 <div class="bubble-legend">
-                    <div class="legend-item"><div class="legend-dot-ring" style="border-color: var(--accent-purple); stroke-width: 2.5;"></div> Creator/Main Dev (Split)</div>
-                    <div class="legend-item"><div class="legend-dot-ring" style="border-color: var(--accent-yellow); filter: drop-shadow(0 0 6px rgba(255, 214, 0, 0.4)); stroke-width: 2.0;"></div> Wallet splitting Clusters</div>
-                    <div class="legend-item"><div class="legend-dot-ring" style="border-color: rgba(139, 149, 165, 0.3);"></div> Other Holders</div>
+                    <div class="legend-item"><div class="legend-dot-ring" style="border-color: var(--accent-purple); stroke-width: 2.5px;"></div> Creator/Main Dev (Split)</div>
+                    <div class="legend-item"><div class="legend-dot-ring" style="border-color: var(--accent-yellow); stroke-width: 2px; filter: drop-shadow(0 0 4px rgba(255,214,0,0.5));"></div> Connected Clusters</div>
+                    <div class="legend-item"><div class="legend-dot-ring" style="border-color: rgba(139, 149, 165, 0.5);"></div> Unrelated Holders</div>
                 </div>
             </div>
 
@@ -298,6 +219,10 @@ async function analyzeToken() {
             </div>
         `;
         
+        // Zapisujemy stan bezpieczeństwa i wywołujemy generator mapy
+        window.currentScanIsSafe = isSafe;
+        window.refreshBubbleMap();
+
         addToHistory(pair.baseToken.symbol, decision, colorClass, "↗");
         incrementScanCount();
         
@@ -307,6 +232,64 @@ async function analyzeToken() {
         resultBox.innerHTML = `<div style="text-align: center; color: var(--accent-red); padding: 20px;">API Error. Try again.</div>`;
     }
 }
+
+// --- DYNAMICZNY SILNIK GENEROWANIA MAPY (Z CENTROWANIEM) ---
+window.refreshBubbleMap = function() {
+    const container = document.getElementById('bubbleMapSVGContainer');
+    if (!container) return;
+
+    const isSafe = window.currentScanIsSafe;
+    // Animacja przy odświeżaniu
+    let svgContent = `<svg viewBox="0 0 1000 1000" style="width:100%; height:100%; animation: fadeInMap 0.4s ease-out;">`;
+    const cX = 500; // Perfekcyjny środek kontenera
+    const cY = 500;
+    let connections = '';
+    let nodes = '';
+
+    if (!isSafe) {
+        // ZŁY TOKEN: Algorytm rysujący klastry połączone z devem (Wallet Splitting)
+        const numClusters = Math.floor(Math.random() * 3) + 3; // Od 3 do 5 klastrów
+        for(let i=0; i<numClusters; i++) {
+            const angle = (Math.PI * 2 * i) / numClusters + (Math.random() * 0.5);
+            const dist = 140 + Math.random() * 80;
+            const clusterX = cX + Math.cos(angle) * dist;
+            const clusterY = cY + Math.sin(angle) * dist;
+
+            connections += `<line class="wallet-link link-dev-cluster" x1="${cX}" y1="${cY}" x2="${clusterX}" y2="${clusterY}" />`;
+            nodes += `<circle class="wallet-circle wallet-cluster" cx="${clusterX}" cy="${clusterY}" r="${20 + Math.random()*10}" style="transform-box: fill-box; transform-origin: center; animation: pulseNode ${1.5 + Math.random()}s infinite alternate;" />`;
+
+            const numInner = Math.floor(Math.random() * 3) + 2;
+            for(let j=0; j<numInner; j++) {
+                const iAngle = Math.random() * Math.PI * 2;
+                const iDist = 40 + Math.random() * 30;
+                const innerX = clusterX + Math.cos(iAngle) * iDist;
+                const innerY = clusterY + Math.sin(iAngle) * iDist;
+
+                connections += `<line class="wallet-link link-cluster-inner" x1="${clusterX}" y1="${clusterY}" x2="${innerX}" y2="${innerY}" />`;
+                nodes += `<circle class="wallet-circle wallet-cluster" cx="${innerX}" cy="${innerY}" r="${10 + Math.random()*8}" style="transform-box: fill-box; transform-origin: center; animation: pulseNode ${1 + Math.random()}s infinite alternate;" />`;
+            }
+        }
+        // Dev idealnie na środku
+        nodes += `<circle class="wallet-circle wallet-dev" cx="${cX}" cy="${cY}" r="45" style="transform-box: fill-box; transform-origin: center; animation: pulseNode 1.2s infinite alternate;" />`;
+
+    } else {
+        // DOBRY TOKEN: Jeden główny, gruby portfel (Dev) zablokowany bez podziału
+        nodes += `<circle class="wallet-circle wallet-dev" cx="${cX}" cy="${cY}" r="50" style="stroke: var(--accent-blue); filter: drop-shadow(0 0 10px rgba(0,210,255,0.6)); transform-box: fill-box; transform-origin: center; animation: pulseNode 2s infinite alternate;" />`;
+    }
+
+    // Pozostałe portfele rozrzucone szeroko (Ulica)
+    const numOthers = isSafe ? 40 : 25;
+    for(let i=0; i<numOthers; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const dist = 280 + Math.random() * 180; // Trzymamy ich z dala od środka
+        const oX = cX + Math.cos(angle) * dist;
+        const oY = cY + Math.sin(angle) * dist;
+        nodes += `<circle class="wallet-circle wallet-other" cx="${oX}" cy="${oY}" r="${8 + Math.random()*12}" style="transform-box: fill-box; transform-origin: center; animation: floatNode ${2 + Math.random()*2}s infinite alternate;" />`;
+    }
+
+    svgContent += connections + nodes + `</svg>`;
+    container.innerHTML = svgContent;
+};
 
 // 3. Synchronizacja statystyk z bazą
 async function syncMainStats() {
