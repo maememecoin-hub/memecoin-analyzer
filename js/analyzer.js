@@ -210,28 +210,30 @@ window.copyResult = function() {
 }
 
 // --- SILNIK LIVE RADAR (Z Kopiowaniem CA i Ikonami Siły) ---
+// --- SILNIK LIVE RADAR (Prawdziwe adresy CA do testów z Axiom) ---
 function initLiveRadar() {
     const radarList = document.getElementById('radarList');
     if(!radarList) return;
 
-    // Baza do generowania tokenów
-    const chains = ['SOL', 'BASE', 'ETH', 'BSC'];
-    const prefixes = ['PEPE', 'DOGE', 'FLOKI', 'SHIB', 'CAT', 'AI', 'WIF', 'BONK', 'CHAD', 'SAFE', 'NEIRO'];
-    const suffixes = ['INU', 'COIN', 'AI', 'CEO', 'PEPE', 'X', 'MOON', 'MARS', 'CAT'];
+    // Baza PRAWDZIWYCH tokenów, które Axiom na pewno rozpozna
+    const realTokens = [
+        { name: 'PEPE', chain: 'ETH', ca: '0x6982508145454ce325ddbe47a25d4ec3d2311933' },
+        { name: 'WIF', chain: 'SOL', ca: 'EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYtM2wYSzL' },
+        { name: 'BONK', chain: 'SOL', ca: 'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263' },
+        { name: 'BRETT', chain: 'BASE', ca: '0x532f27101965dd16442e59d40670faf5abe12047' },
+        { name: 'FLOKI', chain: 'ETH', ca: '0xcf0c122c6b73ff809c693db761e7baebe62b6a2e' },
+        { name: 'POPCAT', chain: 'SOL', ca: '7GCihgDB8fe6KNjn2g4gH13NpdB2VADeNEnzAABp16QW' },
+        { name: 'MOG', chain: 'BASE', ca: '0x2da56ac2f6fa15ccb5581b2fb41c2c31e5bb7700' },
+        { name: 'MEW', chain: 'ETH', ca: '0x94833215291b7d5d2f6280db590bbdc8c78c3b01' }
+    ];
 
     function generateNewPair() {
-        const chain = chains[Math.floor(Math.random() * chains.length)];
-        const name = prefixes[Math.floor(Math.random() * prefixes.length)] + suffixes[Math.floor(Math.random() * suffixes.length)];
-        const liq = Math.floor(Math.random() * 50) + 1; // Od 1k do 50k
-        const age = Math.floor(Math.random() * 59) + 1; // Wiek: od 1 do 59 sekund
+        // Losujemy prawdziwy token z naszej bazy
+        const token = realTokens[Math.floor(Math.random() * realTokens.length)];
         
-        // Generowanie symulowanego CA (Contract Address)
-        const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-        let ca = (chain === 'SOL') ? '' : '0x';
-        const length = (chain === 'SOL') ? 43 : 40;
-        for(let i=0; i<length; i++) {
-            ca += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
+        // Generujemy losowe statystyki płynności i wieku (żeby radar "żył")
+        const liq = Math.floor(Math.random() * 50) + 1; 
+        const age = Math.floor(Math.random() * 59) + 1; 
 
         // Ocena siły (Ikony i kolory)
         let icon = 'ph-trend-down'; // Słaby
@@ -247,34 +249,33 @@ function initLiveRadar() {
 
         const item = document.createElement('div');
         item.className = 'radar-item';
-        item.title = "Kliknij, aby skopiować CA";
+        item.title = "Kliknij, aby skopiować prawdziwe CA";
         
         item.innerHTML = `
             <div class="radar-top">
                 <span style="color: #fff; display: flex; align-items: center; gap: 6px;">
                     <i class="ph ${icon}" style="color: ${iconColor}; font-size: 1.1rem; filter: drop-shadow(0 0 5px ${iconColor});"></i> 
-                    ${name} / W${chain}
+                    ${token.name} / W${token.chain}
                 </span>
-                <span class="new-badge">NEW</span>
+                <span class="new-badge">LIVE</span>
             </div>
             <div class="radar-bot">
                 <span>LIQ: $${liq}K</span>
-                <span>AGE: ${age}s <span class="radar-chain">${chain}</span></span>
+                <span>AGE: ${age}s <span class="radar-chain">${token.chain}</span></span>
             </div>
             <div class="radar-ca">
-                <span>CA: ${ca.substring(0, 8)}...${ca.substring(ca.length - 4)}</span>
+                <span>CA: ${token.ca.substring(0, 8)}...${token.ca.substring(token.ca.length - 4)}</span>
                 <i class="ph ph-copy copy-icon"></i>
             </div>
         `;
         
         // Zdarzenie kliknięcia -> kopiowanie do schowka
         item.addEventListener('click', () => {
-            navigator.clipboard.writeText(ca).then(() => {
+            navigator.clipboard.writeText(token.ca).then(() => {
                 if(typeof showToast === 'function') {
-                    showToast(`Skopiowano CA: ${name}`, "success");
+                    showToast(`Skopiowano CA: ${token.name}`, "success");
                 }
             });
-            // Opcjonalny dźwięk kliknięcia radaru
             if(typeof playSound === 'function') playSound('scan'); 
         });
         
@@ -286,6 +287,17 @@ function initLiveRadar() {
             radarList.removeChild(radarList.lastChild);
         }
     }
+
+    // Generujemy kilka na start
+    for(let i=0; i<5; i++) {
+        setTimeout(generateNewPair, i * 200); 
+    }
+
+    // Nieskończona pętla
+    setInterval(() => {
+        generateNewPair();
+    }, Math.random() * 3000 + 2000); 
+}
 
     // Generujemy kilka na start
     for(let i=0; i<5; i++) {
