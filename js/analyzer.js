@@ -209,7 +209,7 @@ window.copyResult = function() {
     });
 }
 
-// --- SILNIK LIVE RADAR (Generowanie nowo powstałych par) ---
+// --- SILNIK LIVE RADAR (Z Kopiowaniem CA i Ikonami Siły) ---
 function initLiveRadar() {
     const radarList = document.getElementById('radarList');
     if(!radarList) return;
@@ -224,35 +224,75 @@ function initLiveRadar() {
         const name = prefixes[Math.floor(Math.random() * prefixes.length)] + suffixes[Math.floor(Math.random() * suffixes.length)];
         const liq = Math.floor(Math.random() * 50) + 1; // Od 1k do 50k
         const age = Math.floor(Math.random() * 59) + 1; // Wiek: od 1 do 59 sekund
+        
+        // Generowanie symulowanego CA (Contract Address)
+        const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let ca = (chain === 'SOL') ? '' : '0x';
+        const length = (chain === 'SOL') ? 43 : 40;
+        for(let i=0; i<length; i++) {
+            ca += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+
+        // Ocena siły (Ikony i kolory)
+        let icon = 'ph-trend-down'; // Słaby
+        let iconColor = 'var(--text-muted)';
+        
+        if (liq > 35) {
+            icon = 'ph-rocket'; // Bardzo mocny
+            iconColor = 'var(--accent-purple)';
+        } else if (liq > 15) {
+            icon = 'ph-fire'; // Średni/Mocny
+            iconColor = 'var(--accent-yellow)';
+        }
 
         const item = document.createElement('div');
         item.className = 'radar-item';
+        item.title = "Kliknij, aby skopiować CA";
+        
         item.innerHTML = `
             <div class="radar-top">
-                <span style="color: #fff;"><i class="ph ph-fire" style="color: var(--accent-red);"></i> ${name} / W${chain}</span>
+                <span style="color: #fff; display: flex; align-items: center; gap: 6px;">
+                    <i class="ph ${icon}" style="color: ${iconColor}; font-size: 1.1rem; filter: drop-shadow(0 0 5px ${iconColor});"></i> 
+                    ${name} / W${chain}
+                </span>
                 <span class="new-badge">NEW</span>
             </div>
             <div class="radar-bot">
                 <span>LIQ: $${liq}K</span>
                 <span>AGE: ${age}s <span class="radar-chain">${chain}</span></span>
             </div>
+            <div class="radar-ca">
+                <span>CA: ${ca.substring(0, 8)}...${ca.substring(ca.length - 4)}</span>
+                <i class="ph ph-copy copy-icon"></i>
+            </div>
         `;
+        
+        // Zdarzenie kliknięcia -> kopiowanie do schowka
+        item.addEventListener('click', () => {
+            navigator.clipboard.writeText(ca).then(() => {
+                if(typeof showToast === 'function') {
+                    showToast(`Skopiowano CA: ${name}`, "success");
+                }
+            });
+            // Opcjonalny dźwięk kliknięcia radaru
+            if(typeof playSound === 'function') playSound('scan'); 
+        });
         
         // Dodajemy na początek listy
         radarList.prepend(item);
         
-        // Ograniczamy listę np. do 15 elementów, by nie zapchać pamięci
+        // Ograniczamy listę do 15 elementów
         if(radarList.children.length > 15) {
             radarList.removeChild(radarList.lastChild);
         }
     }
 
-    // Generujemy kilka na start, by radar nie był pusty
+    // Generujemy kilka na start
     for(let i=0; i<5; i++) {
         setTimeout(generateNewPair, i * 200); 
     }
 
-    // Odpalamy nieskończoną pętlę (co 2 do 5 sekund nowy token wyskakuje na liście)
+    // Nieskończona pętla (co 2-5 sekund nowy token)
     setInterval(() => {
         generateNewPair();
     }, Math.random() * 3000 + 2000); 
