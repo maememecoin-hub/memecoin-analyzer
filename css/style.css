@@ -621,44 +621,6 @@ body[data-theme="sith"] .glow-2 { background: rgba(153, 0, 0, 0.1); }
     font-size: 1.2rem;
 }
 
-/* === HOLDER BUBBLE MAP VISUALIZER PRO (Axiom Style) === */
-.bubble-map-panel { margin-top: 20px; padding-top: 20px; border-top: 1px dashed var(--border-light); }
-.bubble-map-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-.bubble-map-title { font-size: 0.75rem; color: var(--text-muted); font-weight: 800; display: flex; align-items: center; gap: 6px; letter-spacing: 1px; }
-.bubble-map-title i { color: var(--accent-purple); font-size: 1.2rem; filter: drop-shadow(0 0 5px var(--accent-purple)); }
-
-/* Kontener mapy */
-.bubble-container { height: 280px; background: rgba(0,0,0,0.4); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); box-shadow: inset 0 0 30px rgba(0,0,0,0.8); overflow: hidden; margin-bottom: 15px; position: relative; display: flex; align-items: center; justify-content: center; }
-
-/* Górny pasek kontrolny na mapie */
-.bubble-top-bar { position: absolute; top: 12px; left: 12px; display: flex; gap: 10px; align-items: center; z-index: 10; }
-
-.bubble-refresh-btn { background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: var(--text-main); padding: 8px 12px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 0.7rem; font-weight: 800; transition: 0.2s; backdrop-filter: blur(5px); }
-.bubble-refresh-btn:hover, .bubble-refresh-btn:active { background: rgba(184, 0, 255, 0.2); border-color: var(--accent-purple); color: var(--accent-purple); }
-
-.wallet-splitting-warning { color: #fff; font-size: 0.65rem; font-weight: 900; background: var(--accent-red); padding: 8px 12px; border-radius: 8px; animation: blinkBadge 1.5s infinite; box-shadow: 0 0 15px rgba(255, 51, 102, 0.4); border: 1px solid rgba(255,255,255,0.2); display: flex; align-items: center; gap: 5px;}
-
-/* Animacje i style SVG (Puste kółka jak w Axiom) */
-.wallet-circle { fill: none; stroke: none; transition: 0.3s; }
-.wallet-dev { stroke: var(--accent-purple); filter: drop-shadow(0 0 10px rgba(184, 0, 255, 0.6)); stroke-width: 3; }
-.wallet-cluster { stroke: var(--accent-yellow); filter: drop-shadow(0 0 6px rgba(255, 214, 0, 0.5)); stroke-width: 2; }
-.wallet-other { stroke: rgba(139, 149, 165, 0.3); stroke-width: 1.5; }
-
-/* Linie połączeń */
-.wallet-link { fill: none; stroke-dasharray: 6; animation: dashMove 20s linear infinite; }
-.link-dev-cluster { stroke: rgba(184, 0, 255, 0.4); stroke-width: 2; }
-.link-cluster-inner { stroke: rgba(255, 214, 0, 0.3); stroke-width: 1.5; }
-
-@keyframes dashMove { to { stroke-dashoffset: -100; } }
-@keyframes pulseNode { 0% { transform: scale(0.95); opacity: 0.8; } 100% { transform: scale(1.05); opacity: 1; } }
-@keyframes floatNode { 0% { transform: translateY(0px); } 100% { transform: translateY(-5px); } }
-@keyframes fadeInMap { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
-
-/* Legenda */
-.bubble-legend { display: flex; justify-content: center; flex-wrap: wrap; gap: 15px; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); padding: 0 10px; }
-.legend-item { display: flex; align-items: center; gap: 5px; }
-.legend-dot-ring { width: 10px; height: 10px; border-radius: 50%; border: 2px solid; background: none;}
-
 /* Fuksjowe ikony dla nawigacji */
 .navbar .nav-links a.active, .navbar .nav-links a:hover {
     color: var(--accent-purple); /* Zmieniamy na fuksję */
