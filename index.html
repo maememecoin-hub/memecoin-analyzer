@@ -3,122 +3,199 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MEME_OS // TERMINAL</title>
+    <title>SNIPER TERMINAL // V1.0</title>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
-    <div class="crt-scanlines"></div>
+    <div class="space-bg"></div>
+    <div class="hologram-overlay"></div>
 
-    <div class="os-wrapper">
-        <header class="sys-header">
-            <div class="sys-brand">
-                <i class="ph ph-terminal-window"></i> 
-                <span>ROOT@SNIPER_OS:~</span>
+    <div class="terminal-wrapper">
+        
+        <header class="hud-header">
+            <div class="header-lhs">
+                <i class="ph ph-unite header-logo-icon"></i>
+                <span class="header-title">SNIPER <span class="text-muted">TERMINAL</span></span>
             </div>
-            <nav class="sys-tabs nav-links">
-                <a href="#" class="active" data-target="analyzer">[ ANALYZER.exe ]</a>
-                <a href="#" data-target="dziennik">[ JOURNAL.sys ]</a>
-                <a href="#" data-target="leaderboard">[ RANKS.dat ]</a>
+            <nav class="hud-nav nav-links">
+                <a href="#" class="pill-btn active" data-target="analyzer">ANALYZER</a>
+                <a href="#" class="pill-btn" data-target="dziennik">JOURNAL</a>
+                <a href="#" class="pill-btn" data-target="leaderboard">HALL OF FAME</a>
             </nav>
-            <div class="sys-status">
-                <span class="blink">[REC]</span>
-                <span style="color: var(--sys-green);">API: CONNECTED</span>
-                <i class="ph ph-faders" id="settings-btn" title="Config"></i>
+            <div class="header-rhs nav-icons">
+                <i class="ph ph-faders-horizontal" id="settings-btn" title="Config"></i>
             </div>
         </header>
 
-        <main class="sys-main">
+        <main class="hud-main">
             
-            <aside class="panel left-panel">
-                <div class="panel-head">>> LIVE_RADAR_FEED</div>
-                <div class="panel-body scrollable" id="historyList">
-                    <div class="sys-msg text-muted">> awaiting_contract_data...</div>
-                </div>
-            </aside>
-
-            <section class="panel center-panel">
+            <div class="hud-workspace">
                 
-                <div id="analyzer" class="tab-content active">
-                    <div class="cli-input-box">
-                        <span class="cli-prompt">target_ca ></span>
-                        <input type="text" id="tokenInput" placeholder="ENTER_ADDRESS_HERE..." onkeypress="if(event.key==='Enter'){analyzeToken()}">
-                        <button class="cli-btn" onclick="analyzeToken()">[ EXECUTE ]</button>
-                    </div>
+                <section id="analyzer" class="tab-content active">
+                    <div class="stats-hud-grid">
+                        <div class="stat-hud-card glow-yellow">
+                            <div class="shc-inner">
+                                <div class="shc-head">
+                                    <span class="shc-label">TOKENS SCANNED</span>
+                                    <i class="ph ph-lightning shc-icon yellow"></i>
+                                </div>
+                                <div class="shc-body">
+                                    <span class="shc-val" id="main-tokens-count">...</span>
+                                    <span class="shc-meta">LIFETIME OPS</span>
+                                </div>
+                                <div class="sparkline yellow-line">
+                                    <svg viewBox="0 0 100 25" preserveAspectRatio="none"><path d="M0,20 L15,12 L30,22 L45,8 L60,15 L75,5 L90,18 L100,2" fill="none" stroke="currentColor" stroke-width="2.5"/></svg>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-hud-card glow-cyan">
+                            <div class="shc-inner">
+                                <div class="shc-head">
+                                    <span class="shc-label">ALPHA CAPTURED</span>
+                                    <i class="ph ph-target shc-icon cyan"></i>
+                                </div>
+                                <div class="shc-body">
+                                    <span class="shc-val" id="main-success-rate">0%</span>
+                                    <span class="shc-meta">WIN RATE</span>
+                                </div>
+                                <div class="sparkline cyan-line">
+                                    <svg viewBox="0 0 100 25" preserveAspectRatio="none"><path d="M0,22 L20,18 L40,8 L60,12 L80,5 L100,2" fill="none" stroke="currentColor" stroke-width="2.5"/></svg>
+                                </div>
+                            </div>
+                        </div>
 
-                    <div id="analyzerResultBox" class="result-box" style="display: none;"></div>
-                    
-                    <div id="idleScreen" class="idle-screen">
-                        <i class="ph ph-crosshair"></i>
-                        <p>SYSTEM IDLE // READY FOR INPUT</p>
-                    </div>
-                </div>
+                        <div class="stat-hud-card glow-green">
+                            <div class="shc-inner">
+                                <div class="shc-head">
+                                    <span class="shc-label">APE FUND</span>
+                                    <i class="ph ph-banknotes shc-icon green"></i>
+                                </div>
+                                <div class="shc-body">
+                                    <span class="shc-val" id="main-total-capital">$0</span>
+                                    <span class="shc-meta">LIVE CAPITAL</span>
+                                </div>
+                                <div class="sparkline green-line">
+                                    <svg viewBox="0 0 100 25" preserveAspectRatio="none"><path d="M0,22 L30,18 L50,5 L70,12 L100,2" fill="none" stroke="currentColor" stroke-width="2.5"/></svg>
+                                </div>
+                            </div>
+                        </div>
 
-                <div id="dziennik" class="tab-content">
-                    <div class="panel-head">>> TRADE_DATABASE</div>
-                    <div class="journal-controls">
-                        <button class="cli-btn" onclick="addNewTrade()">[ + INSERT_TRADE ]</button>
-                    </div>
-                    <div class="journal-table-header">
-                        <span>ASSET_ID</span>
-                        <span class="text-right">NET_PNL</span>
-                        <span class="text-right">CMD</span>
-                    </div>
-                    <div class="panel-body scrollable" id="journalList" style="height: calc(100vh - 250px);"></div>
-                </div>
-
-                <div id="leaderboard" class="tab-content">
-                    <div class="panel-head">>> HALL_OF_FAME.dat</div>
-                    <div class="panel-body scrollable" id="leaderboardList" style="height: calc(100vh - 150px);">
-                        <div class="sys-msg">> fetching_data...</div>
-                    </div>
-                </div>
-
-            </section>
-
-            <aside class="panel right-panel">
-                <div class="panel-head">>> WALLET_METRICS</div>
-                <div class="panel-body stats-dense">
-                    
-                    <div class="data-block">
-                        <div class="data-label">START_CAPITAL</div>
-                        <div class="data-val flex-input">
-                            <span>$</span><input type="number" id="startingCapital" value="1000">
+                        <div class="stat-hud-card glow-red">
+                            <div class="shc-inner">
+                                <div class="shc-head">
+                                    <span class="shc-label">MARKET SENTIMENT</span>
+                                    <i class="ph ph-fire shc-icon red"></i>
+                                </div>
+                                <div class="shc-body shc-mood">
+                                    <span class="mood-text">HIGH VOLATILITY</span>
+                                    <span class="mood-sub">DEGEN MODE ACTIVE</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    
-                    <div class="data-block highlight-blue">
-                        <div class="data-label">LIVE_CAPITAL</div>
-                        <div class="data-val" id="currentCapital">$0.00</div>
+
+                    <div class="hud-panel target-box">
+                        <div class="hp-head">
+                            <span>>> TARGET ACQUISITION</span>
+                            <span class="status-indicator"><span class="status-dot green"></span> SYSTEM READY</span>
+                        </div>
+                        <div class="hp-body cli-bar">
+                            <input type="text" id="tokenInput" placeholder="Paste token CA (Solana, Base, ETH)..." onkeypress="if(event.key==='Enter'){analyzeToken()}">
+                            <button class="cli-btn" onclick="analyzeToken()"><i class="ph ph-scan"></i> SEARCH</button>
+                        </div>
                     </div>
 
-                    <div class="data-block" id="pnlCard">
-                        <div class="data-label">TOTAL_PNL</div>
-                        <div class="data-val" id="totalPnl">+$0.00</div>
+                    <div id="analyzerResultBox" class="result-box hud-panel glow-border-blue" style="display: none;"></div>
+
+                    <div id="idleScreen" class="idle-screen">
+                        <i class="ph ph-scope"></i>
+                        <p>AWAITING CONTRACT DATA // INITIATE SCAN</p>
+                    </div>
+                </section>
+
+                <section id="dziennik" class="tab-content">
+                    <div class="stats-hud-grid shg-3" style="margin-bottom: 20px;">
+                        <div class="stat-hud-card glow-cyan">
+                            <div class="shc-inner">
+                                <div class="shc-head"><span class="shc-label">START_CAPITAL</span></div>
+                                <div class="shc-body input-body">
+                                    <span>$</span>
+                                    <input type="number" id="startingCapital" value="1000">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-hud-card glow-blue">
+                            <div class="shc-inner">
+                                <div class="shc-head"><span class="shc-label">CURRENT_CAPITAL</span></div>
+                                <div class="shc-body"><span class="shc-val" id="currentCapital">$0.00</span></div>
+                            </div>
+                        </div>
+                        <div class="stat-hud-card glow-green" id="pnlCard">
+                            <div class="shc-inner">
+                                <div class="shc-head"><span class="shc-label">TOTAL_PNL</span></div>
+                                <div class="shc-body"><span class="shc-val" id="totalPnl">+$0.00</span></div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="data-separator">--- ALGO_STATS ---</div>
-
-                    <div class="data-block">
-                        <div class="data-label">SCANS_EXECUTED</div>
-                        <div class="data-val" id="main-tokens-count">0</div>
+                    <div class="hud-panel">
+                        <div class="hp-head" style="display: flex; justify-content: space-between;">
+                            <span>>> TRADE_HISTORY_DB</span>
+                            <button class="cli-btn-sm" onclick="addNewTrade()">[ + INSERT_TRADE ]</button>
+                        </div>
+                        <div class="hp-body journal-table">
+                            <div class="jt-head">
+                                <span style="flex: 2;">ASSET</span>
+                                <span style="flex: 1; text-align: right;">NET_PNL</span>
+                                <span style="flex: 1; text-align: right;">CMD</span>
+                            </div>
+                            <div id="journalList" class="jt-body scrollable"></div>
+                        </div>
                     </div>
+                </section>
 
-                    <div class="data-block">
-                        <div class="data-label">WIN_RATE</div>
-                        <div class="data-val" id="winRate">0%</div>
-                        <div class="data-sub" id="winLossCount">0W / 0L</div>
+                <section id="leaderboard" class="tab-content">
+                    <div class="hud-panel">
+                        <div class="hp-head">>> HALL_OF_FAME.dat // TOP 10 SNIPES</div>
+                        <div class="hp-body scrollable" id="leaderboardList" style="height: calc(100vh - 200px);">
+                            <div style="text-align: center; color: var(--text-muted); padding: 30px;">
+                                <i class="ph ph-spinner ph-spin" style="font-size: 2.5rem; margin-bottom: 10px;"></i><br>FETCHING DATA...
+                            </div>
+                        </div>
                     </div>
+                </section>
 
-                    <div class="data-block">
-                        <div class="data-label">GLOBAL_SUCCESS</div>
-                        <div class="data-val" id="main-success-rate">0%</div>
+            </div>
+
+            <aside class="hud-sidebar">
+                <div class="hud-panel radar-panel">
+                    <div class="hp-head">
+                        <span><i class="ph ph-scope"></i> LIVE RADAR</span>
+                        <span class="ping-dot"></span>
                     </div>
+                    <div class="hp-body radar-screen">
+                        <div class="radar-grid"></div>
+                        <div id="historyList" class="radar-feed scrollable">
+                            <div class="radar-idle-msg">Awaiting target...</div>
+                        </div>
+                    </div>
+                </div>
 
-                    <div class="data-separator">--- SYS_WARNING ---</div>
-                    <div class="sys-msg text-red blink-slow">! HIGH VOLATILITY !</div>
+                <div class="hud-panel alerts-panel">
+                    <div class="hp-head">>> ALERTS_FEED</div>
+                    <div class="hp-body alerts-body">
+                        <div class="alert-chain-pills">
+                            <span class="chain-pill bnb">BNB</span>
+                            <span class="chain-pill base">BASE</span>
+                            <span class="chain-pill sol active">SOL</span>
+                            <span class="chain-pill eth">ETH</span>
+                        </div>
+                        <div class="alert-msg sys-msg">DEGEN MODE ACTIVE</div>
+                    </div>
                 </div>
             </aside>
 
@@ -136,7 +213,7 @@
         <div class="settings-content">
             
             <div class="config-block">
-                <label>BUY_THRESHOLD: <span id="thresholdValue" class="text-blue">6 / 7</span></label>
+                <label>STRONG_BUY_THRESHOLD: <span id="thresholdValue" class="text-blue">6 / 7</span></label>
                 <input type="range" id="strongBuyThreshold" min="4" max="7" value="6" step="1" class="cli-slider">
             </div>
             
@@ -173,17 +250,5 @@
     <script src="js/app.js"></script>
     <script src="js/analyzer.js"></script>
     <script src="js/journal.js"></script>
-    
-    <script>
-        // Mały trik by ukryć idleScreen, gdy pojawia się wynik
-        const observer = new MutationObserver((mutations) => {
-            const idle = document.getElementById('idleScreen');
-            const res = document.getElementById('analyzerResultBox');
-            if(res && idle && res.style.display === 'block') {
-                idle.style.display = 'none';
-            }
-        });
-        observer.observe(document.getElementById('analyzerResultBox'), { attributes: true });
-    </script>
 </body>
 </html>
