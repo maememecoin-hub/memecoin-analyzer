@@ -621,6 +621,28 @@ body[data-theme="sith"] .glow-2 { background: rgba(153, 0, 0, 0.1); }
     font-size: 1.2rem;
 }
 
+/* === BUBBLE MAP VISUALIZER === */
+.bubble-map-panel { margin-top: 20px; padding-top: 20px; border-top: 1px dashed var(--border-light); }
+.bubble-map-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.bubble-map-title { font-size: 0.75rem; color: var(--text-muted); font-weight: 800; display: flex; align-items: center; gap: 6px; letter-spacing: 1px; }
+.bubble-map-title i { color: var(--accent-blue); font-size: 1.2rem; filter: drop-shadow(0 0 5px var(--accent-blue)); }
+
+.bubble-container { height: 180px; background: rgba(0,0,0,0.4); border-radius: 12px; position: relative; border: 1px solid rgba(255,255,255,0.05); box-shadow: inset 0 0 30px rgba(0,0,0,0.8); overflow: hidden; margin-bottom: 10px;}
+
+.bubble { position: absolute; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: 900; color: rgba(255,255,255,0.9); box-shadow: inset -5px -5px 15px rgba(0,0,0,0.3), 0 5px 15px rgba(0,0,0,0.5); animation: floatBubble 3s infinite ease-in-out alternate; }
+
+.bubble-dev { background: radial-gradient(circle at 30% 30%, #ff4b4b, var(--accent-red)); z-index: 10; border: 1px solid rgba(255,51,102,0.8); }
+.bubble-dev.safe { background: radial-gradient(circle at 30% 30%, #00d2ff, var(--accent-blue)); border: 1px solid rgba(0,210,255,0.8); }
+.bubble-holder { background: radial-gradient(circle at 30% 30%, #8b95a5, #4a5568); z-index: 5; opacity: 0.7; }
+.bubble-cluster { background: radial-gradient(circle at 30% 30%, #ff8a8a, var(--accent-red)); z-index: 4; opacity: 0.85; mix-blend-mode: screen;}
+
+@keyframes floatBubble {
+    0% { transform: translateY(0) scale(1); }
+    100% { transform: translateY(-8px) scale(1.05); }
+}
+
+.bubble-legend { display: flex; justify-content: center; gap: 15px; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); }
+
 /* === RESPONSIVE === */
 @media (max-width: 1024px) {
     .dashboard-layout { flex-direction: column; }
