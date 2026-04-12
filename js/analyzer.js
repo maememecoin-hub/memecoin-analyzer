@@ -65,7 +65,7 @@ async function analyzeToken() {
         const created = pair.pairCreatedAt || 0;
         const age = created ? (Date.now() - created) / 60000 : 0;
 
-        // REALNA LOGIKA PUNKTACJI Z FILTRAMI (Bezpieczne pobieranie)
+        // REALNA LOGIKA PUNKTACJI Z FILTRAMI
         let score = 0;
         const liq_mc = fdv ? liquidity / fdv : 0;
         const vol_liq = liquidity ? volume / liquidity : 0;
@@ -209,4 +209,56 @@ window.copyResult = function() {
     });
 }
 
-document.addEventListener("DOMContentLoaded", syncMainStats);
+// --- SILNIK LIVE RADAR (Generowanie nowo powstałych par) ---
+function initLiveRadar() {
+    const radarList = document.getElementById('radarList');
+    if(!radarList) return;
+
+    // Baza do generowania tokenów
+    const chains = ['SOL', 'BASE', 'ETH', 'BSC'];
+    const prefixes = ['PEPE', 'DOGE', 'FLOKI', 'SHIB', 'CAT', 'AI', 'WIF', 'BONK', 'CHAD', 'SAFE', 'NEIRO'];
+    const suffixes = ['INU', 'COIN', 'AI', 'CEO', 'PEPE', 'X', 'MOON', 'MARS', 'CAT'];
+
+    function generateNewPair() {
+        const chain = chains[Math.floor(Math.random() * chains.length)];
+        const name = prefixes[Math.floor(Math.random() * prefixes.length)] + suffixes[Math.floor(Math.random() * suffixes.length)];
+        const liq = Math.floor(Math.random() * 50) + 1; // Od 1k do 50k
+        const age = Math.floor(Math.random() * 59) + 1; // Wiek: od 1 do 59 sekund
+
+        const item = document.createElement('div');
+        item.className = 'radar-item';
+        item.innerHTML = `
+            <div class="radar-top">
+                <span style="color: #fff;"><i class="ph ph-fire" style="color: var(--accent-red);"></i> ${name} / W${chain}</span>
+                <span class="new-badge">NEW</span>
+            </div>
+            <div class="radar-bot">
+                <span>LIQ: $${liq}K</span>
+                <span>AGE: ${age}s <span class="radar-chain">${chain}</span></span>
+            </div>
+        `;
+        
+        // Dodajemy na początek listy
+        radarList.prepend(item);
+        
+        // Ograniczamy listę np. do 15 elementów, by nie zapchać pamięci
+        if(radarList.children.length > 15) {
+            radarList.removeChild(radarList.lastChild);
+        }
+    }
+
+    // Generujemy kilka na start, by radar nie był pusty
+    for(let i=0; i<5; i++) {
+        setTimeout(generateNewPair, i * 200); 
+    }
+
+    // Odpalamy nieskończoną pętlę (co 2 do 5 sekund nowy token wyskakuje na liście)
+    setInterval(() => {
+        generateNewPair();
+    }, Math.random() * 3000 + 2000); 
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    syncMainStats();
+    initLiveRadar();
+});
