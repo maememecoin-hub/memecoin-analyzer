@@ -632,6 +632,41 @@ body[data-theme="sith"] .glow-2 { background: rgba(153, 0, 0, 0.1); }
     filter: drop-shadow(0 0 5px var(--accent-purple));
 }
 
+/* === PRZEŁĄCZNIK (TOGGLE SWITCH) === */
+.switch-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+.switch { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider-toggle { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255,255,255,0.1); transition: .4s; border-radius: 24px; border: 1px solid var(--border-light); }
+.slider-toggle:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: var(--text-muted); transition: .4s; border-radius: 50%; }
+input:checked + .slider-toggle { background-color: rgba(184, 0, 255, 0.3); border-color: var(--accent-purple); }
+input:checked + .slider-toggle:before { transform: translateX(20px); background-color: var(--accent-purple); box-shadow: 0 0 10px var(--accent-purple); }
+
+/* === FORCE MOBILE / COMPACT VIEW === */
+#floating-settings { display: none; } /* Domyślnie ukryte na PC */
+
+body.force-mobile .dashboard-layout { display: flex; flex-direction: column; }
+
+/* Menu zjeżdża na dół jak w aplikacji mobilnej */
+body.force-mobile .navbar { position: fixed; top: auto; bottom: 0; left: 0; width: 100%; height: 75px; flex-direction: row; border-right: none; border-top: 1px solid var(--border-light); border-radius: 20px 20px 0 0; padding: 0; z-index: 1000; justify-content: center; background: rgba(10, 14, 23, 0.95); backdrop-filter: blur(15px); }
+body.force-mobile .logo, body.force-mobile .nav-icons { display: none; }
+body.force-mobile .nav-links { flex-direction: row; width: 100%; justify-content: space-around; margin: 0; padding: 0;}
+body.force-mobile .nav-links li { width: 100%; display: flex; justify-content: center; }
+body.force-mobile .nav-links a { flex-direction: column; font-size: 0.6rem; padding: 8px; gap: 6px; border-radius: 12px; font-weight: 800; letter-spacing: 1px;}
+body.force-mobile .nav-links a i { font-size: 1.6rem; margin-right: 0;}
+
+/* Pływający guzik ustawień (prawy górny róg) */
+body.force-mobile #floating-settings { display: block; position: fixed; top: 15px; right: 15px; width: 45px; height: 45px; border-radius: 50%; background: var(--bg-glass); border: 1px solid var(--accent-purple); color: var(--accent-purple); z-index: 999; text-align: center; line-height: 48px; font-size: 1.6rem; cursor: pointer; box-shadow: 0 0 20px rgba(184,0,255,0.3); backdrop-filter: blur(10px); transition: all 0.2s;}
+body.force-mobile #floating-settings:hover { background: rgba(184,0,255,0.2); color: #fff; }
+
+/* Przearanżowanie głównej treści na węższą */
+body.force-mobile .main-content { margin-left: 0; width: 100%; max-width: 100%; padding: 15px; padding-bottom: 95px; }
+body.force-mobile .stats-grid { grid-template-columns: 1fr !important; gap: 10px; }
+body.force-mobile .control-bar { flex-direction: column; }
+body.force-mobile .control-bar input, body.force-mobile .control-bar button { width: 100%; justify-content: center; }
+
+/* Live Radar wrzucamy pod spód strony zamiast po prawej */
+body.force-mobile .live-radar { position: relative; width: 100%; height: 350px; right: auto; top: auto; border-left: none; border-top: 1px solid var(--border-light); margin-bottom: 20px; border-radius: 16px; }
+
 /* === RESPONSIVE === */
 @media (max-width: 1024px) {
     .dashboard-layout { flex-direction: column; }
