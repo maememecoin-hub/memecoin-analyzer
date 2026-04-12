@@ -178,18 +178,13 @@ async function analyzeToken() {
 
             <div class="bubble-map-panel">
                 <div class="bubble-map-header">
-                    <span class="bubble-map-title"><i class="ph-fill ph-target"></i> REAL-TIME HOLDER MAP</span>
+                    <span class="bubble-map-title"><i class="ph-fill ph-target"></i> OFFICIAL BUBBLEMAP</span>
+                    <a href="https://app.bubblemaps.io/sol/token/${address}" target="_blank" style="text-decoration: none; color: var(--accent-blue); font-size: 0.75rem; font-weight: 800; display: flex; align-items: center; gap: 5px; background: rgba(0,210,255,0.1); padding: 5px 10px; border-radius: 6px; border: 1px solid rgba(0,210,255,0.3);">
+                        <i class="ph ph-arrow-square-out"></i> Otwórz pełny ekran
+                    </a>
                 </div>
-                <div class="bubble-container">
-                    <div class="bubble-top-bar" id="bubbleMapBar">
-                        <button class="bubble-refresh-btn" onclick="refreshBubbleMap()"><i class="ph ph-arrows-clockwise"></i> Refresh Map</button>
-                    </div>
-                    <div id="bubbleMapSVGContainer" style="width: 100%; height: 100%;"></div>
-                </div>
-                <div class="bubble-legend">
-                    <div class="legend-item"><div class="legend-dot-ring" style="border-color: var(--accent-purple);"></div> Top 1 Wallet</div>
-                    <div class="legend-item"><div class="legend-dot-ring" style="border-color: var(--accent-yellow);"></div> Clustered Wallets</div>
-                    <div class="legend-item"><div class="legend-dot-ring" style="border-color: rgba(139, 149, 165, 0.5);"></div> Community</div>
+                <div class="bubble-container" style="height: 450px; padding: 0; overflow: hidden; border: 1px solid var(--border-light);">
+                    <iframe src="https://app.bubblemaps.io/sol/token/${address}" width="100%" height="100%" frameborder="0" style="border-radius: 12px; pointer-events: auto;"></iframe>
                 </div>
             </div>
 
@@ -217,7 +212,6 @@ async function analyzeToken() {
             </div>
         `;
         
-        window.refreshBubbleMap();
         addToHistory(pair.baseToken.symbol, decision, colorClass, "↗");
         incrementScanCount();
         
@@ -227,77 +221,6 @@ async function analyzeToken() {
         resultBox.innerHTML = `<div style="text-align: center; color: var(--accent-red); padding: 20px;">API Error. Try again.</div>`;
     }
 }
-
-window.refreshBubbleMap = function() {
-    const container = document.getElementById('bubbleMapSVGContainer');
-    const bar = document.getElementById('bubbleMapBar');
-    if (!container) return;
-
-    // Przebudowałem ten fragment, by po odświeżeniu ułożenie było NOWE dla tego samego tokena 
-    // Dodajemy mały szum czasu, by przycisk "refresh" losował nieco inny układ.
-    const ca = window.currentCA || "default";
-    const seed = getSeedFromAddress(ca) + Date.now();
-    
-    const seededRandom = (s) => {
-        const x = Math.sin(s) * 10000;
-        return x - Math.floor(x);
-    };
-
-    let svgContent = `<svg viewBox="0 0 1000 1000" style="width:100%; height:100%; animation: fadeInMap 0.4s ease-out;">`;
-    const cX = 500;
-    const cY = 500;
-    
-    let connections = '';
-    let nodes = '';
-
-    const numClusters = Math.floor(seededRandom(seed) * 7);
-    const isHighRisk = numClusters > 4;
-
-    const existingWarn = bar.querySelector('.wallet-splitting-warning');
-    if(existingWarn) existingWarn.remove();
-
-    if(isHighRisk && bar) {
-        const warn = document.createElement('div');
-        warn.className = 'wallet-splitting-warning';
-        warn.innerHTML = `<i class="ph ph-warning"></i> WALLET SPLITTING DETECTED`;
-        bar.appendChild(warn);
-    }
-
-    for(let i=0; i<numClusters; i++) {
-        const clusterSeed = seed + (i * 123);
-        const angle = seededRandom(clusterSeed) * Math.PI * 2;
-        const dist = 150 + seededRandom(clusterSeed + 1) * 150;
-        const clusterX = cX + Math.cos(angle) * dist;
-        const clusterY = cY + Math.sin(angle) * dist;
-
-        connections += `<line class="wallet-link link-dev-cluster" x1="${cX}" y1="${cY}" x2="${clusterX}" y2="${clusterY}" />`;
-        nodes += `<circle class="wallet-circle wallet-cluster" cx="${clusterX}" cy="${clusterY}" r="${25 + seededRandom(clusterSeed + 2) * 15}" style="transform-box: fill-box; transform-origin: center; animation: pulseNode 2s infinite alternate;" />`;
-
-        const inCluster = Math.floor(seededRandom(clusterSeed + 3) * 4) + 2;
-        for(let j=0; j<inCluster; j++) {
-            const innerAngle = seededRandom(clusterSeed + j + 5) * Math.PI * 2;
-            const innerDist = 45 + seededRandom(clusterSeed + j + 6) * 30;
-            const ix = clusterX + Math.cos(innerAngle) * innerDist;
-            const iy = clusterY + Math.sin(innerAngle) * innerDist;
-            connections += `<line class="wallet-link link-cluster-inner" x1="${clusterX}" y1="${clusterY}" x2="${ix}" y2="${iy}" />`;
-            nodes += `<circle class="wallet-circle wallet-cluster" cx="${ix}" cy="${iy}" r="${10 + seededRandom(clusterSeed + j) * 10}" style="transform-box: fill-box; transform-origin: center; animation: pulseNode 1.5s infinite alternate;" />`;
-        }
-    }
-
-    nodes += `<circle class="wallet-circle wallet-dev" cx="${cX}" cy="${cY}" r="55" style="transform-box: fill-box; transform-origin: center; animation: pulseNode 1.2s infinite alternate;" />`;
-
-    for(let i=0; i<35; i++) {
-        const otherSeed = seed + (i * 999);
-        const angle = seededRandom(otherSeed) * Math.PI * 2;
-        const dist = 320 + seededRandom(otherSeed + 1) * 150;
-        const ox = cX + Math.cos(angle) * dist;
-        const oy = cY + Math.sin(angle) * dist;
-        nodes += `<circle class="wallet-circle wallet-other" cx="${ox}" cy="${oy}" r="${8 + seededRandom(otherSeed + 2) * 15}" style="transform-box: fill-box; transform-origin: center; animation: floatNode ${2 + seededRandom(otherSeed)*2}s infinite alternate;" />`;
-    }
-
-    svgContent += connections + nodes + `</svg>`;
-    container.innerHTML = svgContent;
-};
 
 async function syncMainStats() {
     try {
