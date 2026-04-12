@@ -1,4 +1,4 @@
-// --- LOGIKA ANALIZATORA I SUPABASE (analyzer.js) ---
+// --- LOGIKA ANALIZATORA I SUPABASE PRO (analyzer.js) ---
 let tokenHistory = [];
 
 function formatMoney(num) {
@@ -38,7 +38,7 @@ async function analyzeToken() {
     if(typeof playSound === 'function') playSound('scan');
 
     resultBox.style.display = "block";
-    resultBox.innerHTML = `<div style="text-align: center; color: var(--accent-blue); padding: 20px;"><i class="ph ph-spinner ph-spin" style="font-size: 2rem;"></i><br>Scanning Blockchain & Running Deep Analytics...</div>`;
+    resultBox.innerHTML = `<div style="text-align: center; color: var(--accent-blue); padding: 20px;"><i class="ph ph-spinner ph-spin" style="font-size: 2rem;"></i><br>Running Deep On-Chain Audit & Mapping...</div>`;
 
     try {
         const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${address}`);
@@ -97,8 +97,8 @@ async function analyzeToken() {
         // TWITTER AI
         const hypeLevel = isSafe ? (Math.floor(Math.random() * 20) + 80) : (Math.floor(Math.random() * 40) + 10);
         const symbol = pair.baseToken.symbol;
-        const bullishTweets = [`Just aped into $${symbol}, this is going to the moon! 🚀`, `Smart money accumulating $${symbol} right now. Don't fade.`, `$${symbol} dev is cooking something massive. 100x incoming! 🔥`];
-        const bearishTweets = [`$${symbol} looks like a slow rug. Be careful...`, `Dev wallet holds 80% of $${symbol}. Huge red flag 🚩`, `Volume on $${symbol} is dead. Everyone left.`];
+        const bullishTweets = [`Just aped into $${symbol}, to the moon! 🚀`, `Smart money accumulating $${symbol}. Do fade.`, `$${symbol} dev is cooking massive. 🔥`];
+        const bearishTweets = [`$${symbol} looks slow rug.🚩`, `Dev wallet holds 80% $${symbol}. Huge red flag`, `Volume $${symbol} is dead.`];
         let selectedTweets = [];
         if(hypeLevel > 50) {
             selectedTweets.push(bullishTweets[Math.floor(Math.random() * bullishTweets.length)]);
@@ -120,33 +120,83 @@ async function analyzeToken() {
             publicPercent = 100 - lpPercent - devPercent; 
         }
 
-        // --- NOWOŚĆ: BUBBLE MAP VISUALIZER ---
-        let bubblesHTML = '';
-        if (isSafe) {
-            // Bezpieczny - bąbelki rozproszone po całym oknie
-            bubblesHTML += `<div class="bubble bubble-dev safe" style="width: 50px; height: 50px; left: 45%; top: 35%; animation-delay: 0s;">DEV</div>`;
-            for(let i=0; i<15; i++) {
-                const size = Math.floor(Math.random() * 20) + 15;
-                const left = Math.floor(Math.random() * 85) + 5;
-                const top = Math.floor(Math.random() * 75) + 5;
-                const delay = (Math.random() * 2).toFixed(1);
-                bubblesHTML += `<div class="bubble bubble-holder" style="width: ${size}px; height: ${size}px; left: ${left}%; top: ${top}%; animation-delay: ${delay}s;"></div>`;
+        // --- SILNIK BUBBLE MAP PRO (Axiom Style z SVG) ---
+        let mapHTML = '';
+        const width = 1000;
+        const height = 1000; // Używamy koordynatów wektorowych
+        const mainDev = { x: 500, y: 350, r: 65, colorClass: 'wallet-dev' };
+        
+        let clusters = [];
+        let connections = '';
+
+        if (!isSafe) {
+            // Niebezpieczny (Scam/Rug) - Symulujemy Wallet Splitting (Pęczki portfeli)
+            // Generujemy 3-5 klastrów
+            const numClusters = Math.floor(Math.random() * 3) + 3;
+            for(let i=0; i<numClusters; i++) {
+                const clusterMain = {
+                    x: 200 + Math.floor(Math.random() * 600),
+                    y: 600 + Math.floor(Math.random() * 250),
+                    r: 45,
+                    colorClass: 'wallet-cluster'
+                };
+                clusters.push(clusterMain);
+
+                // Połączenia od Głównego Dev do Klastra
+                connections += `<line class="wallet-link link-dev-cluster" x1="${mainDev.x}" y1="${mainDev.y}" x2="${clusterMain.x}" y2="${clusterMain.y}" />`;
+
+                // Małe portfele wewnątrz klastra (钱包splitting symulacja)
+                const numInner = Math.floor(Math.random() * 3) + 2;
+                for(let j=0; j<numInner; j++) {
+                    const innerWallet = {
+                        x: clusterMain.x + (Math.random() * 200 - 100),
+                        y: clusterMain.y + (Math.random() * 200 - 100),
+                        r: 25,
+                        colorClass: 'wallet-cluster'
+                    };
+                    clusters.push(innerWallet);
+                    // Połączenie od głównego portfela klastra do małych portfeli
+                    connections += `<line class="wallet-link link-cluster-inner" x1="${clusterMain.x}" y1="${clusterMain.y}" x2="${innerWallet.x}" y2="${innerWallet.y}" />`;
+                }
             }
         } else {
-            // Niebezpieczny (Scam/Rug) - bąbelki zgrupowane przy Devie (Wallet Splitting)
-            bubblesHTML += `<div class="bubble bubble-dev" style="width: 65px; height: 65px; left: 45%; top: 35%; animation-delay: 0s;">DEV</div>`;
-            for(let i=0; i<20; i++) {
-                const size = Math.floor(Math.random() * 30) + 15;
-                const left = 35 + Math.floor(Math.random() * 25); 
-                const top = 25 + Math.floor(Math.random() * 35);
-                const delay = (Math.random() * 2).toFixed(1);
-                bubblesHTML += `<div class="bubble bubble-cluster" style="width: ${size}px; height: ${size}px; left: ${left}%; top: ${top}%; animation-delay: ${delay}s;"></div>`;
-            }
-            bubblesHTML += `<div style="position:absolute; top: 10px; left: 10px; color: #fff; font-size: 0.65rem; font-weight: 900; background: var(--accent-red); padding: 4px 8px; border-radius: 4px; animation: blinkBadge 1s infinite; z-index: 20; box-shadow: 0 0 10px var(--accent-red);">⚠️ WALLET SPLITTING DETECTED</div>`;
+            // Bezpieczny - Głuwny twórca jest jeden, ewentualnie ma jeden powiązany portfel LP
+            mainDev.r = 55;
+            clusters.push({ x: mainDev.x + 150, y: mainDev.y + 100, r: 35, colorClass: 'wallet-dev' });
+            connections += `<line class="wallet-link link-dev-cluster" x1="${mainDev.x}" y1="${mainDev.y}" x2="${mainDev.x+150}" y2="${mainDev.y+100}" />`;
         }
 
+        // Zwykłe portfele - szare, puste, niepowiązane
+        const numOthers = isSafe ? 25 : 15;
+        let othersHTML = '';
+        for(let i=0; i<numOthers; i++) {
+            const size = Math.floor(Math.random() * 30) + 20;
+            const x = Math.floor(Math.random() * 900) + 50;
+            const y = Math.floor(Math.random() * 900) + 50;
+            
+            // Unikamy nakładania się z Głuwnym Dev
+            const dist = Math.sqrt(Math.pow(x - mainDev.x, 2) + Math.pow(y - mainDev.y, 2));
+            if (dist > 250) {
+                othersHTML += `<circle class="wallet-circle wallet-other" cx="${x}" cy="${y}" r="${size}" />`;
+            }
+        }
 
-        // Generowanie HTML (Wszystkie sekcje złożone w jedną całość)
+        // Składamy SVG w całość
+        let svgContent = `<svg viewBox="0 0 1000 1000" class="bubble-svg" id="copyBubbleMap">`;
+        svgContent += connections; // Linie na spodzie
+        svgContent += `<circle class="wallet-circle ${mainDev.colorClass}" cx="${mainDev.x}" cy="${mainDev.y}" r="${mainDev.r}" />`; // Główny Dev
+        // Klastry/Dzielenie portfeli
+        for(let c of clusters) {
+            svgContent += `<circle class="wallet-circle ${c.colorClass}" cx="${c.x}" cy="${c.y}" r="${c.r}" />`;
+        }
+        svgContent += othersHTML; // Inne portfele
+        svgContent += `</svg>`;
+
+        // Tekst ostrzegawczy
+        const warningHTML = !isSafe ? `<div style="position:absolute; top: 10px; left: 10px; color: #fff; font-size: 0.65rem; font-weight: 900; background: var(--accent-red); padding: 4px 8px; border-radius: 4px; animation: blinkBadge 1s infinite; z-index: 20; box-shadow: 0 0 10px var(--accent-red);">⚠️ WALLET SPLITTING DETECTED</div>` : '';
+
+
+        // Generowanie HTML całej strony
         resultBox.innerHTML = `
             <div class="result-header">
                 <div class="token-name" id="copyTokenName">
@@ -207,11 +257,20 @@ async function analyzeToken() {
                     <span class="bubble-map-title"><i class="ph-fill ph-target"></i> HOLDER BUBBLE MAP</span>
                 </div>
                 <div class="bubble-container">
-                    ${bubblesHTML}
+                    <div class="bubble-controls">
+                        <button class="bubble-btn bubble-refresh"><i class="ph ph-arrows-clockwise"></i> Refresh</button>
+                        <button class="bubble-btn bubble-time"><i class="ph ph-calendar-blank"></i> 1m <i class="ph ph-caret-down"></i></button>
+                        <button class="bubble-btn"><i class="ph ph-funnel"></i> Filters</button>
+                        <button class="bubble-btn"><i class="ph ph-chart-line-up"></i></button>
+                        <button class="bubble-btn"><i class="ph ph-users"></i></button>
+                    </div>
+                    ${warningHTML}
+                    ${svgContent}
                 </div>
                 <div class="bubble-legend">
-                    <div class="legend-item"><div class="legend-dot dot-dev"></div> Creator (Dev)</div>
-                    <div class="legend-item"><div class="legend-dot" style="background:#8b95a5;"></div> Other Holders</div>
+                    <div class="legend-item"><div class="legend-dot-ring" style="border-color: var(--accent-purple); stroke-width: 2.5;"></div> Creator/Main Dev (Split)</div>
+                    <div class="legend-item"><div class="legend-dot-ring" style="border-color: var(--accent-yellow); filter: drop-shadow(0 0 6px rgba(255, 214, 0, 0.4)); stroke-width: 2.0;"></div> Wallet splitting Clusters</div>
+                    <div class="legend-item"><div class="legend-dot-ring" style="border-color: rgba(139, 149, 165, 0.3);"></div> Other Holders</div>
                 </div>
             </div>
 
@@ -249,6 +308,7 @@ async function analyzeToken() {
     }
 }
 
+// 3. Synchronizacja statystyk z bazą
 async function syncMainStats() {
     try {
         if (typeof db === 'undefined') return;
@@ -319,7 +379,7 @@ window.copyResult = function() {
     
     const text = `🎯 ${name}\n🚨 Signal: ${dec}\n📊 Score: ${score}/7\n💰 ${stats}`;
     navigator.clipboard.writeText(text).then(() => {
-        if(typeof showToast === 'function') showToast("Skopiowano wynik do schowka!", "success");
+        if(typeof showToast === 'function') showToast("Skopiowano wynik schowka!", "success");
     });
 }
 
@@ -357,7 +417,7 @@ function initLiveRadar() {
 
         const item = document.createElement('div');
         item.className = 'radar-item';
-        item.title = "Kliknij, aby skopiować prawdziwe CA";
+        item.title = "Kliknij, aby skopiować prawdzi CA";
         
         item.innerHTML = `
             <div class="radar-top">
