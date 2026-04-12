@@ -484,9 +484,14 @@ function initMarketHeatmap() {
     setInterval(updateHeatmap, 5000); 
 }
 
-// --- NOWOŚĆ: PASTE & SCAN (Auto-wklejanie ze schowka) ---
+// --- NOWOŚĆ: PASTE & SCAN (Auto-wklejanie ze schowka + Fallback dla mobile) ---
 window.pasteAndScan = async function() {
     try {
+        // Sprawdzamy, czy API schowka jest w ogóle dostępne
+        if (!navigator.clipboard || !navigator.clipboard.readText) {
+            throw new Error("API Schowka jest niedostępne (możliwy brak HTTPS lub blokada na urządzeniu mobilnym).");
+        }
+
         // Próba odczytu ze schowka systemowego
         const text = await navigator.clipboard.readText();
         
@@ -500,17 +505,26 @@ window.pasteAndScan = async function() {
         if (input) {
             // Wkleja tekst do inputa
             input.value = text.trim();
-            if(typeof showToast === 'function') showToast("Adres wklejony automatycznie!", "info");
+            if(typeof showToast === 'function') showToast("Adres wklejony z sukcesem!", "info");
             
             // Od razu odpala główną funkcję analizy
             analyzeToken();
         }
     } catch (err) {
-        console.error("Błąd odczytu schowka:", err);
+        console.error("Wklejanie nie powiodło się:", err);
         if(typeof playSound === 'function') playSound('error');
-        if(typeof showToast === 'function') showToast("Zezwól przeglądarce na dostęp do schowka!", "error");
+        
+        // Zależnie od błędu, komunikujemy użytkownikowi problem
+        if(typeof showToast === 'function') {
+           showToast("Brak dostępu do schowka! Użyj wklejania z klawiatury w pasku.", "error");
+        } else {
+            alert("Nie można automatycznie odczytać schowka. Wklej kod ręcznie w okienko obok.");
+        }
+        
+        // Opcjonalnie: możemy podświetlić pole tekstowe, aby łatwiej było wkleić ręcznie
+        const input = document.getElementById("tokenInput");
+        if (input) input.focus();
     }
-};
 
 // INIT GLOBALNY
 document.addEventListener("DOMContentLoaded", () => {
