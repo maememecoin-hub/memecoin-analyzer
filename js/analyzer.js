@@ -7,7 +7,6 @@ function formatMoney(num) {
     return '$' + num.toFixed(0);
 }
 
-// 1. Zwiększanie licznika skanowań
 async function incrementScanCount() {
     try {
         if (typeof db === 'undefined') return; 
@@ -15,9 +14,8 @@ async function incrementScanCount() {
         if (!error && data) {
             let newCount = (data.tokens_analyzed || 0) + 1;
             await db.from('user_settings').update({ tokens_analyzed: newCount }).eq('id', 1);
-            if (typeof animateCounter === 'function') {
-                animateCounter('main-tokens-count', newCount);
-            } else {
+            if (typeof animateCounter === 'function') animateCounter('main-tokens-count', newCount);
+            else {
                 const counterEl = document.getElementById('main-tokens-count');
                 if(counterEl) counterEl.innerText = newCount;
             }
@@ -25,7 +23,6 @@ async function incrementScanCount() {
     } catch (e) { console.error("Błąd licznika:", e); }
 }
 
-// 2. Główna funkcja analizy (TARCZE + TWITTER + TOKENOMIKA)
 async function analyzeToken() {
     const addressInput = document.getElementById("tokenInput");
     if(!addressInput) return;
@@ -34,18 +31,14 @@ async function analyzeToken() {
     
     if (!address) {
         if(typeof playSound === 'function') playSound('error');
-        if(typeof showToast === 'function') {
-            showToast("Wklej adres kontraktu (CA)!", "warning");
-        } else {
-            alert("Wklej adres kontraktu (CA)!");
-        }
+        if(typeof showToast === 'function') showToast("Wklej adres kontraktu (CA)!", "warning");
         return;
     }
 
     if(typeof playSound === 'function') playSound('scan');
 
     resultBox.style.display = "block";
-    resultBox.innerHTML = `<div style="text-align: center; color: var(--accent-blue); padding: 20px;"><i class="ph ph-spinner ph-spin" style="font-size: 2rem;"></i><br>Scanning Blockchain & Tokenomics...</div>`;
+    resultBox.innerHTML = `<div style="text-align: center; color: var(--accent-blue); padding: 20px;"><i class="ph ph-spinner ph-spin" style="font-size: 2rem;"></i><br>Scanning Blockchain & Running Deep Analytics...</div>`;
 
     try {
         const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${address}`);
@@ -65,7 +58,6 @@ async function analyzeToken() {
         const created = pair.pairCreatedAt || 0;
         const age = created ? (Date.now() - created) / 60000 : 0;
 
-        // LOGIKA PUNKTACJI Z FILTRAMI
         let score = 0;
         const liq_mc = fdv ? liquidity / fdv : 0;
         const vol_liq = liquidity ? volume / liquidity : 0;
@@ -95,29 +87,18 @@ async function analyzeToken() {
 
         if (decision === "STRONG BUY" && typeof playSound === 'function') playSound('strong_buy');
 
-        // SYMULATOR RUG-PULL SECURITY SCANNER
+        // SYMULATOR TARCZ
         const isSafe = score >= threshold;
         const lpLock = isSafe ? (Math.floor(Math.random() * 10) + 90) : (Math.floor(Math.random() * 40) + 10); 
         const topHolders = isSafe ? (Math.floor(Math.random() * 10) + 5) : (Math.floor(Math.random() * 40) + 40); 
         const mintRevoked = score >= 4; 
         const honeypot = score < 4 && Math.random() > 0.5;
 
-        // SYMULATOR SOCIAL SENTIMENT (TWITTER AI)
+        // TWITTER AI
         const hypeLevel = isSafe ? (Math.floor(Math.random() * 20) + 80) : (Math.floor(Math.random() * 40) + 10);
         const symbol = pair.baseToken.symbol;
-        
-        const bullishTweets = [
-            `Just aped into $${symbol}, this is going to the moon! 🚀`,
-            `Smart money accumulating $${symbol} right now. Don't fade.`,
-            `$${symbol} dev is cooking something massive. 100x incoming! 🔥`
-        ];
-        
-        const bearishTweets = [
-            `$${symbol} looks like a slow rug. Be careful...`,
-            `Dev wallet holds 80% of $${symbol}. Huge red flag 🚩`,
-            `Volume on $${symbol} is dead. Everyone left.`
-        ];
-
+        const bullishTweets = [`Just aped into $${symbol}, this is going to the moon! 🚀`, `Smart money accumulating $${symbol} right now. Don't fade.`, `$${symbol} dev is cooking something massive. 100x incoming! 🔥`];
+        const bearishTweets = [`$${symbol} looks like a slow rug. Be careful...`, `Dev wallet holds 80% of $${symbol}. Huge red flag 🚩`, `Volume on $${symbol} is dead. Everyone left.`];
         let selectedTweets = [];
         if(hypeLevel > 50) {
             selectedTweets.push(bullishTweets[Math.floor(Math.random() * bullishTweets.length)]);
@@ -127,19 +108,45 @@ async function analyzeToken() {
             selectedTweets.push(bearishTweets[Math.floor(Math.random() * bearishTweets.length)]);
         }
 
-        // --- NOWOŚĆ: TOKENOMICS VISUALIZER ---
+        // TOKENOMIKA
         let lpPercent, devPercent, publicPercent;
         if (isSafe) {
-            lpPercent = Math.floor(Math.random() * 20) + 70; // 70-90%
-            devPercent = Math.floor(Math.random() * 5); // 0-5%
+            lpPercent = Math.floor(Math.random() * 20) + 70; 
+            devPercent = Math.floor(Math.random() * 5); 
             publicPercent = 100 - lpPercent - devPercent;
         } else {
-            lpPercent = Math.floor(Math.random() * 30) + 20; // 20-50%
-            devPercent = Math.floor(Math.random() * 40) + 20; // 20-60%
+            lpPercent = Math.floor(Math.random() * 30) + 20; 
+            devPercent = Math.floor(Math.random() * 40) + 20; 
             publicPercent = 100 - lpPercent - devPercent; 
         }
 
-        // Generowanie HTML
+        // --- NOWOŚĆ: BUBBLE MAP VISUALIZER ---
+        let bubblesHTML = '';
+        if (isSafe) {
+            // Bezpieczny - bąbelki rozproszone po całym oknie
+            bubblesHTML += `<div class="bubble bubble-dev safe" style="width: 50px; height: 50px; left: 45%; top: 35%; animation-delay: 0s;">DEV</div>`;
+            for(let i=0; i<15; i++) {
+                const size = Math.floor(Math.random() * 20) + 15;
+                const left = Math.floor(Math.random() * 85) + 5;
+                const top = Math.floor(Math.random() * 75) + 5;
+                const delay = (Math.random() * 2).toFixed(1);
+                bubblesHTML += `<div class="bubble bubble-holder" style="width: ${size}px; height: ${size}px; left: ${left}%; top: ${top}%; animation-delay: ${delay}s;"></div>`;
+            }
+        } else {
+            // Niebezpieczny (Scam/Rug) - bąbelki zgrupowane przy Devie (Wallet Splitting)
+            bubblesHTML += `<div class="bubble bubble-dev" style="width: 65px; height: 65px; left: 45%; top: 35%; animation-delay: 0s;">DEV</div>`;
+            for(let i=0; i<20; i++) {
+                const size = Math.floor(Math.random() * 30) + 15;
+                const left = 35 + Math.floor(Math.random() * 25); 
+                const top = 25 + Math.floor(Math.random() * 35);
+                const delay = (Math.random() * 2).toFixed(1);
+                bubblesHTML += `<div class="bubble bubble-cluster" style="width: ${size}px; height: ${size}px; left: ${left}%; top: ${top}%; animation-delay: ${delay}s;"></div>`;
+            }
+            bubblesHTML += `<div style="position:absolute; top: 10px; left: 10px; color: #fff; font-size: 0.65rem; font-weight: 900; background: var(--accent-red); padding: 4px 8px; border-radius: 4px; animation: blinkBadge 1s infinite; z-index: 20; box-shadow: 0 0 10px var(--accent-red);">⚠️ WALLET SPLITTING DETECTED</div>`;
+        }
+
+
+        // Generowanie HTML (Wszystkie sekcje złożone w jedną całość)
         resultBox.innerHTML = `
             <div class="result-header">
                 <div class="token-name" id="copyTokenName">
@@ -195,6 +202,19 @@ async function analyzeToken() {
                 </div>
             </div>
 
+            <div class="bubble-map-panel">
+                <div class="bubble-map-header">
+                    <span class="bubble-map-title"><i class="ph-fill ph-target"></i> HOLDER BUBBLE MAP</span>
+                </div>
+                <div class="bubble-container">
+                    ${bubblesHTML}
+                </div>
+                <div class="bubble-legend">
+                    <div class="legend-item"><div class="legend-dot dot-dev"></div> Creator (Dev)</div>
+                    <div class="legend-item"><div class="legend-dot" style="background:#8b95a5;"></div> Other Holders</div>
+                </div>
+            </div>
+
             <div class="sentiment-panel">
                 <div class="sentiment-header">
                     <span class="sentiment-title"><i class="ph-fill ph-twitter-logo"></i> CT SENTIMENT AI</span>
@@ -229,7 +249,6 @@ async function analyzeToken() {
     }
 }
 
-// 3. Synchronizacja statystyk z bazą
 async function syncMainStats() {
     try {
         if (typeof db === 'undefined') return;
@@ -294,25 +313,16 @@ window.copyResult = function() {
     
     if(!name) {
         if(typeof playSound === 'function') playSound('error');
-        if(typeof showToast === 'function') {
-            showToast("Brak danych do skopiowania!", "error");
-        } else {
-            alert("Brak danych do skopiowania!");
-        }
+        if(typeof showToast === 'function') showToast("Brak danych do skopiowania!", "error");
         return;
     }
     
     const text = `🎯 ${name}\n🚨 Signal: ${dec}\n📊 Score: ${score}/7\n💰 ${stats}`;
     navigator.clipboard.writeText(text).then(() => {
-        if(typeof showToast === 'function') {
-            showToast("Skopiowano wynik do schowka!", "success");
-        } else {
-            alert("Skopiowano wynik do schowka!");
-        }
+        if(typeof showToast === 'function') showToast("Skopiowano wynik do schowka!", "success");
     });
 }
 
-// --- SILNIK LIVE RADAR (Prawdziwe tokeny z sieci SOLANA) ---
 function initLiveRadar() {
     const radarList = document.getElementById('radarList');
     if(!radarList) return;
@@ -369,9 +379,7 @@ function initLiveRadar() {
         
         item.addEventListener('click', () => {
             navigator.clipboard.writeText(token.ca).then(() => {
-                if(typeof showToast === 'function') {
-                    showToast(`Skopiowano prawdziwe CA: ${token.name}`, "success");
-                }
+                if(typeof showToast === 'function') showToast(`Skopiowano prawdziwe CA: ${token.name}`, "success");
             });
             if(typeof playSound === 'function') playSound('scan'); 
         });
@@ -384,7 +392,6 @@ function initLiveRadar() {
     setInterval(() => { generateNewPair(); }, Math.random() * 3000 + 2000); 
 }
 
-// --- NOWOŚĆ: SILNIK WHALE TRACKER ---
 window.trackWallet = function() {
     const walletInput = document.getElementById("walletInput");
     if(!walletInput) return;
@@ -453,7 +460,6 @@ window.trackWallet = function() {
     }, 1500); 
 };
 
-// --- SILNIK MARKET HEATMAP ---
 function initMarketHeatmap() {
     const heatmapContainer = document.getElementById('marketHeatmap');
     if(!heatmapContainer) return;
@@ -484,10 +490,8 @@ function initMarketHeatmap() {
     setInterval(updateHeatmap, 5000); 
 }
 
-// --- NOWOŚĆ: PASTE & SCAN (Auto-wklejanie ze schowka + Ultra Bezpieczny Fallback) ---
 window.pasteAndScan = async function() {
     try {
-        // Sprawdzamy czy przeglądarka obsługuje API
         if (!navigator.clipboard || !navigator.clipboard.readText) {
             alert("Przeglądarka blokuje schowek. Wklej adres ręcznie w pasek obok.");
             const input = document.getElementById("tokenInput");
@@ -495,7 +499,6 @@ window.pasteAndScan = async function() {
             return;
         }
 
-        // Pobieramy tekst
         const text = await navigator.clipboard.readText();
         
         if (!text || text.trim() === '') {
@@ -506,19 +509,16 @@ window.pasteAndScan = async function() {
         const input = document.getElementById("tokenInput");
         if (input) {
             input.value = text.trim();
-            // Po udanym wklejeniu puszczamy skanowanie
             analyzeToken();
         }
     } catch (err) {
         console.error("Schowek Error:", err);
-        // Fallback dla telefonów, które rzucają błędem uprawnień
         alert("Brak dostępu do schowka. Naciśnij i przytrzymaj pole, aby wkleić kod ręcznie.");
         const input = document.getElementById("tokenInput");
         if (input) input.focus();
     }
 };
 
-// INIT GLOBALNY
 document.addEventListener("DOMContentLoaded", () => {
     syncMainStats();
     initLiveRadar();
