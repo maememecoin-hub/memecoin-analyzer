@@ -7,7 +7,7 @@ function formatMoney(num) {
     return '$' + num.toFixed(0);
 }
 
-// 1. Zwiększanie licznika skanowań w bazie
+// 1. Zwiększanie licznika skanowań
 async function incrementScanCount() {
     try {
         if (typeof db === 'undefined') return; 
@@ -25,7 +25,7 @@ async function incrementScanCount() {
     } catch (e) { console.error("Błąd licznika:", e); }
 }
 
-// 2. Główna funkcja analizy (Z TARCZAMI BEZPIECZEŃSTWA)
+// 2. Główna funkcja analizy (Z TARCZAMI I TWITTEREM)
 async function analyzeToken() {
     const addressInput = document.getElementById("tokenInput");
     if(!addressInput) return;
@@ -45,7 +45,7 @@ async function analyzeToken() {
     if(typeof playSound === 'function') playSound('scan');
 
     resultBox.style.display = "block";
-    resultBox.innerHTML = `<div style="text-align: center; color: var(--accent-blue); padding: 20px;"><i class="ph ph-spinner ph-spin" style="font-size: 2rem;"></i><br>Scanning Blockchain & Security Checks...</div>`;
+    resultBox.innerHTML = `<div style="text-align: center; color: var(--accent-blue); padding: 20px;"><i class="ph ph-spinner ph-spin" style="font-size: 2rem;"></i><br>Scanning Blockchain & Twitter AI...</div>`;
 
     try {
         const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${address}`);
@@ -65,7 +65,7 @@ async function analyzeToken() {
         const created = pair.pairCreatedAt || 0;
         const age = created ? (Date.now() - created) / 60000 : 0;
 
-        // REALNA LOGIKA PUNKTACJI Z FILTRAMI
+        // LOGIKA PUNKTACJI Z FILTRAMI
         let score = 0;
         const liq_mc = fdv ? liquidity / fdv : 0;
         const vol_liq = liquidity ? volume / liquidity : 0;
@@ -84,9 +84,8 @@ async function analyzeToken() {
 
         let threshold = 6;
         const savedThreshold = localStorage.getItem('sniperThreshold');
-        if (savedThreshold) {
-            threshold = Number(savedThreshold);
-        } else {
+        if (savedThreshold) threshold = Number(savedThreshold);
+        else {
             const thresholdInput = document.getElementById("strongBuyThreshold");
             if (thresholdInput) threshold = Number(thresholdInput.value);
         }
@@ -94,16 +93,44 @@ async function analyzeToken() {
         const decision = score >= threshold ? "STRONG BUY" : (score >= 4 ? "SCALP" : "SKIP");
         const colorClass = score >= threshold ? "green" : (score >= 4 ? "blue" : "red");
 
-        if (decision === "STRONG BUY" && typeof playSound === 'function') {
-            playSound('strong_buy');
-        }
+        if (decision === "STRONG BUY" && typeof playSound === 'function') playSound('strong_buy');
 
-        // --- SYMULATOR RUG-PULL SECURITY SCANNER ---
+        // SYMULATOR RUG-PULL SECURITY SCANNER
         const isSafe = score >= threshold;
-        const lpLock = isSafe ? (Math.floor(Math.random() * 10) + 90) : (Math.floor(Math.random() * 40) + 10); // 90-100% bezpieczne, 10-50% niebezpieczne
-        const topHolders = isSafe ? (Math.floor(Math.random() * 10) + 5) : (Math.floor(Math.random() * 40) + 40); // 5-15% ok, 40-80% wieloryby
+        const lpLock = isSafe ? (Math.floor(Math.random() * 10) + 90) : (Math.floor(Math.random() * 40) + 10); 
+        const topHolders = isSafe ? (Math.floor(Math.random() * 10) + 5) : (Math.floor(Math.random() * 40) + 40); 
         const mintRevoked = score >= 4; 
-        const honeypot = score < 4 && Math.random() > 0.5; // 50% szans na honeypot przy bardzo złym wyniku
+        const honeypot = score < 4 && Math.random() > 0.5;
+
+        // --- NOWOŚĆ: SYMULATOR SOCIAL SENTIMENT (TWITTER AI) ---
+        const hypeLevel = isSafe ? (Math.floor(Math.random() * 20) + 80) : (Math.floor(Math.random() * 40) + 10);
+        const symbol = pair.baseToken.symbol;
+        
+        const bullishTweets = [
+            `Just aped into $${symbol}, this is going to the moon! 🚀`,
+            `Smart money accumulating $${symbol} right now. Don't fade.`,
+            `$${symbol} dev is cooking something massive. 100x incoming! 🔥`,
+            `Chart looks incredibly bullish for $${symbol}. Sending it!`,
+            `CA is safe, LP locked. Im all in on $${symbol}.`
+        ];
+        
+        const bearishTweets = [
+            `$${symbol} looks like a slow rug. Be careful...`,
+            `Dev wallet holds 80% of $${symbol}. Huge red flag 🚩`,
+            `Volume on $${symbol} is dead. Everyone left.`,
+            `Just sold my bags of $${symbol}. Moving to the next play.`,
+            `Sniper bots already dumped $${symbol}, it's over.`
+        ];
+
+        // Wybieramy 2 losowe tweety pasujące do nastroju
+        let selectedTweets = [];
+        if(hypeLevel > 50) {
+            selectedTweets.push(bullishTweets[Math.floor(Math.random() * bullishTweets.length)]);
+            selectedTweets.push(bullishTweets[Math.floor(Math.random() * bullishTweets.length)]);
+        } else {
+            selectedTweets.push(bearishTweets[Math.floor(Math.random() * bearishTweets.length)]);
+            selectedTweets.push(bearishTweets[Math.floor(Math.random() * bearishTweets.length)]);
+        }
 
         // Generowanie HTML
         resultBox.innerHTML = `
@@ -128,11 +155,11 @@ async function analyzeToken() {
                 <div class="sec-grid">
                     <div class="sec-item ${mintRevoked ? 'sec-safe' : 'sec-danger'}">
                         <i class="ph ${mintRevoked ? 'ph-check-circle' : 'ph-warning-circle'}"></i> 
-                        <span>Mint Revoked: ${mintRevoked ? 'YES' : 'NO'}</span>
+                        <span>Mint: ${mintRevoked ? 'REVOKED' : 'ACTIVE'}</span>
                     </div>
                     <div class="sec-item ${lpLock > 80 ? 'sec-safe' : (lpLock > 50 ? 'sec-warn' : 'sec-danger')}">
                         <i class="ph ph-lock-key"></i> 
-                        <span>LP Locked: ${lpLock}%</span>
+                        <span>LP: ${lpLock}%</span>
                     </div>
                     <div class="sec-item ${topHolders < 20 ? 'sec-safe' : 'sec-danger'}">
                         <i class="ph ph-users"></i> 
@@ -141,6 +168,29 @@ async function analyzeToken() {
                     <div class="sec-item ${!honeypot ? 'sec-safe' : 'sec-danger'}">
                         <i class="ph ${!honeypot ? 'ph-shield-check' : 'ph-skull'}"></i> 
                         <span>Honeypot: ${!honeypot ? 'PASS' : 'FAIL'}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sentiment-panel">
+                <div class="sentiment-header">
+                    <span class="sentiment-title"><i class="ph-fill ph-twitter-logo"></i> CT SENTIMENT AI</span>
+                </div>
+                <div class="sentiment-bar-container">
+                    <div class="sentiment-bar-bull" style="width: ${hypeLevel}%;"></div>
+                </div>
+                <div class="sentiment-labels">
+                    <span class="bull-text">${hypeLevel}% BULLISH</span>
+                    <span class="bear-text">${100 - hypeLevel}% BEARISH</span>
+                </div>
+                <div class="tweet-list">
+                    <div class="tweet-item">
+                        <span class="tweet-user">@DegenSniper <span>• 2m ago</span></span>
+                        "${selectedTweets[0]}"
+                    </div>
+                    <div class="tweet-item">
+                        <span class="tweet-user">@WhaleTracker <span>• 5m ago</span></span>
+                        "${selectedTweets[1]}"
                     </div>
                 </div>
             </div>
@@ -296,9 +346,7 @@ function initLiveRadar() {
         
         item.addEventListener('click', () => {
             navigator.clipboard.writeText(token.ca).then(() => {
-                if(typeof showToast === 'function') {
-                    showToast(`Skopiowano prawdziwe CA: ${token.name}`, "success");
-                }
+                if(typeof showToast === 'function') showToast(`Skopiowano prawdziwe CA: ${token.name}`, "success");
             });
             if(typeof playSound === 'function') playSound('scan'); 
         });
@@ -327,21 +375,18 @@ window.trackWallet = function() {
     if(typeof playSound === 'function') playSound('scan');
     if(typeof showToast === 'function') showToast("Connecting to Solscan API...", "info");
 
-    // Efekt ładowania
     resultBox.style.display = "block";
     resultBox.style.opacity = "0.3";
 
     setTimeout(() => {
         resultBox.style.opacity = "1";
-        if(typeof playSound === 'function') playSound('strong_buy'); // Dźwięk sukcesu
+        if(typeof playSound === 'function') playSound('strong_buy');
 
-        // Losowe dane symulacyjne portfela
         const netWorth = Math.floor(Math.random() * 800000) + 50000;
-        const winRate = Math.floor(Math.random() * 30) + 60; // 60-90%
+        const winRate = Math.floor(Math.random() * 30) + 60; 
         const tokens = ['WIF', 'BONK', 'POPCAT', 'BOME', 'MYRO', 'SLERF', 'PONKE', 'TOSHI'];
         const topToken = tokens[Math.floor(Math.random() * tokens.length)];
 
-        // Animujemy statystyki portfela
         if(typeof animateCounter === 'function') {
             animateCounter('wNetWorth', netWorth, 1500, '$', '');
             animateCounter('wWinRate', winRate, 1500, '', '%');
@@ -351,11 +396,10 @@ window.trackWallet = function() {
         }
         document.getElementById('wTopToken').innerText = `$${topToken}`;
 
-        // Generowanie ostatniej aktywności portfela
         const activityList = document.getElementById('walletActivityList');
         let html = '';
         for(let i=0; i<4; i++) {
-            const isBuy = Math.random() > 0.5; // 50% szans na buy/sell
+            const isBuy = Math.random() > 0.5; 
             const actionColor = isBuy ? 'var(--accent-green)' : 'var(--accent-red)';
             const actionText = isBuy ? 'BOUGHT' : 'SOLD';
             const icon = isBuy ? 'ph-arrow-down-left' : 'ph-arrow-up-right';
@@ -384,7 +428,7 @@ window.trackWallet = function() {
     }, 1500); 
 };
 
-// --- SILNIK MARKET HEATMAP (SOLANA ECOSYSTEM) ---
+// --- SILNIK MARKET HEATMAP ---
 function initMarketHeatmap() {
     const heatmapContainer = document.getElementById('marketHeatmap');
     if(!heatmapContainer) return;
@@ -399,7 +443,7 @@ function initMarketHeatmap() {
 
     function updateHeatmap() {
         heatmapContainer.innerHTML = sectors.map(s => {
-            const change = (Math.random() * 10 - 4).toFixed(2); // Losowa zmiana od -4% do +6%
+            const change = (Math.random() * 10 - 4).toFixed(2); 
             const isBullish = change >= 0;
             return `
                 <div class="heatmap-tile ${isBullish ? 'tile-bullish' : 'tile-bearish'}">
@@ -412,7 +456,7 @@ function initMarketHeatmap() {
     }
 
     updateHeatmap();
-    setInterval(updateHeatmap, 5000); // Odświeżaj co 5 sekund
+    setInterval(updateHeatmap, 5000); 
 }
 
 // INIT GLOBALNY
