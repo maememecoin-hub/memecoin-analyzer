@@ -209,21 +209,21 @@ window.copyResult = function() {
     });
 }
 
-// --- SILNIK LIVE RADAR (Prawdziwe adresy CA do testów z Axiom) ---
+// --- SILNIK LIVE RADAR (Tylko sieć SOLANA) ---
 function initLiveRadar() {
     const radarList = document.getElementById('radarList');
     if(!radarList) return;
 
-    // Baza PRAWDZIWYCH tokenów, które Axiom na pewno rozpozna
+    // Baza PRAWDZIWYCH tokenów, TYLKO z sieci SOL
     const realTokens = [
-        { name: 'PEPE', chain: 'ETH', ca: '0x6982508145454ce325ddbe47a25d4ec3d2311933' },
         { name: 'WIF', chain: 'SOL', ca: 'EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYtM2wYSzL' },
         { name: 'BONK', chain: 'SOL', ca: 'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263' },
-        { name: 'BRETT', chain: 'BASE', ca: '0x532f27101965dd16442e59d40670faf5abe12047' },
-        { name: 'FLOKI', chain: 'ETH', ca: '0xcf0c122c6b73ff809c693db761e7baebe62b6a2e' },
         { name: 'POPCAT', chain: 'SOL', ca: '7GCihgDB8fe6KNjn2g4gH13NpdB2VADeNEnzAABp16QW' },
-        { name: 'MOG', chain: 'BASE', ca: '0x2da56ac2f6fa15ccb5581b2fb41c2c31e5bb7700' },
-        { name: 'MEW', chain: 'ETH', ca: '0x94833215291b7d5d2f6280db590bbdc8c78c3b01' }
+        { name: 'MYRO', chain: 'SOL', ca: 'HhJpBhRRn4g56VsyLuT8VD5egXqDvd9L4N9J8YxdyQ9w' },
+        { name: 'BOME', chain: 'SOL', ca: 'ukHH6c7mMyiWCf1b9pnWe25TSpkDDt3H5pQZgZ74J82' },
+        { name: 'SLERF', chain: 'SOL', ca: '7BgBvyjrZX1YKz4oh9mjb8ZScatkkwb8A9D9q58K6xG' },
+        { name: 'WEN', chain: 'SOL', ca: 'WENWENvqqNya429ubCdR81ZmD69brwQaaBYY6p3LCpk' },
+        { name: 'PONKE', chain: 'SOL', ca: '5z3EqYQo9HiCEs3R84RCDMu2nH1BfB1qN1Z74Y3n1qT' }
     ];
 
     function generateNewPair() {
@@ -248,7 +248,7 @@ function initLiveRadar() {
 
         const item = document.createElement('div');
         item.className = 'radar-item';
-        item.title = "Kliknij, aby skopiować prawdziwe CA";
+        item.title = "Kliknij, aby skopiować CA";
         
         item.innerHTML = `
             <div class="radar-top">
