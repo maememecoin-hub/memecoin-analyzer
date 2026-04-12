@@ -484,47 +484,39 @@ function initMarketHeatmap() {
     setInterval(updateHeatmap, 5000); 
 }
 
-// --- NOWOŚĆ: PASTE & SCAN (Auto-wklejanie ze schowka + Fallback dla mobile) ---
+// --- NOWOŚĆ: PASTE & SCAN (Auto-wklejanie ze schowka + Ultra Bezpieczny Fallback) ---
 window.pasteAndScan = async function() {
     try {
-        // Sprawdzamy, czy API schowka jest w ogóle dostępne
+        // Sprawdzamy czy przeglądarka obsługuje API
         if (!navigator.clipboard || !navigator.clipboard.readText) {
-            throw new Error("API Schowka jest niedostępne (możliwy brak HTTPS lub blokada na urządzeniu mobilnym).");
+            alert("Przeglądarka blokuje schowek. Wklej adres ręcznie w pasek obok.");
+            const input = document.getElementById("tokenInput");
+            if (input) input.focus();
+            return;
         }
 
-        // Próba odczytu ze schowka systemowego
+        // Pobieramy tekst
         const text = await navigator.clipboard.readText();
         
         if (!text || text.trim() === '') {
-            if(typeof playSound === 'function') playSound('error');
-            if(typeof showToast === 'function') showToast("Schowek jest pusty!", "warning");
+            alert("Schowek jest pusty! Skopiuj najpierw adres kontraktu.");
             return;
         }
 
         const input = document.getElementById("tokenInput");
         if (input) {
-            // Wkleja tekst do inputa
             input.value = text.trim();
-            if(typeof showToast === 'function') showToast("Adres wklejony z sukcesem!", "info");
-            
-            // Od razu odpala główną funkcję analizy
+            // Po udanym wklejeniu puszczamy skanowanie
             analyzeToken();
         }
     } catch (err) {
-        console.error("Wklejanie nie powiodło się:", err);
-        if(typeof playSound === 'function') playSound('error');
-        
-        // Zależnie od błędu, komunikujemy użytkownikowi problem
-        if(typeof showToast === 'function') {
-           showToast("Brak dostępu do schowka! Użyj wklejania z klawiatury w pasku.", "error");
-        } else {
-            alert("Nie można automatycznie odczytać schowka. Wklej kod ręcznie w okienko obok.");
-        }
-        
-        // Opcjonalnie: możemy podświetlić pole tekstowe, aby łatwiej było wkleić ręcznie
+        console.error("Schowek Error:", err);
+        // Fallback dla telefonów, które rzucają błędem uprawnień
+        alert("Brak dostępu do schowka. Naciśnij i przytrzymaj pole, aby wkleić kod ręcznie.");
         const input = document.getElementById("tokenInput");
         if (input) input.focus();
     }
+};
 
 // INIT GLOBALNY
 document.addEventListener("DOMContentLoaded", () => {
