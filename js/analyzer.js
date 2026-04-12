@@ -7,15 +7,6 @@ function formatMoney(num) {
     return '$' + num.toFixed(0);
 }
 
-function getSeedFromAddress(addr) {
-    let seed = 0;
-    for (let i = 0; i < addr.length; i++) {
-        seed = ((seed << 5) - seed) + addr.charCodeAt(i);
-        seed |= 0;
-    }
-    return Math.abs(seed);
-}
-
 async function incrementScanCount() {
     try {
         if (typeof db === 'undefined') return; 
@@ -96,12 +87,14 @@ async function analyzeToken() {
 
         if (decision === "STRONG BUY" && typeof playSound === 'function') playSound('strong_buy');
 
+        // SYMULATOR TARCZ
         const isSafe = score >= 4; 
         const lpLock = isSafe ? (Math.floor(Math.random() * 10) + 90) : (Math.floor(Math.random() * 40) + 10); 
         const topHolders = isSafe ? (Math.floor(Math.random() * 10) + 5) : (Math.floor(Math.random() * 40) + 40); 
         const mintRevoked = score >= 4; 
         const honeypot = score < 4 && Math.random() > 0.5;
 
+        // TWITTER AI
         const hypeLevel = isSafe ? (Math.floor(Math.random() * 20) + 80) : (Math.floor(Math.random() * 40) + 10);
         const symbol = pair.baseToken.symbol;
         const bullishTweets = [`Just aped into $${symbol}, to the moon! 🚀`, `Smart money accumulating $${symbol}.`, `$${symbol} dev is cooking massive. 🔥`];
@@ -115,12 +108,12 @@ async function analyzeToken() {
             selectedTweets.push(bearishTweets[Math.floor(Math.random() * bearishTweets.length)]);
         }
 
+        // TOKENOMIKA
         const lpPercent = Math.floor(Math.random() * 40) + 40;
         const devPercent = Math.floor(Math.random() * 15);
         const publicPercent = 100 - lpPercent - devPercent;
 
-        window.currentCA = address;
-
+        // Generowanie HTML (Bez mapy)
         resultBox.innerHTML = `
             <div class="result-header">
                 <div class="token-name" id="copyTokenName">
@@ -173,18 +166,6 @@ async function analyzeToken() {
                     <div class="legend-item"><div class="legend-dot dot-lp"></div> LP (${lpPercent}%)</div>
                     <div class="legend-item"><div class="legend-dot dot-dev"></div> Team/Dev (${devPercent}%)</div>
                     <div class="legend-item"><div class="legend-dot dot-public"></div> Public (${publicPercent}%)</div>
-                </div>
-            </div>
-
-            <div class="bubble-map-panel">
-                <div class="bubble-map-header">
-                    <span class="bubble-map-title"><i class="ph-fill ph-target"></i> OFFICIAL BUBBLEMAP</span>
-                    <a href="https://app.bubblemaps.io/sol/token/${address}" target="_blank" style="text-decoration: none; color: var(--accent-blue); font-size: 0.75rem; font-weight: 800; display: flex; align-items: center; gap: 5px; background: rgba(0,210,255,0.1); padding: 5px 10px; border-radius: 6px; border: 1px solid rgba(0,210,255,0.3);">
-                        <i class="ph ph-arrow-square-out"></i> Otwórz pełny ekran
-                    </a>
-                </div>
-                <div class="bubble-container" style="height: 450px; padding: 0; overflow: hidden; border: 1px solid var(--border-light);">
-                    <iframe src="https://app.bubblemaps.io/sol/token/${address}" width="100%" height="100%" frameborder="0" style="border-radius: 12px; pointer-events: auto;"></iframe>
                 </div>
             </div>
 
