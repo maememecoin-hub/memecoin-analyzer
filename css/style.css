@@ -179,7 +179,7 @@ body {
     box-shadow: 0 0 20px rgba(0, 210, 255, 0.4); 
     color: white;
 }
-.scan-btn { padding: 15px 35px; } /* Zwiększony przycisk w panelu */
+.scan-btn { padding: 15px 35px; } 
 
 .btn-outline {
     background: transparent; border: 1px solid var(--border-light); color: var(--text-muted); padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 0.7rem; font-weight: 600; display: flex; align-items: center; gap: 6px; transition: 0.3s;
@@ -457,6 +457,11 @@ body[data-theme="sith"] .glow-2 { background: rgba(153, 0, 0, 0.1); }
     transform: translateX(-2px);
 }
 
+.radar-item:hover .copy-icon {
+    color: var(--accent-blue);
+    transform: scale(1.2);
+}
+
 @keyframes slideInRadar {
     from { opacity: 0; transform: translateX(30px); }
     to { opacity: 1; transform: translateX(0); }
@@ -466,6 +471,19 @@ body[data-theme="sith"] .glow-2 { background: rgba(153, 0, 0, 0.1); }
 .radar-bot { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); font-weight: 600;}
 .radar-chain { padding: 2px 6px; border-radius: 4px; font-size: 0.6rem; background: rgba(255,255,255,0.05); color: #fff;}
 .new-badge { color: var(--accent-yellow); text-shadow: 0 0 5px var(--accent-yellow); animation: blinkBadge 1s infinite; font-size: 0.7rem;}
+
+.radar-ca {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+    padding-top: 6px;
+    border-top: 1px dashed rgba(255,255,255,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.copy-icon { transition: 0.2s; }
 
 @keyframes blinkBadge { 50% { opacity: 0.3; } }
 
