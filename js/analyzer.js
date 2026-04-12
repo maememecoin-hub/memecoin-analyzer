@@ -484,6 +484,34 @@ function initMarketHeatmap() {
     setInterval(updateHeatmap, 5000); 
 }
 
+// --- NOWOŚĆ: PASTE & SCAN (Auto-wklejanie ze schowka) ---
+window.pasteAndScan = async function() {
+    try {
+        // Próba odczytu ze schowka systemowego
+        const text = await navigator.clipboard.readText();
+        
+        if (!text || text.trim() === '') {
+            if(typeof playSound === 'function') playSound('error');
+            if(typeof showToast === 'function') showToast("Schowek jest pusty!", "warning");
+            return;
+        }
+
+        const input = document.getElementById("tokenInput");
+        if (input) {
+            // Wkleja tekst do inputa
+            input.value = text.trim();
+            if(typeof showToast === 'function') showToast("Adres wklejony automatycznie!", "info");
+            
+            // Od razu odpala główną funkcję analizy
+            analyzeToken();
+        }
+    } catch (err) {
+        console.error("Błąd odczytu schowka:", err);
+        if(typeof playSound === 'function') playSound('error');
+        if(typeof showToast === 'function') showToast("Zezwól przeglądarce na dostęp do schowka!", "error");
+    }
+};
+
 // INIT GLOBALNY
 document.addEventListener("DOMContentLoaded", () => {
     syncMainStats();
