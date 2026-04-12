@@ -384,6 +384,44 @@ window.trackWallet = function() {
     }, 1500); 
 };
 
+// --- SILNIK MARKET HEATMAP (SOLANA ECOSYSTEM) ---
+function initMarketHeatmap() {
+    const heatmapContainer = document.getElementById('marketHeatmap');
+    if(!heatmapContainer) return;
+
+    const sectors = [
+        { name: 'SOLANA', ticker: 'SOL' },
+        { name: 'JUPITER', ticker: 'JUP' },
+        { name: 'RAYDIUM', ticker: 'RAY' },
+        { name: 'PYTH', ticker: 'PYTH' },
+        { name: 'PUMP.FUN', ticker: 'PUMP' }
+    ];
+
+    function updateHeatmap() {
+        heatmapContainer.innerHTML = sectors.map(s => {
+            const change = (Math.random() * 10 - 4).toFixed(2); // Losowa zmiana od -4% do +6%
+            const isBullish = change >= 0;
+            return `
+                <div class="heatmap-tile ${isBullish ? 'tile-bullish' : 'tile-bearish'}">
+                    <span style="font-size: 0.6rem; opacity: 0.6; font-weight: bold;">${s.name}</span>
+                    <span class="tile-ticker">${s.ticker}</span>
+                    <span class="tile-pct">${isBullish ? '+' : ''}${change}%</span>
+                </div>
+            `;
+        }).join('');
+    }
+
+    updateHeatmap();
+    setInterval(updateHeatmap, 5000); // Odświeżaj co 5 sekund
+}
+
+// Pamiętaj, aby dodać wywołanie do DOMContentLoaded:
+document.addEventListener("DOMContentLoaded", () => {
+    syncMainStats();
+    initLiveRadar();
+    initMarketHeatmap(); // <--- DODAJ TĘ LINIJKĘ
+});
+
 // INIT GLOBALNY
 document.addEventListener("DOMContentLoaded", () => {
     syncMainStats();
