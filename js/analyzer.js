@@ -209,7 +209,6 @@ window.copyResult = function() {
     });
 }
 
-// --- SILNIK LIVE RADAR (Z Kopiowaniem CA i Ikonami Siły) ---
 // --- SILNIK LIVE RADAR (Prawdziwe adresy CA do testów z Axiom) ---
 function initLiveRadar() {
     const radarList = document.getElementById('radarList');
@@ -294,17 +293,6 @@ function initLiveRadar() {
     }
 
     // Nieskończona pętla
-    setInterval(() => {
-        generateNewPair();
-    }, Math.random() * 3000 + 2000); 
-}
-
-    // Generujemy kilka na start
-    for(let i=0; i<5; i++) {
-        setTimeout(generateNewPair, i * 200); 
-    }
-
-    // Nieskończona pętla (co 2-5 sekund nowy token)
     setInterval(() => {
         generateNewPair();
     }, Math.random() * 3000 + 2000); 
