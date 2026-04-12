@@ -1,197 +1,254 @@
-// --- LOGIKA ANALIZATORA I SUPABASE (analyzer.js) ---
-let tokenHistory = [];
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memecoin Sniper PRO</title>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
 
-function formatMoney(num) {
-    if (num >= 1e6) return '$' + (num / 1e6).toFixed(2) + 'M';
-    if (num >= 1e3) return '$' + (num / 1e3).toFixed(1) + 'K';
-    return '$' + num.toFixed(0);
-}
+    <div class="ambient-glow glow-1"></div>
+    <div class="ambient-glow glow-2"></div>
 
-async function incrementScanCount() {
-    try {
-        const { data, error } = await db.from('user_settings').select('tokens_analyzed').eq('id', 1).single();
-        if (!error && data) {
-            let newCount = (data.tokens_analyzed || 0) + 1;
-            await db.from('user_settings').update({ tokens_analyzed: newCount }).eq('id', 1);
-            if (typeof animateCounter === 'function') {
-                animateCounter('main-tokens-count', newCount);
-            } else {
-                const counterEl = document.getElementById('main-tokens-count');
-                if(counterEl) counterEl.innerText = newCount;
-            }
-        }
-    } catch (e) { console.error("Błąd licznika:", e); }
-}
+    <nav class="navbar glass-panel">
+        <div class="logo">
+            <i class="ph ph-target"></i>
+            <span>MEMECOIN SNIPER</span>
+        </div>
+        <ul class="nav-links">
+            <li><a href="#" class="active" data-target="analyzer"><i class="ph ph-radar"></i> ANALYZER</a></li>
+            <li><a href="#" data-target="dziennik"><i class="ph ph-book-bookmark"></i> DZIENNIK</a></li>
+            <li><a href="#" data-target="leaderboard"><i class="ph ph-trophy"></i> LEADERBOARD</a></li>
+        </ul>
+        <div class="nav-icons">
+            <i class="ph ph-gear" id="settings-btn" title="Ustawienia"></i>
+        </div>
+    </nav>
 
-async function analyzeToken() {
-    const addressInput = document.getElementById("tokenInput");
-    if(!addressInput) return;
-    const address = addressInput.value.trim();
-    const resultBox = document.getElementById("analyzerResultBox");
-    
-    if (!address) {
-        if(typeof playSound === 'function') playSound('error');
-        return showToast("Wklej adres kontraktu (CA)!", "warning");
-    }
-
-    if(typeof playSound === 'function') playSound('scan');
-
-    resultBox.style.display = "block";
-    resultBox.innerHTML = `<div style="text-align: center; color: var(--accent-blue); padding: 20px;"><i class="ph ph-spinner ph-spin" style="font-size: 2rem;"></i><br>Scanning Blockchain...</div>`;
-
-    try {
-        const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${address}`);
-        const data = await res.json();
-        const pair = data.pairs ? data.pairs[0] : null;
-
-        if (!pair) {
-            if(typeof playSound === 'function') playSound('error');
-            resultBox.innerHTML = `<div style="text-align: center; color: var(--accent-red); padding: 20px;">Token not found or no liquidity!</div>`;
-            return;
-        }
-
-        const fdv = pair.fdv || 0;
-        const liquidity = pair.liquidity?.usd || 0;
-        const volume = pair.volume?.h24 || 0;
-        const change1m = pair.priceChange?.m1 || 0;
-        const created = pair.pairCreatedAt || 0;
-        const age = created ? (Date.now() - created) / 60000 : 0;
-
-        // REALNA LOGIKA PUNKTACJI (POBIERANA Z USTAWIEŃ)
-        let score = 0;
-        const liq_mc = fdv ? liquidity / fdv : 0;
-        const vol_liq = liquidity ? volume / liquidity : 0;
-
-        // Pobieranie filtrów z ustawień użytkownika (lub wartości domyślne)
-        const f_liqMc = parseFloat(localStorage.getItem('filterLiqMc') || 2) / 100;
-        const f_volLiq = parseFloat(localStorage.getItem('filterVolLiq') || 5);
-        const f_change = parseFloat(localStorage.getItem('filterChange') || 0.5);
-        const f_vol = parseFloat(localStorage.getItem('filterVol') || 1000);
-        const f_age = parseFloat(localStorage.getItem('filterAge') || 60);
-
-        if (liq_mc > f_liqMc) score += 2;
-        if (vol_liq < f_volLiq) score += 2;
-        if (change1m > f_change) score += 1;
-        if (volume > f_vol) score += 1;
-        if (age < f_age) score += 1;
-
-        // POBIERANIE PROGU Z NOWYCH USTAWIEŃ
-        let threshold = 6;
-        const savedThreshold = localStorage.getItem('sniperThreshold');
-        if (savedThreshold) {
-            threshold = Number(savedThreshold);
-        } else {
-            const thresholdInput = document.getElementById("strongBuyThreshold");
-            if (thresholdInput) threshold = Number(thresholdInput.value);
-        }
+    <main class="main-content">
         
-        const decision = score >= threshold ? "STRONG BUY" : (score >= 4 ? "SCALP" : "SKIP");
-        const colorClass = score >= threshold ? "green" : (score >= 4 ? "blue" : "red");
+        <section id="analyzer" class="tab-content active">
+            <header class="hero compact-hero">
+                <h1 class="title">MEMECOIN <span class="gradient-text">SNIPER</span></h1>
+                <p class="description">REAL-TIME ON-CHAIN ANALYSIS TERMINAL</p>
+            </header>
 
-        if (decision === "STRONG BUY" && typeof playSound === 'function') {
-            playSound('strong_buy');
-        }
-
-        // Renderowanie statystyk ORAZ wykresu Iframe
-        resultBox.innerHTML = `
-            <div class="result-header">
-                <div class="token-name" id="copyTokenName">
-                    <i class="ph ph-diamond"></i> ${pair.baseToken.name} <span class="ticker">$${pair.baseToken.symbol}</span>
+            <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr);">
+                <div class="stat-card glass-panel glow-yellow">
+                    <div class="stat-header">
+                        <span class="stat-label">TOKENS ANALYZED</span>
+                        <div class="stat-icon yellow"><i class="ph ph-lightning"></i></div>
+                    </div>
+                    <div class="stat-body">
+                        <span class="stat-value" id="main-tokens-count">...</span>
+                    </div>
+                    <div class="sparkline yellow-line">
+                        <svg viewBox="0 0 100 20" preserveAspectRatio="none"><path d="M0,15 L20,10 L40,18 L60,5 L80,12 L100,2" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                    </div>
                 </div>
-                <div class="badge ${colorClass}" id="copyDecision">${decision}</div>
-            </div>
-            <div class="result-body">
-                <div class="score">
-                    <span class="score-big" style="color: var(--accent-${colorClass})" id="copyScore">${score}</span><span class="score-small">/7</span>
-                </div>
-                <div class="token-stats" id="copyStats">
-                    <span>MC: ${formatMoney(fdv)}</span> | <span>LIQ: ${formatMoney(liquidity)}</span> | <span>VOL: ${formatMoney(volume)}</span>
-                    <div class="token-meta">AGE: ${Math.round(age)}m <span class="badge blue">ONLINE</span></div>
-                </div>
-            </div>
-            <div class="chart-container">
-                <iframe src="https://dexscreener.com/${pair.chainId}/${pair.pairAddress}?embed=1&theme=dark&info=0" frameborder="0"></iframe>
-            </div>
-            `;
-        
-        addToHistory(pair.baseToken.symbol, decision, colorClass, "↗");
-        incrementScanCount();
-        
-    } catch (e) { 
-        console.error(e);
-        if(typeof playSound === 'function') playSound('error');
-        resultBox.innerHTML = `<div style="text-align: center; color: var(--accent-red); padding: 20px;">API Error. Try again.</div>`;
-    }
-}
-
-async function syncMainStats() {
-    try {
-        const { data: settings } = await db.from('user_settings').select('*').eq('id', 1).single();
-        const { data: trades } = await db.from('trades').select('pnl');
-        
-        let startCap = settings ? parseFloat(settings.starting_capital) : 1000;
-        
-        if (settings) {
-            let scans = settings.tokens_analyzed || 0;
-            if (typeof animateCounter === 'function') animateCounter('main-tokens-count', scans);
-            else {
-                const scanEl = document.getElementById('main-tokens-count');
-                if(scanEl) scanEl.innerText = scans;
-            }
-        }
-
-        if (trades) {
-            let totalPnl = trades.reduce((sum, t) => sum + parseFloat(t.pnl), 0);
-            let currentCap = startCap + totalPnl;
-            
-            if (typeof animateCounter === 'function') animateCounter('main-total-capital', currentCap, 1500, '$', '', 2);
-            else {
-                const capEl = document.getElementById('main-total-capital');
-                if(capEl) capEl.innerText = `$${currentCap.toFixed(2)}`;
-            }
-
-            if (trades.length > 0) {
-                let won = trades.filter(t => parseFloat(t.pnl) > 0).length;
-                let winRate = Math.round((won / trades.length) * 100);
                 
-                if (typeof animateCounter === 'function') animateCounter('main-success-rate', winRate, 1500, '', '%');
-                else {
-                    const rateEl = document.getElementById('main-success-rate');
-                    if(rateEl) rateEl.innerText = `${winRate}%`;
-                }
-            }
-        }
-    } catch (e) { console.error("Błąd synchronizacji:", e); }
-}
-
-function addToHistory(symbol, decision, colorClass, arrow) {
-    tokenHistory.unshift({symbol, decision, colorClass, arrow});
-    if(tokenHistory.length > 5) tokenHistory.pop();
-    const hList = document.getElementById("historyList");
-    if(hList) {
-        hList.innerHTML = tokenHistory.map(t => `
-            <div class="token-list-item">
-                <div class="token-list-info">
-                    <i class="ph ph-magnifying-glass" style="color: var(--accent-blue);"></i> ${t.symbol}
+                <div class="stat-card glass-panel glow-purple">
+                    <div class="stat-header">
+                        <span class="stat-label">SUCCESS RATE</span>
+                        <div class="stat-icon purple"><i class="ph ph-target"></i></div>
+                    </div>
+                    <div class="stat-body">
+                        <span class="stat-value" id="main-success-rate">0%</span>
+                    </div>
+                    <div class="sparkline purple-line">
+                        <svg viewBox="0 0 100 20" preserveAspectRatio="none"><path d="M0,18 L20,15 L40,8 L60,10 L80,5 L100,2" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                    </div>
                 </div>
-                <div class="badge ${t.colorClass}">${t.decision}</div>
-            </div>`).join("");
-    }
-}
 
-window.copyResult = function() {
-    const name = document.getElementById("copyTokenName")?.innerText.trim() || "";
-    const dec = document.getElementById("copyDecision")?.innerText.trim() || "";
-    const score = document.getElementById("copyScore")?.innerText.trim() || "";
-    const stats = document.getElementById("copyStats")?.innerText.trim().replace(/\s*\|\s*/g, ' | ') || "";
-    
-    if(!name) {
-        if(typeof playSound === 'function') playSound('error');
-        return showToast("Brak danych do skopiowania!", "error");
-    }
-    
-    const text = `🎯 ${name}\n🚨 Signal: ${dec}\n📊 Score: ${score}/7\n💰 ${stats}`;
-    navigator.clipboard.writeText(text).then(() => showToast("Skopiowano wynik do schowka!", "success"));
-}
+                <div class="stat-card glass-panel glow-blue">
+                    <div class="stat-header">
+                        <span class="stat-label">LIVE CAPITAL</span>
+                        <div class="stat-icon blue"><i class="ph ph-banknotes"></i></div>
+                    </div>
+                    <div class="stat-body">
+                        <span class="stat-value" id="main-total-capital">$0</span>
+                    </div>
+                    <div class="sparkline blue-line">
+                        <svg viewBox="0 0 100 20" preserveAspectRatio="none"><path d="M0,18 L30,15 L50,5 L70,8 L100,2" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                    </div>
+                </div>
+            </div>
 
-document.addEventListener("DOMContentLoaded", syncMainStats);
+            <div class="glass-panel control-panel-wrapper">
+                <div class="control-panel-header">
+                    <span class="cph-title"><i class="ph ph-crosshair"></i> TARGET ACQUISITION</span>
+                    <span class="cph-status"><span class="status-dot"></span> System Ready • API Connected</span>
+                </div>
+                <div class="control-bar">
+                    <input type="text" id="tokenInput" placeholder="Paste token contract address here..." onkeypress="if(event.key==='Enter'){analyzeToken()}">
+                    <button class="btn-primary" onclick="analyzeToken()"><i class="ph ph-scan"></i> SCAN</button>
+                </div>
+            </div>
+
+            <div id="analyzerResultBox" class="result-box glass-panel glow-border" style="display: none;"></div>
+
+            <div class="glass-panel">
+                <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed var(--border-light); padding-bottom: 15px; margin-bottom: 15px;">
+                    <span><i class="ph ph-clock-counter-clockwise"></i> RECENT SCANS</span>
+                    <button onclick="copyResult()" class="btn-outline"><i class="ph ph-copy"></i> COPY LATEST</button>
+                </div>
+                <div id="historyList">
+                    <div style="color: var(--text-muted); font-size: 0.8rem; padding: 10px 0; text-align: center;">Awaiting first scan...</div>
+                </div>
+            </div>
+        </section>
+
+        <section id="dziennik" class="tab-content">
+            <header class="hero compact-hero" style="margin-bottom: 20px;">
+                <h2 class="title"><span class="gradient-text">TRADING</span> JOURNAL</h2>
+                <p class="description">TRACK YOUR SNIPES AND PNL.</p>
+            </header>
+
+            <div class="stats-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 30px;">
+                <div class="stat-card glass-panel">
+                    <div class="stat-header">
+                        <span class="stat-label">STARTING CAPITAL</span>
+                        <div class="stat-icon blue"><i class="ph ph-wallet"></i></div>
+                    </div>
+                    <div class="stat-body input-body">
+                        <span>$</span>
+                        <input type="number" id="startingCapital" value="1000">
+                    </div>
+                </div>
+                
+                <div class="stat-card glass-panel glow-blue">
+                    <div class="stat-header">
+                        <span class="stat-label">CURRENT CAPITAL</span>
+                        <div class="stat-icon blue"><i class="ph ph-coins"></i></div>
+                    </div>
+                    <div class="stat-body">
+                        <span class="stat-value" id="currentCapital">$0.00</span>
+                    </div>
+                </div>
+
+                <div class="stat-card glass-panel glow-green" id="pnlCard">
+                    <div class="stat-header">
+                        <span class="stat-label">TOTAL PNL</span>
+                        <div class="stat-icon green" id="pnlIcon"><i class="ph ph-trend-up"></i></div>
+                    </div>
+                    <div class="stat-body">
+                        <span class="stat-value" id="totalPnl">+$0.00</span>
+                    </div>
+                </div>
+
+                <div class="stat-card glass-panel">
+                    <div class="stat-header">
+                        <span class="stat-label">WIN RATE</span>
+                        <div class="stat-icon purple"><i class="ph ph-crosshair"></i></div>
+                    </div>
+                    <div class="stat-body" style="flex-direction: row; align-items: baseline; justify-content: space-between;">
+                        <span class="stat-value" id="winRate">0%</span>
+                        <span class="stat-sub" id="winLossCount" style="font-size:0.8rem;">0W / 0L</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-panel" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <div class="panel-header" style="margin: 0;">
+                    <i class="ph ph-book-open"></i> TRADE HISTORY
+                </div>
+                <button class="btn-primary" onclick="addNewTrade()"><i class="ph ph-plus"></i> NEW TRADE</button>
+            </div>
+
+            <div class="glass-panel">
+                <div class="journal-header" style="display: flex; justify-content: space-between; padding-bottom: 10px; border-bottom: 1px solid var(--border-light); color: var(--text-muted); font-size: 0.75rem; font-weight: 700; letter-spacing: 1px;">
+                    <span style="flex: 2;">ASSET</span>
+                    <span style="flex: 1; text-align: right;">NET PNL</span>
+                    <span style="flex: 1; text-align: right;">ACTION</span>
+                </div>
+                <div id="journalList" style="margin-top: 10px;"></div>
+            </div>
+        </section>
+
+        <section id="leaderboard" class="tab-content">
+            <header class="hero compact-hero" style="margin-bottom: 30px;">
+                <h2 class="title">HALL OF <span class="gradient-text">FAME</span></h2>
+                <p class="description">TOP 10 NAJLEPSZYCH ZAGRAŃ W HISTORII</p>
+            </header>
+
+            <div class="glass-panel" id="leaderboardList">
+                <div style="text-align: center; color: var(--text-muted); padding: 30px;">
+                    <i class="ph ph-spinner ph-spin" style="font-size: 2.5rem; margin-bottom: 10px;"></i><br>Ładowanie rankingu z bazy...
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <div id="overlay" class="overlay"></div>
+    
+    <div id="toast-container" class="toast-container"></div>
+    
+    <aside id="settings-panel" class="settings-panel">
+        <div class="settings-header">
+            <h3><i class="ph ph-faders"></i> TERMINAL SETTINGS</h3>
+            <i class="ph ph-x" id="close-settings" style="cursor:pointer;"></i>
+        </div>
+        <div class="settings-content">
+            
+            <div class="setting-group">
+                <label for="strongBuyThreshold">
+                    <span>STRONG BUY THRESHOLD</span>
+                    <span id="thresholdValue" class="badge blue">6 / 7</span>
+                </label>
+                <p class="setting-desc">Minimalny wynik punktowy wymagany do wyświetlenia sygnału kupna.</p>
+                <input type="range" id="strongBuyThreshold" min="4" max="7" value="6" step="1" class="slider">
+            </div>
+            
+            <hr class="settings-divider">
+
+            <div class="setting-group">
+                <label><i class="ph ph-sliders-horizontal"></i> FILTRY SKANERA</label>
+                <p class="setting-desc">Dostosuj kryteria przyznawania punktów przez bota.</p>
+
+                <div class="filter-item">
+                    <span>Min. Liq/MC Ratio (%)</span>
+                    <input type="number" id="filterLiqMc" value="2" step="0.5">
+                </div>
+                <div class="filter-item">
+                    <span>Max. Vol/Liq Ratio</span>
+                    <input type="number" id="filterVolLiq" value="5" step="0.5">
+                </div>
+                <div class="filter-item">
+                    <span>Min. Price Change 1m (%)</span>
+                    <input type="number" id="filterChange" value="0.5" step="0.1">
+                </div>
+                <div class="filter-item">
+                    <span>Min. Volume 24h ($)</span>
+                    <input type="number" id="filterVol" value="1000" step="100">
+                </div>
+                <div class="filter-item">
+                    <span>Max. Token Age (min)</span>
+                    <input type="number" id="filterAge" value="60" step="5">
+                </div>
+            </div>
+
+            <hr class="settings-divider">
+            
+            <div class="setting-group">
+                <label>TERMINAL THEME</label>
+                <p class="setting-desc">Wybierz kolorystykę główną interfejsu.</p>
+                <div class="theme-options">
+                    <div class="theme-btn active" data-theme="cyber" style="--t-color: #00d2ff;"></div>
+                    <div class="theme-btn" data-theme="matrix" style="--t-color: #00ff41;"></div>
+                    <div class="theme-btn" data-theme="sith" style="--t-color: #ff3333;"></div>
+                </div>
+            </div>
+
+        </div>
+    </aside>
+
+    <script src="js/supabase-config.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/analyzer.js"></script>
+    <script src="js/journal.js"></script>
+</body>
+</html>
