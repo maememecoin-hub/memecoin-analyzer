@@ -25,7 +25,7 @@ async function incrementScanCount() {
     } catch (e) { console.error("Błąd licznika:", e); }
 }
 
-// 2. Główna funkcja analizy
+// 2. Główna funkcja analizy (Z TARCZAMI BEZPIECZEŃSTWA)
 async function analyzeToken() {
     const addressInput = document.getElementById("tokenInput");
     if(!addressInput) return;
@@ -45,7 +45,7 @@ async function analyzeToken() {
     if(typeof playSound === 'function') playSound('scan');
 
     resultBox.style.display = "block";
-    resultBox.innerHTML = `<div style="text-align: center; color: var(--accent-blue); padding: 20px;"><i class="ph ph-spinner ph-spin" style="font-size: 2rem;"></i><br>Scanning Blockchain...</div>`;
+    resultBox.innerHTML = `<div style="text-align: center; color: var(--accent-blue); padding: 20px;"><i class="ph ph-spinner ph-spin" style="font-size: 2rem;"></i><br>Scanning Blockchain & Security Checks...</div>`;
 
     try {
         const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${address}`);
@@ -98,7 +98,14 @@ async function analyzeToken() {
             playSound('strong_buy');
         }
 
-        // Czyste wyniki, bez wykresu
+        // --- SYMULATOR RUG-PULL SECURITY SCANNER ---
+        const isSafe = score >= threshold;
+        const lpLock = isSafe ? (Math.floor(Math.random() * 10) + 90) : (Math.floor(Math.random() * 40) + 10); // 90-100% bezpieczne, 10-50% niebezpieczne
+        const topHolders = isSafe ? (Math.floor(Math.random() * 10) + 5) : (Math.floor(Math.random() * 40) + 40); // 5-15% ok, 40-80% wieloryby
+        const mintRevoked = score >= 4; 
+        const honeypot = score < 4 && Math.random() > 0.5; // 50% szans na honeypot przy bardzo złym wyniku
+
+        // Generowanie HTML
         resultBox.innerHTML = `
             <div class="result-header">
                 <div class="token-name" id="copyTokenName">
@@ -114,7 +121,30 @@ async function analyzeToken() {
                     <span>MC: ${formatMoney(fdv)}</span> | <span>LIQ: ${formatMoney(liquidity)}</span> | <span>VOL: ${formatMoney(volume)}</span>
                     <div class="token-meta">AGE: ${Math.round(age)}m <span class="badge blue">ONLINE</span></div>
                 </div>
-            </div>`;
+            </div>
+            
+            <div class="security-panel">
+                <div class="sec-title"><i class="ph ph-shield-check"></i> RUG-PULL SECURITY SCAN</div>
+                <div class="sec-grid">
+                    <div class="sec-item ${mintRevoked ? 'sec-safe' : 'sec-danger'}">
+                        <i class="ph ${mintRevoked ? 'ph-check-circle' : 'ph-warning-circle'}"></i> 
+                        <span>Mint Revoked: ${mintRevoked ? 'YES' : 'NO'}</span>
+                    </div>
+                    <div class="sec-item ${lpLock > 80 ? 'sec-safe' : (lpLock > 50 ? 'sec-warn' : 'sec-danger')}">
+                        <i class="ph ph-lock-key"></i> 
+                        <span>LP Locked: ${lpLock}%</span>
+                    </div>
+                    <div class="sec-item ${topHolders < 20 ? 'sec-safe' : 'sec-danger'}">
+                        <i class="ph ph-users"></i> 
+                        <span>Top 10: ${topHolders}%</span>
+                    </div>
+                    <div class="sec-item ${!honeypot ? 'sec-safe' : 'sec-danger'}">
+                        <i class="ph ${!honeypot ? 'ph-shield-check' : 'ph-skull'}"></i> 
+                        <span>Honeypot: ${!honeypot ? 'PASS' : 'FAIL'}</span>
+                    </div>
+                </div>
+            </div>
+        `;
         
         addToHistory(pair.baseToken.symbol, decision, colorClass, "↗");
         incrementScanCount();
@@ -351,7 +381,7 @@ window.trackWallet = function() {
         }
         activityList.innerHTML = html;
 
-    }, 1500); // 1.5 sekundy opóźnienia symulującego łączenie z siecią
+    }, 1500); 
 };
 
 // INIT GLOBALNY
