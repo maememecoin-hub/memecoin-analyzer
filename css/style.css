@@ -1,8 +1,8 @@
 :root {
     /* Głęboka czerń z nutą granatu */
     --bg-main: #050814; 
-    --bg-glass: rgba(10, 15, 30, 0.4); /* Szkło bazowe */
-    --bg-glass-hover: rgba(20, 25, 45, 0.5);
+    --bg-glass: rgba(10, 15, 30, 0.5); /* Lekko przyciemnione szkło */
+    --bg-glass-hover: rgba(20, 25, 45, 0.6);
     
     --border-light: rgba(255, 255, 255, 0.08);
     --border-glow: rgba(0, 210, 255, 0.3);
@@ -24,6 +24,15 @@
 
 body {
     background-color: var(--bg-main);
+    /* Gwiezdne tło generowane czystym CSS */
+    background-image:
+        radial-gradient(1px 1px at 15% 15%, rgba(255, 255, 255, 0.15) 100%, transparent),
+        radial-gradient(1.5px 1.5px at 25% 45%, rgba(255, 255, 255, 0.2) 100%, transparent),
+        radial-gradient(1px 1px at 45% 85%, rgba(255, 255, 255, 0.1) 100%, transparent),
+        radial-gradient(2px 2px at 75% 25%, rgba(255, 255, 255, 0.25) 100%, transparent),
+        radial-gradient(1px 1px at 85% 65%, rgba(255, 255, 255, 0.1) 100%, transparent),
+        radial-gradient(1.5px 1.5px at 95% 15%, rgba(255, 255, 255, 0.15) 100%, transparent);
+    background-attachment: fixed;
     color: var(--text-main);
     font-family: var(--font-family);
     min-height: 100vh;
@@ -38,23 +47,23 @@ body {
     border-radius: 50%;
     filter: blur(150px);
     z-index: -1;
-    opacity: 0.4;
+    opacity: 0.5; /* Mocniejsze świecenie */
     pointer-events: none;
     transition: background 0.5s ease;
 }
 .glow-1 {
     top: -100px;
     left: -100px;
-    width: 500px;
-    height: 500px;
-    background: rgba(0, 210, 255, 0.2);
-}
-.glow-2 {
-    bottom: 20%;
-    right: -150px;
     width: 600px;
     height: 600px;
-    background: rgba(184, 0, 255, 0.15);
+    background: rgba(0, 210, 255, 0.25);
+}
+.glow-2 {
+    bottom: 10%;
+    right: -150px;
+    width: 700px;
+    height: 700px;
+    background: rgba(184, 0, 255, 0.2);
 }
 
 /* === GLASSMORPHISM PANELS === */
@@ -64,7 +73,7 @@ body {
     -webkit-backdrop-filter: blur(16px);
     border: 1px solid var(--border-light);
     border-radius: 16px;
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
 }
 
 /* === NAWIGACJA === */
@@ -78,7 +87,7 @@ body {
 .logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.2rem; color: var(--text-main); letter-spacing: 2px; }
 .logo i { color: var(--accent-blue); font-size: 1.5rem;}
 
-.nav-links { list-style: none; display: flex; gap: 5px; background: rgba(0, 0, 0, 0.2); padding: 5px; border-radius: 12px; border: 1px solid var(--border-light); }
+.nav-links { list-style: none; display: flex; gap: 5px; background: rgba(0, 0, 0, 0.3); padding: 5px; border-radius: 12px; border: 1px solid var(--border-light); }
 .nav-links a { text-decoration: none; color: var(--text-muted); padding: 8px 16px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; transition: all 0.3s ease; white-space: nowrap; display: flex; align-items: center; gap: 6px;}
 .nav-links a i { font-size: 1.1rem; }
 .nav-links a.active, .nav-links a:hover { background: rgba(255, 255, 255, 0.05); color: var(--text-main); box-shadow: inset 0 0 10px rgba(255,255,255,0.02);}
@@ -111,6 +120,7 @@ body {
 .stat-body { z-index: 2; display: flex; flex-direction: column;}
 .stat-value { font-size: 1.8rem; font-weight: 800; letter-spacing: 1px;}
 .stat-sub { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;}
+.stat-meta { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; opacity: 0.7;}
 
 /* Wejścia (Inputy) w kartach statystyk (Journal) */
 .input-body { flex-direction: row; align-items: baseline; gap: 2px; }
@@ -131,24 +141,23 @@ body {
 .stat-icon.green i { color: var(--accent-green); }
 
 /* === SPARKLINES (Mini wykresy) === */
-.sparkline { position: absolute; bottom: 0; left: 0; width: 100%; height: 40px; opacity: 0.3; z-index: 1;}
+.sparkline { position: absolute; bottom: 0; left: 0; width: 100%; height: 40px; opacity: 0.6; z-index: 1; filter: drop-shadow(0 0 8px currentColor);}
 .sparkline svg { width: 100%; height: 100%; }
 .yellow-line { color: var(--accent-yellow); }
 .purple-line { color: var(--accent-purple); }
 .blue-line { color: var(--accent-blue); }
 
-/* === CONTROL BAR (Wyszukiwarka PRO) === */
-.control-bar {
-    display: flex; align-items: center; padding: 8px 15px; margin-bottom: 25px; gap: 15px;
-}
-.threshold-box { display: flex; align-items: center; gap: 8px; font-size: 0.75rem; font-weight: bold;}
-.threshold-box .muted { color: var(--text-muted); letter-spacing: 1px;}
-.threshold-box input { background: rgba(0,0,0,0.4); border: 1px solid var(--border-light); color: white; padding: 4px 8px; border-radius: 6px; width: 45px; text-align: center; font-weight: bold; outline: none; transition: 0.3s;}
-.threshold-box input:focus { border-color: var(--accent-blue); box-shadow: 0 0 10px rgba(0,210,255,0.2);}
+/* === CONTROL BAR PRO (Wyszukiwarka) === */
+.control-panel-wrapper { padding: 25px; margin-bottom: 30px; border-top: 1px solid rgba(0, 210, 255, 0.3); box-shadow: 0 10px 40px rgba(0, 210, 255, 0.05); background: linear-gradient(180deg, rgba(0, 210, 255, 0.04) 0%, transparent 100%), var(--bg-glass); }
+.control-panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.cph-title { font-size: 0.85rem; font-weight: 800; color: var(--accent-blue); letter-spacing: 2px; display: flex; align-items: center; gap: 8px; }
+.cph-status { font-size: 0.7rem; color: var(--text-muted); display: flex; align-items: center; gap: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; background: rgba(0,0,0,0.4); padding: 5px 10px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05);}
+.status-dot { width: 8px; height: 8px; background: var(--accent-green); border-radius: 50%; box-shadow: 0 0 10px var(--accent-green); animation: pulse 2s infinite; }
+@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
 
-.divider { width: 1px; height: 30px; background: var(--border-light); }
-
-.control-bar > input[type="text"] { flex: 1; background: transparent; border: none; color: white; font-size: 0.95rem; padding: 10px; outline: none; }
+.control-bar { display: flex; gap: 15px; align-items: stretch; }
+.control-bar > input[type="text"] { flex: 1; background: rgba(0,0,0,0.5); border: 1px solid var(--border-light); color: white; font-size: 1rem; padding: 15px 20px; border-radius: 12px; outline: none; transition: 0.3s; letter-spacing: 1px; }
+.control-bar > input[type="text"]:focus { border-color: var(--accent-blue); background: rgba(0,0,0,0.7); box-shadow: inset 0 0 20px rgba(0,210,255,0.05), 0 0 20px rgba(0,210,255,0.1); }
 .control-bar > input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.5;}
 
 /* Elementy UI */
@@ -157,11 +166,11 @@ body {
     border: 1px solid rgba(0,210,255,0.5); 
     color: var(--accent-blue); 
     padding: 10px 24px; 
-    border-radius: 10px; 
+    border-radius: 12px; 
     cursor: pointer; 
     font-weight: 800; 
     letter-spacing: 1px;
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     display: flex; align-items: center; gap: 8px;
     transition: all 0.3s ease; 
 }
@@ -170,6 +179,7 @@ body {
     box-shadow: 0 0 20px rgba(0, 210, 255, 0.4); 
     color: white;
 }
+.scan-btn { padding: 15px 35px; } /* Zwiększony przycisk w panelu */
 
 .btn-outline {
     background: transparent; border: 1px solid var(--border-light); color: var(--text-muted); padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 0.7rem; font-weight: 600; display: flex; align-items: center; gap: 6px; transition: 0.3s;
@@ -199,9 +209,16 @@ body {
 .token-meta { margin-top: 10px; font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; justify-content: flex-end; gap: 10px;}
 .token-meta .badge { padding: 3px 6px; font-size: 0.6rem; border:none; box-shadow:none; opacity: 0.8;}
 
+/* === SKELETON LOADERS (Puste miejsca w tabeli) === */
+.recent-header { display: flex; justify-content: space-between; padding-bottom: 10px; color: var(--text-muted); font-size: 0.75rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; border-bottom: 1px dashed var(--border-light); margin-bottom: 10px;}
+.skeleton-row { display: flex; gap: 20px; padding: 15px 0; border-bottom: 1px solid rgba(255,255,255,0.02); align-items: center; }
+.skeleton-box { background: rgba(255, 255, 255, 0.04); border-radius: 6px; overflow: hidden; position: relative; }
+.skeleton-box::after { content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent); animation: shimmer 2s infinite; }
+@keyframes shimmer { 100% { left: 200%; } }
+
 /* === LISTA OSTATNICH TOKENÓW & JOURNAL === */
 .token-list-item, .journal-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid var(--border-light); transition: background 0.3s;}
-.token-list-item:hover, .journal-item:hover { background: rgba(255,255,255,0.02); padding-left: 10px; padding-right: 10px; border-radius: 8px; border-bottom-color: transparent;}
+.token-list-item:hover, .journal-item:hover { background: rgba(255,255,255,0.04); padding-left: 10px; padding-right: 10px; border-radius: 8px; border-bottom-color: transparent;}
 .token-list-item:last-child, .journal-item:last-child { border-bottom: none; }
 .token-list-info { display: flex; align-items: center; gap: 12px; font-weight: bold; font-size: 0.95rem;}
 .token-list-info i { font-size: 1.2rem; background: rgba(255,255,255,0.05); padding: 8px; border-radius: 8px;}
@@ -363,9 +380,6 @@ body[data-theme="sith"] .glow-2 { background: rgba(153, 0, 0, 0.1); }
     border: none;
     display: block;
 }
-@media (max-width: 768px) {
-    .chart-container { height: 300px; }
-}
 
 /* === FILTRY SKANERA === */
 .filter-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 0.75rem; color: var(--text-main); font-weight: 600;}
@@ -380,10 +394,13 @@ body[data-theme="sith"] .glow-2 { background: rgba(153, 0, 0, 0.1); }
     .title { font-size: 2.2rem; }
     .main-content { margin: 20px auto; }
     .control-bar { flex-direction: column; align-items: stretch; gap: 10px;}
+    .control-panel-wrapper { padding: 15px; }
+    .cph-status { font-size: 0.6rem; }
     .divider { display: none; }
     .threshold-box { justify-content: space-between; padding-bottom: 10px; border-bottom: 1px solid var(--border-light);}
     .result-body { flex-direction: column; align-items: flex-start; gap: 20px; }
     .token-stats { text-align: left; }
     .token-meta { justify-content: flex-start; }
     #dziennik .stats-grid { grid-template-columns: 1fr; }
+    .chart-container { height: 300px; }
 }
