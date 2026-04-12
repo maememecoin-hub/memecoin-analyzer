@@ -576,6 +576,25 @@ body[data-theme="sith"] .glow-2 { background: rgba(153, 0, 0, 0.1); }
 .tweet-user { font-weight: 900; color: #1DA1F2; margin-bottom: 4px; display: block; font-size: 0.75rem;}
 .tweet-user span { color: var(--text-muted); font-weight: normal; margin-left: 5px;}
 
+/* === TOKENOMICS VISUALIZER === */
+.tokenomics-panel { margin-top: 20px; padding-top: 20px; border-top: 1px dashed var(--border-light); }
+.tokenomics-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.tokenomics-title { font-size: 0.75rem; color: var(--text-muted); font-weight: 800; display: flex; align-items: center; gap: 6px; letter-spacing: 1px; }
+.tokenomics-title i { color: var(--accent-purple); font-size: 1.2rem; filter: drop-shadow(0 0 5px rgba(184, 0, 255, 0.5)); } 
+
+.tokenomics-bar-container { width: 100%; height: 12px; border-radius: 6px; overflow: hidden; display: flex; margin-bottom: 12px; background: rgba(0,0,0,0.5); box-shadow: inset 0 0 5px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.05);}
+.tk-segment { height: 100%; transition: width 1s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; align-items: center; justify-content: center; font-size: 0.5rem; font-weight: 900; color: rgba(0,0,0,0.5);}
+.tk-lp { background: var(--accent-blue); box-shadow: 0 0 10px var(--accent-blue); }
+.tk-dev { background: var(--accent-red); box-shadow: 0 0 10px var(--accent-red); }
+.tk-public { background: var(--accent-green); box-shadow: 0 0 10px var(--accent-green); }
+
+.tokenomics-legend { display: flex; justify-content: space-between; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); }
+.legend-item { display: flex; align-items: center; gap: 5px; }
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+.dot-lp { background: var(--accent-blue); box-shadow: 0 0 5px var(--accent-blue); }
+.dot-dev { background: var(--accent-red); box-shadow: 0 0 5px var(--accent-red); }
+.dot-public { background: var(--accent-green); box-shadow: 0 0 5px var(--accent-green); }
+
 /* === RESPONSIVE === */
 @media (max-width: 1024px) {
     .dashboard-layout { flex-direction: column; }
