@@ -182,7 +182,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
     
-        // --- Zaawansowane Filtry Skanera ---
+    // --- Zaawansowane Filtry Skanera ---
     const filters = ['filterLiqMc', 'filterVolLiq', 'filterChange', 'filterVol', 'filterAge'];
     const defaultFilters = { filterLiqMc: 2, filterVolLiq: 5, filterChange: 0.5, filterVol: 1000, filterAge: 60 };
 
@@ -222,4 +222,32 @@ document.addEventListener("DOMContentLoaded", () => {
             localStorage.setItem('sniperTheme', theme); 
         });
     });
+
+    // --- COMPACT / MOBILE VIEW LOGIC ---
+    const mobileToggle = document.getElementById('forceMobileToggle');
+    const floatingSettingsBtn = document.getElementById('floating-settings');
+    const savedMobileView = localStorage.getItem('sniperMobileView') === 'true';
+
+    function applyMobileView(isMobile) {
+        if (isMobile) {
+            document.body.classList.add('force-mobile');
+        } else {
+            document.body.classList.remove('force-mobile');
+        }
+        if(mobileToggle) mobileToggle.checked = isMobile;
+    }
+
+    applyMobileView(savedMobileView);
+
+    if (mobileToggle) {
+        mobileToggle.addEventListener('change', (e) => {
+            const isChecked = e.target.checked;
+            localStorage.setItem('sniperMobileView', isChecked);
+            applyMobileView(isChecked);
+        });
+    }
+
+    if (floatingSettingsBtn) {
+        floatingSettingsBtn.addEventListener('click', openSettings);
+    }
 });
