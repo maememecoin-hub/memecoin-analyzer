@@ -415,15 +415,9 @@ function initMarketHeatmap() {
     setInterval(updateHeatmap, 5000); // Odświeżaj co 5 sekund
 }
 
-// Pamiętaj, aby dodać wywołanie do DOMContentLoaded:
-document.addEventListener("DOMContentLoaded", () => {
-    syncMainStats();
-    initLiveRadar();
-    initMarketHeatmap(); // <--- DODAJ TĘ LINIJKĘ
-});
-
 // INIT GLOBALNY
 document.addEventListener("DOMContentLoaded", () => {
     syncMainStats();
     initLiveRadar();
+    initMarketHeatmap();
 });
