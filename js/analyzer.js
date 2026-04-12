@@ -25,7 +25,7 @@ async function incrementScanCount() {
     } catch (e) { console.error("Błąd licznika:", e); }
 }
 
-// 2. Główna funkcja analizy (Z TARCZAMI I TWITTEREM)
+// 2. Główna funkcja analizy (TARCZE + TWITTER + TOKENOMIKA)
 async function analyzeToken() {
     const addressInput = document.getElementById("tokenInput");
     if(!addressInput) return;
@@ -45,7 +45,7 @@ async function analyzeToken() {
     if(typeof playSound === 'function') playSound('scan');
 
     resultBox.style.display = "block";
-    resultBox.innerHTML = `<div style="text-align: center; color: var(--accent-blue); padding: 20px;"><i class="ph ph-spinner ph-spin" style="font-size: 2rem;"></i><br>Scanning Blockchain & Twitter AI...</div>`;
+    resultBox.innerHTML = `<div style="text-align: center; color: var(--accent-blue); padding: 20px;"><i class="ph ph-spinner ph-spin" style="font-size: 2rem;"></i><br>Scanning Blockchain & Tokenomics...</div>`;
 
     try {
         const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${address}`);
@@ -102,27 +102,22 @@ async function analyzeToken() {
         const mintRevoked = score >= 4; 
         const honeypot = score < 4 && Math.random() > 0.5;
 
-        // --- NOWOŚĆ: SYMULATOR SOCIAL SENTIMENT (TWITTER AI) ---
+        // SYMULATOR SOCIAL SENTIMENT (TWITTER AI)
         const hypeLevel = isSafe ? (Math.floor(Math.random() * 20) + 80) : (Math.floor(Math.random() * 40) + 10);
         const symbol = pair.baseToken.symbol;
         
         const bullishTweets = [
             `Just aped into $${symbol}, this is going to the moon! 🚀`,
             `Smart money accumulating $${symbol} right now. Don't fade.`,
-            `$${symbol} dev is cooking something massive. 100x incoming! 🔥`,
-            `Chart looks incredibly bullish for $${symbol}. Sending it!`,
-            `CA is safe, LP locked. Im all in on $${symbol}.`
+            `$${symbol} dev is cooking something massive. 100x incoming! 🔥`
         ];
         
         const bearishTweets = [
             `$${symbol} looks like a slow rug. Be careful...`,
             `Dev wallet holds 80% of $${symbol}. Huge red flag 🚩`,
-            `Volume on $${symbol} is dead. Everyone left.`,
-            `Just sold my bags of $${symbol}. Moving to the next play.`,
-            `Sniper bots already dumped $${symbol}, it's over.`
+            `Volume on $${symbol} is dead. Everyone left.`
         ];
 
-        // Wybieramy 2 losowe tweety pasujące do nastroju
         let selectedTweets = [];
         if(hypeLevel > 50) {
             selectedTweets.push(bullishTweets[Math.floor(Math.random() * bullishTweets.length)]);
@@ -130,6 +125,18 @@ async function analyzeToken() {
         } else {
             selectedTweets.push(bearishTweets[Math.floor(Math.random() * bearishTweets.length)]);
             selectedTweets.push(bearishTweets[Math.floor(Math.random() * bearishTweets.length)]);
+        }
+
+        // --- NOWOŚĆ: TOKENOMICS VISUALIZER ---
+        let lpPercent, devPercent, publicPercent;
+        if (isSafe) {
+            lpPercent = Math.floor(Math.random() * 20) + 70; // 70-90%
+            devPercent = Math.floor(Math.random() * 5); // 0-5%
+            publicPercent = 100 - lpPercent - devPercent;
+        } else {
+            lpPercent = Math.floor(Math.random() * 30) + 20; // 20-50%
+            devPercent = Math.floor(Math.random() * 40) + 20; // 20-60%
+            publicPercent = 100 - lpPercent - devPercent; 
         }
 
         // Generowanie HTML
@@ -169,6 +176,22 @@ async function analyzeToken() {
                         <i class="ph ${!honeypot ? 'ph-shield-check' : 'ph-skull'}"></i> 
                         <span>Honeypot: ${!honeypot ? 'PASS' : 'FAIL'}</span>
                     </div>
+                </div>
+            </div>
+
+            <div class="tokenomics-panel">
+                <div class="tokenomics-header">
+                    <span class="tokenomics-title"><i class="ph-fill ph-chart-pie-slice"></i> TOKENOMICS DISTRIBUTION</span>
+                </div>
+                <div class="tokenomics-bar-container">
+                    <div class="tk-segment tk-lp" style="width: ${lpPercent}%;"></div>
+                    <div class="tk-segment tk-dev" style="width: ${devPercent}%;"></div>
+                    <div class="tk-segment tk-public" style="width: ${publicPercent}%;"></div>
+                </div>
+                <div class="tokenomics-legend">
+                    <div class="legend-item"><div class="legend-dot dot-lp"></div> LP (${lpPercent}%)</div>
+                    <div class="legend-item"><div class="legend-dot dot-dev"></div> Team/Dev (${devPercent}%)</div>
+                    <div class="legend-item"><div class="legend-dot dot-public"></div> Public (${publicPercent}%)</div>
                 </div>
             </div>
 
@@ -346,7 +369,9 @@ function initLiveRadar() {
         
         item.addEventListener('click', () => {
             navigator.clipboard.writeText(token.ca).then(() => {
-                if(typeof showToast === 'function') showToast(`Skopiowano prawdziwe CA: ${token.name}`, "success");
+                if(typeof showToast === 'function') {
+                    showToast(`Skopiowano prawdziwe CA: ${token.name}`, "success");
+                }
             });
             if(typeof playSound === 'function') playSound('scan'); 
         });
