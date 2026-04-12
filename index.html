@@ -89,10 +89,10 @@
                         <span class="cph-status"><span class="status-dot"></span> System Ready • API Connected</span>
                     </div>
                     <div class="control-bar">
-                        <input type="text" id="tokenInput" placeholder="Paste token contract address (e.g. Solana, Base, ETH)..." onkeypress="if(event.key==='Enter'){analyzeToken()}">
-                        <button class="btn-primary scan-btn" onclick="analyzeToken()"><i class="ph ph-scan"></i> SCAN TOKEN</button>
+                          <input type="text" id="tokenInput" placeholder="Paste Solana contract address..." onkeypress="if(event.key==='Enter'){analyzeToken()}">
+                          <button class="paste-btn" onclick="pasteAndScan()"><i class="ph ph-clipboard-text"></i> PASTE & SCAN</button>
+                          <button class="btn-primary scan-btn" onclick="analyzeToken()"><i class="ph ph-scan"></i> SCAN</button>
                     </div>
-                </div>
 
                 <div id="analyzerResultBox" class="result-box glass-panel glow-border" style="display: none;"></div>
 
